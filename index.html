@@ -159,6 +159,28 @@ h1{font-size:30px;font-weight:800} h2{font-size:24px;font-weight:800} h3{font-si
 #prep.ok{background:#eaffd6}
 #prep i{position:absolute;left:0;bottom:0;height:4px;background:var(--green);transition:width .3s}
 
+/* animal pens */
+.field.ranch{background:repeating-linear-gradient(115deg,#8bc34a 0 22px,#83bb43 22px 44px)}
+.pen{position:relative;border-radius:20px;padding:10px;display:grid;grid-template-columns:repeat(4,minmax(0,170px));justify-content:space-evenly;gap:8px;background:var(--floor);
+  border:7px solid #b07a45;box-shadow:0 6px 0 #6b4220,inset 0 0 0 3px #e0a868;background-image:radial-gradient(rgba(255,255,255,.18) 1.5px,transparent 2px);background-size:14px 14px}
+.pen .pond{position:absolute;right:12px;bottom:10px;width:30%;height:42%;border-radius:50%;background:radial-gradient(#9fdcff,#4fb3e8);opacity:.85;pointer-events:none}
+.aslot{position:relative;border:none;background:rgba(255,255,255,.22);border-radius:16px;cursor:pointer;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:4px 2px 6px;z-index:1}
+.aslot:hover{background:rgba(255,255,255,.4)}
+.aslot small{font-size:12px;font-weight:800;color:#4e342e;background:rgba(255,255,255,.75);border-radius:8px;padding:0 6px;white-space:nowrap}
+.aslot.empty{border:3px dashed rgba(255,255,255,.75);justify-content:center;gap:2px}
+.aslot .plus{font-size:28px;color:#fff;font-weight:800;line-height:1}
+.asvg{width:100%;height:auto;max-height:110px;overflow:visible}
+.asvg .hop{transform-box:view-box;transform-origin:50% 95%}
+.asvg.ready .hop{animation:hop 1s ease-in-out infinite}
+.asvg.busy .hop{animation:chew 1.6s ease-in-out infinite}
+@keyframes hop{50%{transform:translateY(-6px)}}
+@keyframes chew{50%{transform:scaleY(.96)}}
+.item .th.animal{background:linear-gradient(#e8f7ff,#e8f7ff 62%,#b5dc7b 62%);display:flex;align-items:flex-end;justify-content:center}
+.item .th.animal .asvg{max-height:100px;width:auto;height:100%}
+.sp .th .asvg{height:90px;width:auto}
+.sp.locked{opacity:.5}
+@media (max-width:560px){ .pen{grid-template-columns:repeat(2,minmax(0,1fr))} }
+
 /* thumbnails, picture picker, list editor */
 .thumb{width:64px;height:64px;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fff8e6;flex:none}
 .thumb img{width:100%;height:100%;object-fit:cover}
@@ -370,39 +392,88 @@ const EMOJI = {
 };
 const AVATARS = ['🐰','🐻','🐱','🐶','🦊','🐼','🐸','🐯','🦁','🐵','🐧','🦄','🐨','🐷','🐥','🐙'];
 
-/* Plants. cat: veg (harvest once), tree (fruit trees: blossom → fruit, many seasons), flower (bloom again and again).
+/* Plants, in six groups. Short crops are picked once; fruit trees, timber trees and flowers stay and give again.
    cost: seed price in 💰 (coins only come from learning). unlock: words learned needed. yield: items per harvest.
-   sell: 💧 per item at the Market. grow: seconds a plant needs to grow after each watering. */
+   sell: 💧 or 🌾 per item at the Market. grow: seconds a plant needs to grow one stage after each watering —
+   short crops take a minute or two, perennials and timber trees much longer, so the farm keeps growing over weeks. */
 const PLANTS = {
-  lettuce:  {cat:'veg', name:'Lettuce',  icon:'🥬', cost:5,  unlock:0,  yield:3, sell:1, grow:20, kind:'lettuce'},
-  carrot:   {cat:'veg', name:'Carrot',   icon:'🥕', cost:6,  unlock:0,  yield:3, sell:1, grow:25, kind:'carrot'},
-  tomato:   {cat:'veg', name:'Tomato',   icon:'🍅', cost:10, unlock:2,  yield:4, sell:1, grow:30, kind:'tomato', flower:true},
-  corn:     {cat:'veg', name:'Corn',     icon:'🌽', cost:12, unlock:4,  yield:3, sell:2, grow:35, kind:'corn', flower:true},
-  pumpkin:  {cat:'veg', name:'Pumpkin',  icon:'🎃', cost:16, unlock:7,  yield:2, sell:4, grow:40, kind:'pumpkin', flower:true},
-  sunflower:{cat:'flower', name:'Sunflower', icon:'🌻', cost:8,  unlock:0,  yield:2, sell:2, grow:30, kind:'sunflower'},
-  tulip:    {cat:'flower', name:'Tulip',     icon:'🌷', cost:10, unlock:1,  yield:2, sell:2, grow:30, kind:'tulip', color:'#ff5c8a'},
-  daisy:    {cat:'flower', name:'Daisy',     icon:'🌼', cost:12, unlock:3,  yield:3, sell:2, grow:35, kind:'daisy'},
-  rose:     {cat:'flower', name:'Rose',      icon:'🌹', cost:16, unlock:5,  yield:2, sell:3, grow:40, kind:'rose'},
-  lavender: {cat:'flower', name:'Lavender',  icon:'💜', cost:20, unlock:9,  yield:3, sell:3, grow:45, kind:'lavender'},
-  apple:    {cat:'tree', name:'Apple',  icon:'🍎', cost:25, unlock:1,  yield:5, sell:1, grow:45, kind:'tree', leaf:'#4caf50', fruit:'#e53935', bloom:'#ffd1dc'},
-  orange:   {cat:'tree', name:'Orange', icon:'🍊', cost:30, unlock:3,  yield:5, sell:1, grow:50, kind:'tree', leaf:'#3f9f45', fruit:'#ff9800', bloom:'#ffffff'},
-  lemon:    {cat:'tree', name:'Lemon',  icon:'🍋', cost:30, unlock:5,  yield:6, sell:1, grow:50, kind:'tree', leaf:'#43a047', fruit:'#cddc39', bloom:'#ffffff', shape:'oval'},
-  peach:    {cat:'tree', name:'Peach',  icon:'🍑', cost:40, unlock:8,  yield:5, sell:2, grow:55, kind:'tree', leaf:'#5cb85c', fruit:'#ffab91', bloom:'#ff8fb1'},
-  pear:     {cat:'tree', name:'Pear',   icon:'🍐', cost:45, unlock:11, yield:5, sell:2, grow:60, kind:'tree', leaf:'#4caf50', fruit:'#c0ca33', bloom:'#ffffff', shape:'pear'},
-  mango:    {cat:'tree', name:'Mango',  icon:'🥭', cost:50, unlock:14, yield:5, sell:2, grow:60, kind:'tree', leaf:'#2e7d32', fruit:'#ffc107', bloom:'#fff59d', shape:'oval'},
-  banana:   {cat:'tree', name:'Banana', icon:'🍌', cost:60, unlock:18, yield:6, sell:2, grow:60, kind:'banana'}
+  // leafy greens
+  lettuce:   {cat:'leafy', name:'Lettuce',  icon:'🥬', cost:5,  unlock:0,  yield:3, sell:1, grow:60,  kind:'lettuce'},
+  spinach:   {cat:'leafy', name:'Spinach',  icon:'🌿', cost:6,  unlock:1,  yield:3, sell:1, grow:75,  kind:'spinach'},
+  broccoli:  {cat:'leafy', name:'Broccoli', icon:'🥦', cost:10, unlock:4,  yield:3, sell:2, grow:120, kind:'broccoli'},
+  // root crops
+  carrot:    {cat:'root', name:'Carrot',       icon:'🥕', cost:6,  unlock:0, yield:3, sell:1, grow:90,  kind:'carrot'},
+  potato:    {cat:'root', name:'Potato',       icon:'🥔', cost:9,  unlock:2, yield:4, sell:1, grow:150, kind:'potato', tuber:'#c8a165'},
+  sweetpotato:{cat:'root', name:'Sweet potato', icon:'🍠', cost:12, unlock:5, yield:4, sell:2, grow:180, kind:'potato', tuber:'#b5485d'},
+  // fruiting vegetables
+  strawberry:{cat:'fruitveg', name:'Strawberry', icon:'🍓', cost:8,  unlock:1,  yield:4, sell:1, grow:120, kind:'strawberry', flower:true},
+  tomato:    {cat:'fruitveg', name:'Tomato',     icon:'🍅', cost:10, unlock:2,  yield:4, sell:1, grow:150, kind:'tomato', flower:true},
+  cucumber:  {cat:'fruitveg', name:'Cucumber',   icon:'🥒', cost:10, unlock:3,  yield:4, sell:1, grow:150, kind:'hangveg', fruit:'#4caf50', shape:'long', flower:true},
+  corn:      {cat:'fruitveg', name:'Corn',       icon:'🌽', cost:12, unlock:4,  yield:3, sell:2, grow:180, kind:'corn', flower:true},
+  chili:     {cat:'fruitveg', name:'Chili',      icon:'🌶️', cost:12, unlock:6,  yield:5, sell:1, grow:180, kind:'hangveg', fruit:'#e53935', shape:'chili', flower:true},
+  eggplant:  {cat:'fruitveg', name:'Eggplant',   icon:'🍆', cost:14, unlock:7,  yield:3, sell:2, grow:210, kind:'hangveg', fruit:'#6a1b9a', shape:'long', flower:true},
+  pumpkin:   {cat:'fruitveg', name:'Pumpkin',    icon:'🎃', cost:16, unlock:8,  yield:2, sell:4, grow:300, kind:'pumpkin', flower:true},
+  watermelon:{cat:'fruitveg', name:'Watermelon', icon:'🍉', cost:20, unlock:10, yield:2, sell:5, grow:360, kind:'melon', flower:true},
+  // fruit trees (perennial)
+  apple:  {cat:'tree', name:'Apple',   icon:'🍎', cost:25, unlock:2,  yield:5, sell:2, grow:600,  kind:'tree', leaf:'#4caf50', fruit:'#e53935', bloom:'#ffd1dc'},
+  orange: {cat:'tree', name:'Orange',  icon:'🍊', cost:30, unlock:4,  yield:5, sell:2, grow:720,  kind:'tree', leaf:'#3f9f45', fruit:'#ff9800', bloom:'#ffffff'},
+  lemon:  {cat:'tree', name:'Lemon',   icon:'🍋', cost:30, unlock:5,  yield:6, sell:2, grow:720,  kind:'tree', leaf:'#43a047', fruit:'#cddc39', bloom:'#ffffff', shape:'oval'},
+  cherry: {cat:'tree', name:'Cherry',  icon:'🍒', cost:35, unlock:6,  yield:6, sell:2, grow:720,  kind:'tree', leaf:'#4caf50', fruit:'#c2185b', bloom:'#ffc1d9'},
+  peach:  {cat:'tree', name:'Peach',   icon:'🍑', cost:40, unlock:8,  yield:5, sell:3, grow:900,  kind:'tree', leaf:'#5cb85c', fruit:'#ffab91', bloom:'#ff8fb1'},
+  pear:   {cat:'tree', name:'Pear',    icon:'🍐', cost:45, unlock:11, yield:5, sell:3, grow:900,  kind:'tree', leaf:'#4caf50', fruit:'#c0ca33', bloom:'#ffffff', shape:'pear'},
+  avocado:{cat:'tree', name:'Avocado', icon:'🥑', cost:50, unlock:13, yield:4, sell:4, grow:1200, kind:'tree', leaf:'#33691e', fruit:'#689f38', bloom:'#f0f4c3', shape:'pear'},
+  mango:  {cat:'tree', name:'Mango',   icon:'🥭', cost:50, unlock:14, yield:5, sell:4, grow:1200, kind:'tree', leaf:'#2e7d32', fruit:'#ffc107', bloom:'#fff59d', shape:'oval'},
+  banana: {cat:'tree', name:'Banana',  icon:'🍌', cost:60, unlock:18, yield:6, sell:3, grow:1200, kind:'banana'},
+  coconut:{cat:'tree', name:'Coconut', icon:'🥥', cost:70, unlock:22, yield:4, sell:6, grow:1800, kind:'palm'},
+  // timber trees (wood)
+  bamboo: {cat:'timber', name:'Bamboo', icon:'🎋', cost:35, unlock:8,  yield:6, sell:3, grow:1200, kind:'bamboo', product:'Bamboo poles'},
+  pine:   {cat:'timber', name:'Pine',   icon:'🌲', cost:40, unlock:6,  yield:4, sell:5, grow:1800, kind:'pine',   product:'Pine wood'},
+  oak:    {cat:'timber', name:'Oak',    icon:'🌳', cost:60, unlock:12, yield:4, sell:8, grow:2700, kind:'oak',    product:'Oak wood'},
+  maple:  {cat:'timber', name:'Maple',  icon:'🍁', cost:80, unlock:16, yield:4, sell:10, grow:3600, kind:'maple', product:'Maple wood'},
+  // flowers
+  sunflower:{cat:'flower', name:'Sunflower', icon:'🌻', cost:8,  unlock:0, yield:2, sell:2, grow:120, kind:'sunflower'},
+  tulip:    {cat:'flower', name:'Tulip',     icon:'🌷', cost:10, unlock:1, yield:2, sell:2, grow:150, kind:'tulip', color:'#ff5c8a'},
+  daisy:    {cat:'flower', name:'Daisy',     icon:'🌼', cost:12, unlock:3, yield:3, sell:2, grow:150, kind:'daisy'},
+  rose:     {cat:'flower', name:'Rose',      icon:'🌹', cost:16, unlock:5, yield:2, sell:3, grow:240, kind:'rose'},
+  hibiscus: {cat:'flower', name:'Hibiscus',  icon:'🌺', cost:18, unlock:7, yield:2, sell:3, grow:300, kind:'hibiscus'},
+  lavender: {cat:'flower', name:'Lavender',  icon:'💜', cost:20, unlock:9, yield:3, sell:3, grow:300, kind:'lavender'}
 };
-const CATS = {veg:'🥕 Vegetables', tree:'🍎 Fruit trees', flower:'🌻 Flowers'};
-const RIPE = {veg:4, tree:5, flower:3};        // stage that can be harvested
-const AFTER = {veg:null, tree:3, flower:2};     // after harvest: veg is gone, trees go back to "grown tree", flowers back to "budding"
+const CATS = {leafy:'🥬 Leafy greens', root:'🥕 Root crops', fruitveg:'🍅 Fruit & veg', tree:'🍎 Fruit trees', timber:'🌲 Timber trees', flower:'🌻 Flowers'};
+// how each group lives: short crops are picked once, the others regrow
+const LIFE = {leafy:'crop', root:'crop', fruitveg:'crop', tree:'tree', timber:'timber', flower:'flower'};
+const RIPE_BY = {crop:4, tree:5, timber:4, flower:3};       // stage that can be harvested
+const AFTER_BY = {crop:null, tree:3, timber:2, flower:2};    // after harvest: crop gone, fruit tree back to "grown tree", timber back to "young tree"
+const lifeOf = t => LIFE[PLANTS[t].cat];
+const ripeOf = t => RIPE_BY[lifeOf(t)];
+const afterOf = t => AFTER_BY[lifeOf(t)];
 const STAGES = {
-  veg:['Seed','Sprout','Seedling','Growing','Ready to pick'],
+  crop:['Seed','Sprout','Seedling','Growing','Ready to pick'],
   tree:['Seed','Sprout','Sapling','Grown tree','Blossoming','Fruiting'],
+  timber:['Seed','Sprout','Sapling','Young tree','Ready to cut'],
   flower:['Seed','Sprout','Budding','Blooming']
 };
-const stageName = (t, s) => (PLANTS[t].cat === 'veg' && s === 3 && PLANTS[t].flower) ? 'Flowering' : STAGES[PLANTS[t].cat][s];
-// Price of bed 1, 2, 3… (the first bed is free). Up to 8 beds, 10 plants per bed.
-const BED_COST = [0, 60, 100, 150, 210, 280, 360, 450];
+const stageName = (t, s) => (lifeOf(t) === 'crop' && s === 3 && PLANTS[t].flower) ? 'Flowering' : STAGES[lifeOf(t)][s];
+const fmtDur = s => s >= 3600 ? `${+(s / 3600).toFixed(1)} h` : s >= 60 ? `${Math.round(s / 60)} min` : `${s} s`;
+
+/* Animals live in pens. They eat feed 🌾 (not water). A baby needs a few meals to grow up;
+   a grown animal gives its product a while after each meal. Bigger animals take longer. */
+const ANIMALS = {
+  chicken:{name:'Chicken', baby:'Chick',    icon:'🐔', cost:20, unlock:2,  pen:'Chicken coop', cap:4, growUp:2, grow:300,  produce:600,  feed:1, product:'Eggs',        pIcon:'🥚', yield:2, sell:2, floor:'#e9cf7d'},
+  duck:   {name:'Duck',    baby:'Duckling', icon:'🦆', cost:25, unlock:4,  pen:'Duck pond',    cap:4, growUp:2, grow:360,  produce:720,  feed:1, product:'Duck eggs',   pIcon:'🥚', yield:2, sell:2, floor:'#9ed36b', pond:true},
+  pig:    {name:'Pig',     baby:'Piglet',   icon:'🐷', cost:40, unlock:7,  pen:'Pigsty',       cap:3, growUp:3, grow:600,  produce:1200, feed:2, product:'Mushrooms',   pIcon:'🍄', yield:3, sell:3, floor:'#9c7a5b'},
+  goat:   {name:'Goat',    baby:'Kid',      icon:'🐐', cost:50, unlock:10, pen:'Goat pen',     cap:3, growUp:3, grow:720,  produce:1500, feed:2, product:'Goat cheese', pIcon:'🧀', yield:2, sell:5, floor:'#b9d77a'},
+  sheep:  {name:'Sheep',   baby:'Lamb',     icon:'🐑', cost:60, unlock:13, pen:'Sheep pen',    cap:3, growUp:3, grow:900,  produce:1800, feed:2, product:'Wool',        pIcon:'🧶', yield:2, sell:6, floor:'#a8d36a'},
+  cow:    {name:'Cow',     baby:'Calf',     icon:'🐮', cost:80, unlock:16, pen:'Cow barn',     cap:2, growUp:4, grow:1200, produce:2400, feed:3, product:'Milk',        pIcon:'🥛', yield:3, sell:6, floor:'#c9b27c'}
+};
+const PEN_COST = [40, 80, 120, 170, 230, 300, 380, 470];
+const MAX_PENS = PEN_COST.length;
+// barn items: plant harvests use the plant key, animal products use "a:<animal>"
+function itemInfo(k) {
+  if (k.startsWith('a:')) { const a = ANIMALS[k.slice(2)]; return a && {name:a.product, icon:a.pIcon, sell:a.sell}; }
+  const p = PLANTS[k]; return p && {name:p.product || p.name, icon:p.icon, sell:p.sell};
+}
+// Price of bed 1, 2, 3… (the first bed is free). Up to 12 beds, 10 plants per bed.
+const BED_COST = [0, 60, 100, 150, 210, 280, 360, 450, 550, 660, 780, 900];
 const MAX_BEDS = BED_COST.length;
 const PLOTS_PER_BED = 10;
 const GOALS = [5, 10, 15, 20];
@@ -421,7 +492,11 @@ const BADGES = [
   {id:'harvest1',   icon:'🧺', name:'First harvest', test:T => T.farm.totalHarvest >= 1},
   {id:'harvest20',  icon:'🚜', name:'20 harvests', test:T => T.farm.totalHarvest >= 20},
   {id:'beds4',      icon:'🏡', name:'Garden with 4 beds', test:T => T.farm.beds.length >= 4},
-  {id:'beds8',      icon:'🏞️', name:'Garden with 8 beds', test:T => T.farm.beds.length >= 8}
+  {id:'beds8',      icon:'🏞️', name:'Garden with 8 beds', test:T => T.farm.beds.length >= 8},
+  {id:'animal1',    icon:'🐣', name:'First animal', test:T => (T.farm.pens || []).some(p => p.animals.some(Boolean))},
+  {id:'collect20',  icon:'🥚', name:'20 animal products', test:T => (T.farm.collected || 0) >= 20},
+  {id:'pens4',      icon:'🐄', name:'4 animal pens', test:T => (T.farm.pens || []).length >= 4},
+  {id:'timber1',    icon:'🌲', name:'First wood cut', test:T => Object.keys(T.farm.harvests || {}).some(k => PLANTS[k] && PLANTS[k].cat === 'timber')}
 ];
 
 /* ---------- storage ----------
@@ -435,7 +510,7 @@ const newBed = () => ({plots:Array.from({length:PLOTS_PER_BED}, () => null)});
 function defaultState() {
   return {
     v:3, lists:[], words:{},
-    farm:{coins:10, water:6, seeds:{lettuce:2, sunflower:1}, beds:[newBed()], barn:{}, harvests:{}, totalHarvest:0},
+    farm:{coins:10, water:6, feed:6, seeds:{lettuce:2, sunflower:1}, beds:[newBed()], pens:[], barn:{}, harvests:{}, totalHarvest:0, collected:0},
     daily:{goal:5, date:today(), words:[], rewarded:false},
     streak:{count:0, last:null},
     stickers:[], flags:{},
@@ -1145,8 +1220,8 @@ function floatText(txt) {
   const f = document.createElement('div'); f.className = 'floaty'; f.textContent = txt;
   document.body.appendChild(f); setTimeout(() => f.remove(), 1300);
 }
-function give({coins = 0, water = 0}) { S.farm.coins += coins; S.farm.water += water; if (coins) Sfx.coin(); save(); }
-const rewardText = ({coins = 0, water = 0}) => [coins && `+${coins} 💰`, water && `+${water} 💧`].filter(Boolean).join('  ');
+function give({coins = 0, water = 0, feed = 0}) { S.farm.coins += coins; S.farm.water += water; S.farm.feed += feed; if (coins) Sfx.coin(); save(); }
+const rewardText = ({coins = 0, water = 0, feed = 0}) => [coins && `+${coins} 💰`, water && `+${water} 💧`, feed && `+${feed} 🌾`].filter(Boolean).join('  ');
 function checkBadges() {
   for (const b of BADGES) if (!S.stickers.includes(b.id) && b.test(S)) {
     S.stickers.push(b.id);
@@ -1203,8 +1278,89 @@ function bananaG(st) {
     [[56, 68], [61, 70], [56, 75], [62, 77], [57, 82], [63, 84]].map(([x, y]) => `<path d="M${x} ${y} q5 6 12 1" stroke="#ffd600" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M${x} ${y} q5 6 12 1" stroke="#fff59d" stroke-width="1.2" fill="none" stroke-linecap="round" transform="translate(0 -1)"/>`).join('');
   return s;
 }
-function vegG(kind, st) {
+function palmG(st) {
+  const frond = (rot, len) => `<path d="M50 46 q${P(len * .5)} -8 ${P(len)} 2 q-${P(len * .5)} 3 -${P(len)} -2z" fill="#43a047" stroke="#2e7d32" stroke-width=".8" transform="rotate(${rot} 50 46)"/>`;
+  if (st === 2) return `<path d="M50 111 Q49 95 50 84" stroke="#a1887f" stroke-width="4" fill="none"/>` + [-160, -120, -60, -20].map(r => `<path d="M50 84 q8 -5 16 1 q-8 2 -16 -1z" fill="#43a047" transform="rotate(${r} 50 84)"/>`).join('');
+  let s = `<path d="M47 111 Q42 80 48 46 L53 46 Q48 80 54 111 Z" fill="#a1887f"/><path d="M46 96 h7 M46 82 h6 M47 68 h6 M48 56 h5" stroke="#8d6e63" stroke-width="1.4"/>`;
+  s += [-175, -145, -115, -65, -35, -5].map((r, i) => frond(r, 30 + (i % 2) * 6)).join('');
+  if (st === 4) s += [[47, 52], [53, 53], [50, 56]].map(([x, y]) => circ(x, y, 2.4, '#fff59d')).join('');
+  if (st === 5) s += [[45, 52], [52, 54], [48, 57], [55, 50]].map(([x, y]) => circ(x, y, 4.2, '#795548') + circ(x - 1.2, y - 1.2, 1.3, '#a1887f')).join('');
+  return s;
+}
+function timberG(sp, st) {
+  const k = sp.kind, trunk = (w, top) => `<path d="M${50 - w} 111 L${50 - w * .7} ${top} L${50 + w * .7} ${top} L${50 + w} 111 Z" fill="#7b5233"/>`;
+  if (k === 'pine') {
+    const layers = st === 2 ? [[86, 12, 14]] : st === 3 ? [[78, 18, 16], [62, 13, 14]] : [[76, 24, 18], [58, 19, 16], [42, 14, 14], [28, 9, 12]];
+    return trunk(st === 4 ? 4 : 2.5, 80) + layers.map(([y, w, h], i) => `<path d="M${50 - w} ${y + h} L50 ${y - h * .2} L${50 + w} ${y + h} Z" fill="${i % 2 ? '#2e7d32' : '#388e3c'}"/>`).join('');
+  }
+  if (k === 'bamboo') {
+    const h = st === 2 ? 30 : st === 3 ? 60 : 88, xs = st === 2 ? [50] : st === 3 ? [44, 54] : [38, 47, 56, 64];
+    return xs.map((x, i) => {
+      const top = 111 - h + i * 6;
+      let s = `<rect x="${x - 2.5}" y="${top}" width="5" height="${111 - top}" rx="2" fill="${i % 2 ? '#7cb342' : '#8bc34a'}"/>`;
+      for (let y = 108; y > top + 6; y -= 13) s += `<rect x="${x - 3}" y="${y}" width="6" height="2" rx="1" fill="#558b2f"/>`;
+      return s + leafE(x + 6, top + 6, 7, 2, -25, '#689f38') + leafE(x - 6, top + 12, 7, 2, 25, '#7cb342');
+    }).join('');
+  }
+  // oak and maple: round broad-leaved trees
+  const leaf = k === 'maple' ? (st === 4 ? ['#e64a19', '#ff7043', '#ffa726'] : ['#7cb342', '#ef6c00', '#9ccc65']) : ['#2f6b25', '#3b7d2a', '#4a8f36'];
+  if (st === 2) return `<rect x="48.5" y="78" width="3" height="33" rx="1.5" fill="#7b5233"/>` + circ(50, 72, 11, leaf[1]) + circ(44, 77, 7, leaf[0]) + circ(57, 76, 7, leaf[2]);
+  const big = st === 4 ? 1 : .78, cx = 50, cy = st === 4 ? 44 : 56;
+  let s = trunk(st === 4 ? 7 : 5, cy + 14) + `<path d="M48 ${cy + 26} Q38 ${cy + 16} 32 ${cy + 10}" stroke="#7b5233" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M52 ${cy + 22} Q62 ${cy + 12} 68 ${cy + 8}" stroke="#7b5233" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  s += [[0, 0, 28], [-22, 10, 19], [22, 10, 19], [-13, -14, 18], [14, -14, 18], [0, 18, 18]].map(([dx, dy, r], i) => circ(cx + dx * big, cy + dy * big, r * big, leaf[i % 3])).join('');
+  if (k === 'oak' && st === 4) s += [[38, 52], [60, 48], [50, 62], [66, 60]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2.4" ry="3.2" fill="#a1887f"/><rect x="${x - 2.6}" y="${y - 4.2}" width="5.2" height="2" rx="1" fill="#6d4c41"/>`).join('');
+  return s;
+}
+function vegG(kind, st, sp = {}) {
   const G1 = '#5cb85c', G2 = '#3f9a3a', G3 = '#8bd26b';
+  if (kind === 'spinach') {
+    const n = st === 2 ? 5 : 8, L = st === 2 ? 9 : st === 3 ? 13 : 16;
+    let s = '';
+    for (let i = 0; i < n; i++) { const a = -160 + i * (140 / (n - 1)), r = a * Math.PI / 180; s += leafE(50 + Math.cos(r) * L * .6, 104 + Math.sin(r) * L * .6, L * .62, L * .34, a, i % 2 ? '#2e7d32' : '#43a047'); }
+    return s;
+  }
+  if (kind === 'broccoli') {
+    let s = leafE(38, 100, 12, 5, -30, G1) + leafE(62, 100, 12, 5, 30, G1);
+    if (st < 3) return s + leafE(50, 96, 10, 4, 90, G2);
+    const r = st === 4 ? 7 : 4.5, cy = st === 4 ? 82 : 90;
+    s += `<rect x="47" y="${cy}" width="6" height="${111 - cy}" rx="2" fill="#8bc34a"/>`;
+    return s + [[44, cy], [56, cy], [50, cy - 6], [39, cy - 3], [61, cy - 3]].map(([x, y]) => circ(x, y, r, '#2e7d32') + circ(x - 1.5, y - 1.5, r * .5, '#43a047')).join('');
+  }
+  if (kind === 'potato') {
+    const k = [0, 0, .6, .85, 1][st];
+    let s = [[40, 98], [60, 98], [50, 90], [44, 86], [56, 86]].map(([x, y], i) => leafE(50 + (x - 50) * k, 108 - (108 - y) * k * 1.2, 7 * k + 2, 4 * k + 1.5, i % 2 ? 30 : -30, i % 2 ? G1 : G2)).join('');
+    if (st === 3) s += blossom(50, 82, 3.5, '#ffffff', '#ffd54f') + blossom(42, 88, 3, '#f3e5f5', '#ffd54f');
+    if (st === 4) s = [[38, 109, 7, 5], [53, 110, 8, 5.5], [64, 108, 5, 4]].map(([x, y, rx, ry]) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${sp.tuber || '#c8a165'}"/>`).join('') + s;
+    return s;
+  }
+  if (kind === 'strawberry') {
+    let s = [[40, 100], [50, 95], [60, 100], [45, 104], [56, 104]].map(([x, y], i) => leafE(x, y, 6, 4, i * 30 - 60, i % 2 ? G1 : G2)).join('');
+    if (st === 3) s += [[38, 96], [62, 96], [50, 90]].map(([x, y]) => blossom(x, y, 3.4, '#ffffff', '#ffd54f')).join('');
+    if (st === 4) s += [[36, 105], [48, 108], [62, 105], [56, 99]].map(([x, y]) => `<path d="M${x - 4} ${y - 3} Q${x} ${y + 7} ${x + 4} ${y - 3} Z" fill="#e53935"/>` + leafE(x, y - 3.5, 3, 1.4, 0, '#2e7d32') + circ(x - 1, y, .6, '#ffeb3b') + circ(x + 1.2, y + 1.5, .6, '#ffeb3b')).join('');
+    return s;
+  }
+  if (kind === 'hangveg') {
+    let s = st >= 3 ? `<rect x="64" y="54" width="3" height="58" rx="1.5" fill="#a5774a"/>` : '';
+    const h = st === 2 ? 22 : 46;
+    s += `<path d="M50 111 Q46 ${111 - h / 2} 52 ${111 - h}" stroke="#4a9a3a" stroke-width="3" fill="none"/>`;
+    const lv = st === 2 ? [[42, 98], [58, 96], [48, 90]] : [[40, 98], [60, 96], [38, 84], [60, 82], [44, 72], [58, 68], [50, 62]];
+    s += lv.map(([x, y], i) => leafE(x, y, 8, 4.5, i % 2 ? 25 : -25, i % 3 ? G1 : G2)).join('');
+    const pts = [[45, 84], [57, 78], [42, 96], [56, 94]];
+    if (st === 3) s += pts.slice(0, 3).map(([x, y]) => blossom(x, y, 3.3, sp.fruit === '#6a1b9a' ? '#ce93d8' : '#ffe14d', '#f9a825')).join('');
+    if (st === 4) s += pts.map(([x, y]) => sp.shape === 'chili'
+      ? `<path d="M${x} ${y} q4 7 -1 15" stroke="${sp.fruit}" stroke-width="3.4" fill="none" stroke-linecap="round"/>` + leafE(x, y - 1, 2.2, 1.2, 0, '#2e7d32')
+      : `<ellipse cx="${x}" cy="${y + 7}" rx="${sp.fruit === '#6a1b9a' ? 4.4 : 3.2}" ry="9" fill="${sp.fruit}" transform="rotate(8 ${x} ${y + 7})"/>` + leafE(x, y - 1.5, 3.2, 1.8, 0, '#2e7d32')).join('');
+    return s;
+  }
+  if (kind === 'pumpkin' || kind === 'melon') {
+    const big = (x, y, r) => circ(x, y, r, G2) + `<path d="M${x} ${y} l${-r * .6} ${-r * .4} M${x} ${y} l${r * .6} ${-r * .4} M${x} ${y} l0 ${-r * .8}" stroke="${G3}" stroke-width="1.2"/>`;
+    let s = `<path d="M30 108 Q50 100 72 106" stroke="#5b8f2a" stroke-width="2.5" fill="none"/>`;
+    s += st === 2 ? big(42, 100, 8) + big(58, 98, 9) : big(26, 98, 11) + big(76, 99, 11) + big(52, 88, 13);
+    if (st === 3) s += blossom(38, 98, 6, '#ffb300', '#ff8f00');
+    if (st === 4 && kind === 'melon') s += `<ellipse cx="42" cy="101" rx="17" ry="11" fill="#2e7d32"/>` + [-10, -4, 2, 8].map(d => `<path d="M${42 + d} 91 q${d * .25} 10 0 20" stroke="#81c784" stroke-width="2" fill="none"/>`).join('');
+    if (st === 4 && kind === 'pumpkin') s += `<ellipse cx="42" cy="101" rx="16" ry="11" fill="#ff8f1f"/><ellipse cx="36" cy="101" rx="7" ry="11" fill="#ff9d3a"/><ellipse cx="48" cy="101" rx="7" ry="11" fill="#ff9d3a"/><ellipse cx="42" cy="101" rx="5" ry="11" fill="#ffad55"/><rect x="40.5" y="86" width="3" height="6" rx="1" fill="#6d4c2b"/>`;
+    return s;
+  }
   if (kind === 'lettuce') {
     const k = [0, 0, .55, .8, 1][st];
     return circ(50, 104 - 8 * k, 20 * k, G2) + circ(38, 104 - 6 * k, 13 * k, G1) + circ(62, 104 - 6 * k, 13 * k, G1) + circ(50, 100 - 10 * k, 13 * k, G3) + circ(50, 98 - 12 * k, 7 * k, '#c5ec9e');
@@ -1233,14 +1389,6 @@ function vegG(kind, st) {
     s += lv.map(([y, d]) => `<path d="M50 ${y} q${d * 14} -12 ${d * 22} -2 q${-d * 12} -4 ${-d * 22} 2z" fill="${G1}"/>`).join('');
     if (st >= 3) s += `<path d="M50 ${111 - h} l-5 -8 M50 ${111 - h} l0 -9 M50 ${111 - h} l5 -8" stroke="#d4a72c" stroke-width="2" stroke-linecap="round"/>`;
     if (st === 4) s += `<ellipse cx="57" cy="72" rx="5" ry="12" fill="#ffd54f"/><path d="M54 66 h6 M54 70 h6 M54 74 h6 M54 78 h6" stroke="#f5b400" stroke-width="1"/><path d="M50 86 q2 -16 10 -24 q-4 14 -2 26z" fill="#7cb342"/>`;
-    return s;
-  }
-  if (kind === 'pumpkin') {
-    const big = (x, y, r) => circ(x, y, r, G2) + `<path d="M${x} ${y} l${-r * .6} ${-r * .4} M${x} ${y} l${r * .6} ${-r * .4} M${x} ${y} l0 ${-r * .8}" stroke="${G3}" stroke-width="1.2"/>`;
-    let s = `<path d="M30 108 Q50 100 72 106" stroke="#5b8f2a" stroke-width="2.5" fill="none"/>`;
-    s += st === 2 ? big(42, 100, 8) + big(58, 98, 9) : big(26, 98, 11) + big(76, 99, 11) + big(52, 88, 13);
-    if (st === 3) s += blossom(38, 98, 6, '#ffb300', '#ff8f00');
-    if (st === 4) s += `<ellipse cx="42" cy="101" rx="16" ry="11" fill="#ff8f1f"/><ellipse cx="36" cy="101" rx="7" ry="11" fill="#ff9d3a"/><ellipse cx="48" cy="101" rx="7" ry="11" fill="#ff9d3a"/><ellipse cx="42" cy="101" rx="5" ry="11" fill="#ffad55"/><rect x="40.5" y="86" width="3" height="6" rx="1" fill="#6d4c2b"/>`;
     return s;
   }
   return '';
@@ -1275,6 +1423,12 @@ function flowerG(sp, st) {
     if (st === 2) return s + pts.map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2.6" ry="3.6" fill="#e53935"/>`).join('');
     return s + pts.map(([x, y]) => circ(x, y, 6.2, '#d81b60') + circ(x, y, 4.4, '#ec407a') + `<path d="M${x - 2.5} ${y} a2.5 2.5 0 1 1 2.5 2.5" stroke="#ad1457" stroke-width="1.2" fill="none"/>`).join('');
   }
+  if (k === 'hibiscus') {
+    const s = circ(50, 94, 19, '#33691e') + circ(33, 101, 11, '#43a047') + circ(67, 101, 11, '#43a047') + circ(50, 80, 12, '#43a047');
+    const pts = [[40, 84], [60, 86], [50, 98]];
+    if (st === 2) return s + pts.map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2.6" ry="4" fill="#f06292"/>`).join('');
+    return s + pts.map(([x, y]) => blossom(x, y, 8, '#ec407a', '#ad1457') + `<path d="M${x} ${y} l4 -6" stroke="#ffeb3b" stroke-width="1.2"/>`).join('');
+  }
   if (k === 'lavender') {
     const xs = [34, 42, 50, 58, 66], tops = [70, 62, 56, 63, 72];
     return xs.map((x, i) => {
@@ -1291,12 +1445,62 @@ function plantSVG(t, st, wet = false) {
   let inner;
   if (st === 0) inner = seedG();
   else if (st === 1) inner = sproutG();
-  else if (sp.cat === 'tree') inner = sp.kind === 'banana' ? bananaG(st) : treeG(sp, st);
-  else if (sp.cat === 'veg') inner = vegG(sp.kind, st);
+  else if (sp.kind === 'banana') inner = bananaG(st);
+  else if (sp.kind === 'palm') inner = palmG(st);
+  else if (sp.cat === 'tree') inner = treeG(sp, st);
+  else if (sp.cat === 'timber') inner = timberG(sp, st);
+  else if (lifeOf(t) === 'crop') inner = vegG(sp.kind, st, sp);
   else inner = flowerG(sp, st);
-  if (st >= 2 && sp.cat !== 'tree') inner = `<g transform="translate(50 111) scale(1.3) translate(-50 -111)">${inner}</g>`; // vegetables and flowers are shorter, so draw them bigger
+  if (st >= 2 && !['tree', 'timber'].includes(sp.cat)) inner = `<g transform="translate(50 111) scale(1.3) translate(-50 -111)">${inner}</g>`; // vegetables and flowers are shorter, so draw them bigger
   const delay = -((t.length * 7 + st * 3) % 40) / 10;
   return `<svg class="psvg" viewBox="0 0 100 120" aria-hidden="true">${soilMound(wet)}<g class="sway" style="animation-delay:${delay}s">${inner}</g></svg>`;
+}
+/* Animals, drawn facing right on a 100 × 90 canvas, feet at y ≈ 84. Babies are the same animal, smaller (chicks and ducklings are yellow). */
+const legs = (xs, top, len, c, w = 3) => xs.map(x => `<rect x="${x - w / 2}" y="${top}" width="${w}" height="${len}" rx="${w / 2}" fill="${c}"/>`).join('');
+const eye = (x, y, r = 2) => circ(x, y, r, '#222') + circ(x + r * .35, y - r * .35, r * .35, '#fff');
+function animalBody(t, adult) {
+  if (t === 'chicken' || t === 'duck') {
+    if (!adult) return legs([46, 54], 74, 10, '#ff9800', 2) + circ(48, 64, 13, '#ffe082') + circ(60, 52, 9, '#ffe57f') + eye(63, 50, 1.6) +
+      `<path d="M68 52 l6 2 l-6 2z" fill="#ff9800"/>` + leafE(44, 64, 7, 4, -20, '#ffd54f');
+    const duck = t === 'duck';
+    let s = legs([44, 54], 70, 14, '#ff9800', 2.5) + `<path d="M24 50 q-6 -14 6 -12 q-2 6 4 8z" fill="${duck ? '#eeeeee' : '#fafafa'}"/>`;
+    s += `<ellipse cx="46" cy="60" rx="22" ry="15" fill="#ffffff"/>` + leafE(42, 60, 11, 6, -15, duck ? '#e0e0e0' : '#eeeeee');
+    s += circ(64, 40, 10, '#ffffff') + eye(67, 37);
+    s += duck ? `<path d="M72 40 q10 -1 12 3 q-6 3 -12 1z" fill="#ff9800"/>` : `<path d="M73 39 l8 3 l-8 3z" fill="#ffa000"/><path d="M58 31 q3 -8 6 -2 q3 -6 5 2 q2 -5 3 2z" fill="#e53935"/><ellipse cx="72" cy="48" rx="2.2" ry="3.5" fill="#e53935"/>`;
+    return s;
+  }
+  if (t === 'pig') {
+    return legs([34, 42, 56, 64], 66, 16, '#f48fb1', 5) + `<path d="M18 54 q-6 -4 -2 -8 q4 -2 2 4" stroke="#f06292" stroke-width="2" fill="none"/>` +
+      `<ellipse cx="44" cy="58" rx="26" ry="17" fill="#f8bbd0"/>` + circ(70, 50, 14, '#f8bbd0') + `<path d="M62 38 l-2 -10 l8 6z M74 38 l4 -10 l2 10z" fill="#f48fb1"/>` +
+      `<ellipse cx="81" cy="54" rx="6" ry="5" fill="#f48fb1"/>` + circ(79, 54, 1.2, '#ad1457') + circ(83, 54, 1.2, '#ad1457') + eye(70, 46) + circ(64, 54, 2.5, '#ffcdd2');
+  }
+  if (t === 'goat') {
+    return legs([32, 40, 54, 62], 62, 22, '#d7ccc8', 3.5) + `<ellipse cx="46" cy="54" rx="24" ry="14" fill="#efebe9"/>` + `<path d="M22 46 l-6 -4 l4 8z" fill="#efebe9"/>` +
+      `<ellipse cx="72" cy="40" rx="9" ry="12" fill="#efebe9" transform="rotate(25 72 40)"/>` + `<path d="M68 30 q-4 -12 6 -14 q-6 4 -2 14z M74 29 q2 -12 10 -10 q-7 3 -6 11z" fill="#8d6e63"/>` +
+      `<path d="M62 36 l-8 -2 l6 6z" fill="#d7ccc8"/>` + eye(73, 37) + `<path d="M77 50 q1 8 -3 10 q0 -6 -1 -9z" fill="#bcaaa4"/>` + circ(79, 46, 1.4, '#6d4c41');
+  }
+  if (t === 'sheep') {
+    let s = legs([34, 42, 54, 62], 64, 18, '#424242', 3.5);
+    s += [[30, 52], [40, 46], [52, 46], [60, 52], [36, 60], [48, 62], [58, 60], [44, 54]].map(([x, y]) => circ(x, y, 10, '#fafafa')).join('');
+    s += [[30, 52], [52, 46], [48, 62]].map(([x, y]) => circ(x - 2, y - 2, 4, '#ffffff')).join('');
+    s += `<ellipse cx="72" cy="48" rx="8" ry="10" fill="#424242"/>` + leafE(64, 42, 5, 2.4, -30, '#616161') + circ(72, 39, 6, '#fafafa') + eye(74, 47, 1.6);
+    return s;
+  }
+  if (t === 'cow') {
+    let s = legs([30, 38, 56, 64], 62, 22, '#fafafa', 5) + legs([30, 38, 56, 64], 80, 4, '#5d4037', 5);
+    s += `<ellipse cx="46" cy="52" rx="28" ry="16" fill="#fafafa"/>` + `<path d="M34 42 q6 -4 10 2 q-2 8 -10 6 q-4 -4 0 -8z M52 54 q8 -4 12 2 q-4 8 -12 4z" fill="#3e2723"/>`;
+    s += `<path d="M18 46 q-6 8 -2 16" stroke="#fafafa" stroke-width="2.5" fill="none"/>` + `<ellipse cx="73" cy="42" rx="11" ry="12" fill="#fafafa"/>`;
+    s += `<path d="M66 32 q-4 -6 -1 -9 M80 32 q4 -6 1 -9" stroke="#bcaaa4" stroke-width="3" fill="none" stroke-linecap="round"/>` + leafE(63, 37, 5, 2.6, -20, '#3e2723') + leafE(83, 37, 5, 2.6, 20, '#fafafa');
+    s += `<ellipse cx="75" cy="50" rx="8" ry="5.5" fill="#f8bbd0"/>` + circ(72, 50, 1.2, '#880e4f') + circ(78, 50, 1.2, '#880e4f') + eye(70, 40) + eye(78, 40);
+    return s;
+  }
+  return '';
+}
+function animalSVG(t, adult, state = '') {
+  const babyBird = !adult && (t === 'chicken' || t === 'duck');
+  const scale = adult || babyBird ? 1 : .68;
+  const body = `<g transform="translate(50 84) scale(${scale}) translate(-50 -84)">${animalBody(t, adult)}</g>`;
+  return `<svg class="asvg ${state}" viewBox="0 0 100 90" aria-hidden="true"><ellipse cx="48" cy="85" rx="28" ry="4" fill="rgba(0,0,0,.15)"/><g class="hop">${body}</g></svg>`;
 }
 const BARN_SVG = `<svg viewBox="0 0 150 130" width="100%" height="100%">
   <rect x="100" y="38" width="34" height="84" rx="4" fill="#cfd8dc"/><path d="M100 40 Q117 18 134 40 Z" fill="#90a4ae"/><path d="M104 60 h26 M104 80 h26 M104 100 h26" stroke="#b0bec5" stroke-width="2"/>
@@ -1347,14 +1551,14 @@ function renderTabbar() {
   const t = S && TAB_OF[cur.name], tb = $('#tabbar');
   tb.classList.toggle('hide', !t);
   if (!t) return;
-  const ripe = allPlots().filter(({p}) => plotState(p) === 'ripe').length;
-  const thirsty = allPlots().filter(({p}) => plotState(p) === 'water').length;
-  tb.innerHTML = [['learn', '📚', 'Learn'], ['garden', '🌻', 'Garden'], ['shop', '🛒', 'Shop']].map(([k, i, l]) =>
-    `<button class="tb ${t === k ? 'on' : ''}" data-act="tab" data-to="${k}"><span class="i">${i}</span>${l}${k === 'garden' && (ripe || thirsty) ? `<span class="dot">${ripe ? ripe + ' ripe' : thirsty + '💧'}</span>` : ''}</button>`).join('');
+  const ripe = allPlots().filter(({p}) => plotState(p) === 'ripe').length + allAnimals().filter(({a}) => animalState(a) === 'ready').length;
+  const thirsty = allPlots().filter(({p}) => plotState(p) === 'water').length + allAnimals().filter(({a}) => animalState(a) === 'hungry').length;
+  tb.innerHTML = [['learn', '📚', 'Learn'], ['garden', '🌻', 'Farm'], ['shop', '🛒', 'Shop']].map(([k, i, l]) =>
+    `<button class="tb ${t === k ? 'on' : ''}" data-act="tab" data-to="${k}"><span class="i">${i}</span>${l}${k === 'garden' && (ripe || thirsty) ? `<span class="dot">${ripe ? ripe + ' ready' : thirsty + ' to tend'}</span>` : ''}</button>`).join('');
 }
 const streakNow = (T = S) => (T.streak.last === today() || T.streak.last === yesterday()) ? T.streak.count : 0;
 const kidChip = () => { const p = profile(); return p ? `<button class="pill kid" data-act="go" data-to="profiles" title="Switch child">${p.avatar} ${esc(p.name)}</button>` : ''; };
-const hudHTML = () => S ? `<div class="hud">${cloudPillHTML()}${kidChip()}<span class="pill" title="Day streak">🔥 ${streakNow()}</span><span class="pill" title="Coins – earned by learning">💰 ${S.farm.coins}</span><span class="pill" title="Water for your plants">💧 ${S.farm.water}</span></div>` : '';
+const hudHTML = () => S ? `<div class="hud">${cloudPillHTML()}${kidChip()}<span class="pill" title="Day streak">🔥 ${streakNow()}</span><span class="pill" title="Coins – earned by learning">💰 ${S.farm.coins}</span><span class="pill" title="Water for your plants">💧 ${S.farm.water}</span><span class="pill" title="Feed for your animals">🌾 ${S.farm.feed}</span></div>` : '';
 const topBar = (title, back) => `<div class="top">${back ? `<button class="back" data-act="go" data-to="${back}">⬅</button>` : ''}<div class="title">${title}</div>${hudHTML()}</div>`;
 const SCREENS = {};
 
@@ -1403,6 +1607,10 @@ SCREENS.learn = () => {
   app.innerHTML = topBar('📚 Learn') + `
   <div class="card mascot-card"><div class="mascot">🐰</div><div class="bubble">${esc(msg)}</div></div>
   <button class="learn-btn" data-act="learn"><span style="font-size:40px">▶️</span><span>Start learning<span class="sub">${reviews ? `${plural(reviews, 'word')} to review · ` : ''}one word at a time</span></span></button>
+  <div class="card review-card"><div class="row"><span style="font-size:34px">🔁</span><div style="flex:1;min-width:180px"><b style="font-size:19px">Review words</b>
+    <div class="small muted">${learnedWords(null).length ? `${plural(learnedWords(null).length, 'learned word')}${reviews ? ` · <b>${reviews} due today</b>` : ' · none due today'}` : 'Learn some words first, then review them here.'}</div></div>
+    <button class="btn blue" data-act="review" data-n="auto" ${learnedWords(null).length ? '' : 'disabled'}>⚡ Auto</button>
+    <button class="btn" data-act="review-pick" ${learnedWords(null).length ? '' : 'disabled'}>Choose…</button></div></div>
   <div class="card">
     <div class="row"><h3>🎯 Today's goal</h3><span class="spacer"></span><b>${done}/${d.goal} words</b></div>
     <div class="goal-bar"><i style="width:${pct}%"></i></div>
@@ -1428,6 +1636,7 @@ SCREENS.list = ({id}) => {
   <div class="card">
     <input type="text" value="${esc(l.name)}" data-field="list-name" data-id="${id}" style="font-weight:800;font-size:20px">
     <div class="row" style="margin-top:10px"><button class="btn primary" data-act="learn" data-list="${id}" ${ws.length ? '' : 'disabled'}>▶️ Learn this list</button>
+      ${learnedWords(id).length ? `<button class="btn blue" data-act="review-pick" data-list="${id}">🔁 Review this list (${learnedWords(id).length})</button>` : ''}
       <button class="btn" data-act="edit-list" data-id="${id}">✏️ Edit list</button>
       <button class="btn" data-act="go" data-to="add" data-list="${id}">➕ Add words</button>
       ${noPic ? `<button class="btn orange" data-act="pick-all" data-id="${id}">🖼 Choose pictures (${noPic})</button>` : ''}
@@ -1692,10 +1901,42 @@ function buildSession(listId) {
   if (!items.length) { items = shuffle(pool).slice(0, 5).map(w => ({id:w.id, review:true})); free = true; }
   return {items, free};
 }
+/* Review (revise) learned words: "auto" takes the words due today, or the weakest ones if none are due;
+   a number takes that many, due words first, then the words the child finds hardest or saw longest ago. */
+const learnedWords = listId => Object.values(S.words).filter(w => w.mastered && (!listId || w.listId === listId));
+function buildReview(n, listId) {
+  const now = Date.now(), pool = learnedWords(listId);
+  if (!pool.length) return null;
+  const weakness = w => (w.box || 1) * 4 - w.wrong + w.right * .2;   // lower = needs more practice
+  const due = pool.filter(w => w.due <= now).sort((a, b) => a.due - b.due);
+  const rest = pool.filter(w => w.due > now).sort((a, b) => weakness(a) - weakness(b) || a.last - b.last);
+  const chosen = n === 'auto' ? (due.length ? due.slice(0, 10) : rest.slice(0, 5)) : [...due, ...rest].slice(0, n);
+  return {items:shuffle(chosen).map(w => ({id:w.id, review:true}))};
+}
+function reviewModal(listId = '') {
+  const lists = S.lists.filter(l => learnedWords(l.id).length);
+  const pool = learnedWords(listId || null), due = pool.filter(w => w.due <= Date.now()).length;
+  openModal(`<h3>🔁 Review words</h3>
+    ${pool.length ? `<div class="small muted">Practise words you already learned so you don't forget them. ${due ? `<b>${plural(due, 'word')} ${due === 1 ? 'is' : 'are'} due today.</b>` : 'Nothing is due today — you can still practise.'}</div>
+    <label class="fl">From</label><select data-change="review-list"><option value="">All lists (${learnedWords(null).length} learned)</option>${lists.map(l => `<option value="${l.id}" ${l.id === listId ? 'selected' : ''}>${esc(l.name)} (${learnedWords(l.id).length})</option>`).join('')}</select>
+    <div class="row" style="margin-top:14px"><button class="btn primary big" data-act="review" data-n="auto" data-list="${listId}">⚡ Auto review${due ? ` · ${Math.min(due, 10)} due` : ' · weakest 5'}</button></div>
+    <label class="fl">Or choose how many</label>
+    <div class="chips">${[5, 10, 15, 20].filter(n => n < pool.length).map(n => `<button class="chip" data-act="review" data-n="${n}" data-list="${listId}">${n} words</button>`).join('')}
+      <button class="chip" data-act="review" data-n="${pool.length}" data-list="${listId}">All ${plural(pool.length, 'word')}</button></div>`
+    : `<p class="muted">No learned words yet. Learn some words first — then come back to review them. ⭐</p>`}`);
+}
+async function startReview(n, listId) {
+  const b = buildReview(n === 'auto' ? 'auto' : +n, listId || null);
+  if (!b || !b.items.length) return toast('No learned words to review yet — learn some words first! ⭐');
+  closeModal();
+  G = {items:b.items, qi:0, combo:0, earned:{coins:0, water:0, feed:0}, finished:[], reviewed:0, listId:listId || null, mode:'review', reviewN:n};
+  cur = {name:'game', p:{}}; renderTabbar();
+  startItem();
+}
 async function startSession(listId) {
   const b = buildSession(listId);
   if (!b) { toast('No words yet. Add some words first!'); return go('add'); }
-  G = {items:b.items, qi:0, combo:0, earned:{coins:0, water:0}, finished:[], reviewed:0, listId};
+  G = {items:b.items, qi:0, combo:0, earned:{coins:0, water:0, feed:0}, finished:[], reviewed:0, listId};
   const need = b.items.map(t => S.words[t.id]).filter(w => !w.enriched);
   cur = {name:'game', p:{}}; renderTabbar();
   if (need.length && navigator.onLine) {
@@ -1924,12 +2165,12 @@ function dayLog() { rollDay(); const d = S.daily.date; return S.stats.days[d] ||
 function finishRound() {
   const c = G.cur, w = c.w, now = Date.now();
   const slips = c.mistakes + c.hints, first = slips === 0;
-  let coins, water = 0; const notes = [];
+  let coins, water = 0, feed = 0; const notes = [];
   if (c.r.k === 'card') { coins = 1; }
   else {
     G.combo = first ? G.combo + 1 : 0;
     coins = first ? 3 : slips <= 1 ? 2 : 1;
-    if (first) water = 1;
+    if (first) { water = 1; feed = 1; }
     if (G.combo >= 3 && first) { coins += 1; if (G.combo % 3 === 0) notes.push(`🔥 ${G.combo} in a row! Bonus coins!`); }
     if (G.combo >= 5) S.flags.combo5 = true;
     w.right++; w.wrong += c.mistakes;
@@ -1940,7 +2181,7 @@ function finishRound() {
     w.step = Math.max(w.step, G.ri + 1);
     if (w.step >= G.rounds.length) {
       c.wordDone = true; w.mastered = true; w.masteredAt = now; w.box = 1; w.due = now + DAY;
-      coins += 5; water += 2; G.finished.push(w.id);
+      coins += 5; water += 2; feed += 2; G.finished.push(w.id);
       const log = dayLog(); log.learned = log.learned || []; if (!log.learned.includes(w.id)) log.learned.push(w.id);
       markDaily(w.id);
       notes.push('⭐ This word is now in your Learned book! Bunny will ask again tomorrow so you remember it.');
@@ -1956,9 +2197,9 @@ function finishRound() {
     } else { w.box = 1; w.due = now + DAY; notes.push('Almost! We\'ll review it again tomorrow.'); }
     markDaily(w.id);
   }
-  give({coins, water});
-  G.earned.coins += coins; G.earned.water += water;
-  c.reward = {coins, water, notes};
+  give({coins, water, feed});
+  G.earned.coins += coins; G.earned.water += water; G.earned.feed = (G.earned.feed || 0) + feed;
+  c.reward = {coins, water, feed, notes};
   checkBadges(); save();
 }
 function nextRound() {
@@ -1973,9 +2214,9 @@ function markDaily(id) {
   if (!d.rewarded && d.words.length >= d.goal) {
     d.rewarded = true; S.flags.goal = true;
     const [rc, rw] = GOAL_REWARD[d.goal] || [10, 5];
-    give({coins:rc, water:rw});
-    if (G) { G.earned.coins += rc; G.earned.water += rw; }
-    setTimeout(() => { toast(`🎯 Today's goal complete! +${rc} 💰 +${rw} 💧`, 3500); FX.burst(120); Sfx.win(); }, 600);
+    give({coins:rc, water:rw, feed:rw});
+    if (G) { G.earned.coins += rc; G.earned.water += rw; G.earned.feed = (G.earned.feed || 0) + rw; }
+    setTimeout(() => { toast(`🎯 Today's goal complete! +${rc} 💰 +${rw} 💧 +${rw} 🌾`, 3500); FX.burst(120); Sfx.win(); }, 600);
   }
 }
 function endSession() {
@@ -1995,7 +2236,8 @@ function endSession() {
     <div class="mascot-card" style="justify-content:center"><div class="mascot">🐰</div><div class="bubble">You have ${S.farm.coins} 💰 and ${S.farm.water} 💧. Water your garden or buy some seeds!</div></div>
     <div style="display:grid;gap:10px;margin-top:14px">
       <button class="btn big primary" data-act="tab" data-to="garden">🌻 Go water the garden</button>
-      <button class="btn big" data-act="learn" ${lid ? `data-list="${lid}"` : ''}>▶️ Keep learning</button>
+      ${G.mode === 'review' ? `<button class="btn big blue" data-act="review-pick" ${lid ? `data-list="${lid}"` : ''}>🔁 Review more</button>` : ''}
+      <button class="btn big" data-act="learn" ${lid ? `data-list="${lid}"` : ''}>▶️ ${G.mode === 'review' ? 'Learn new words' : 'Keep learning'}</button>
       <button class="btn" data-act="tab" data-to="shop">🛒 Go shopping</button></div></div>`;
   G = null;
 }
@@ -2005,17 +2247,68 @@ function endSession() {
    ========================================================= */
 const justWatered = new Set();
 const allPlots = () => S ? S.farm.beds.flatMap((b, bi) => b.plots.map((p, pi) => ({p, bi, pi}))) : [];
-const plotState = p => !p ? 'empty' : p.stage >= RIPE[PLANTS[p.t].cat] ? 'ripe' : p.wAt ? 'grow' : 'water';
+const plotState = p => !p ? 'empty' : p.stage >= ripeOf(p.t) ? 'ripe' : p.wAt ? 'grow' : 'water';
 const growLeft = p => Math.max(0, Math.ceil((p.wAt + PLANTS[p.t].grow * 1000 - Date.now()) / 1000));
 const fmtSec = s => s >= 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : `${s}s`;
 function tickPlants() {
   if (!S) return false;
   let changed = false; const now = Date.now();
   for (const {p} of allPlots()) if (p && p.wAt && now - p.wAt >= PLANTS[p.t].grow * 1000) {
-    p.wAt = null; p.stage = Math.min(p.stage + 1, RIPE[PLANTS[p.t].cat]); changed = true;
+    p.wAt = null; p.stage = Math.min(p.stage + 1, ripeOf(p.t)); changed = true;
   }
-  if (changed) save(false); // growth follows from the watering time, every device works it out the same way
+  if (tickAnimals()) changed = true;
+  if (changed) save(false); // growth follows from the watering / feeding time, every device works it out the same way
   return changed;
+}
+/* ---- animals ---- */
+const allAnimals = () => S ? S.farm.pens.flatMap((pen, ni) => pen.animals.map((a, ai) => ({a, ni, ai, t:pen.t}))) : [];
+const animalState = a => !a ? 'empty' : a.ready ? 'ready' : a.fAt ? 'busy' : 'hungry';
+const animalWait = (t, a) => a.adult ? ANIMALS[t].produce : ANIMALS[t].grow;
+const animalLeft = (t, a) => Math.max(0, Math.ceil((a.fAt + animalWait(t, a) * 1000 - Date.now()) / 1000));
+const animalUnlocked = t => masteredCount() >= ANIMALS[t].unlock;
+function tickAnimals() {
+  let changed = false; const now = Date.now();
+  for (const {a, t} of allAnimals()) if (a && a.fAt && now - a.fAt >= animalWait(t, a) * 1000) {
+    a.fAt = null; changed = true;
+    if (a.adult) a.ready = true;
+    else { a.g = (a.g || 0) + 1; if (a.g >= ANIMALS[t].growUp) a.adult = true; }
+  }
+  return changed;
+}
+function feedAnimal(ni, ai, quiet) {
+  const pen = S.farm.pens[ni], a = pen.animals[ai], A = ANIMALS[pen.t];
+  if (animalState(a) !== 'hungry') return false;
+  if (S.farm.feed < A.feed) { if (!quiet) toast(`🌾 Not enough feed (a ${A.name.toLowerCase()} eats ${A.feed}). Learn more words or trade harvest for feed at the Market.`, 4000); return false; }
+  S.farm.feed -= A.feed; a.fAt = Date.now();
+  return true;
+}
+function animalSlotHTML(t, a, ni, ai) {
+  const A = ANIMALS[t], st = animalState(a);
+  if (!a) return `<button class="aslot empty" data-act="animal" data-n="${ni}" data-a="${ai}" title="Buy a ${A.name.toLowerCase()}"><span class="plus">＋</span><small>${esc(A.name)} · ${A.cost} 💰</small></button>`;
+  const tag = st === 'ready' ? `<span class="ptag ripe">${A.pIcon} Collect!</span>` : st === 'hungry' ? `<span class="ptag water">🌾 ${A.feed}</span>` : `<span class="ptag grow" data-aw="${ni}-${ai}">⏳ ${fmtSec(animalLeft(t, a))}</span>`;
+  const label = a.adult ? A.name : `${A.baby} ${a.g || 0}/${A.growUp}`;
+  return `<button class="aslot ${st}" data-act="animal" data-n="${ni}" data-a="${ai}" title="${esc(label)}">${tag}${animalSVG(t, a.adult, st)}<small>${esc(label)}</small></button>`;
+}
+function penHTML(pen, ni) {
+  const A = ANIMALS[pen.t], n = pen.animals.filter(Boolean).length, hungry = pen.animals.filter(a => animalState(a) === 'hungry').length;
+  return `<div class="bed"><div class="bed-head"><span style="white-space:nowrap">${A.icon} ${esc(A.pen)} <span class="small" style="opacity:.9">· ${n}/${A.cap}</span></span><span class="spacer"></span>
+      ${hungry ? `<button class="btn sm orange" style="white-space:nowrap" data-act="feed-pen" data-n="${ni}">🌾 Feed all (${hungry})</button>` : ''}</div>
+    <div class="pen" style="--floor:${A.floor}">${A.pond ? '<span class="pond"></span>' : ''}${pen.animals.map((a, ai) => animalSlotHTML(pen.t, a, ni, ai)).join('')}</div></div>`;
+}
+function penPicker() {
+  const cost = PEN_COST[S.farm.pens.length];
+  openModal(`<h3>🏗️ Build a pen · ${cost} 💰</h3><div class="small muted">Each kind of animal lives in its own pen. You have ${S.farm.coins} 💰.</div>
+    <div class="seed-pick" style="margin-top:10px">${Object.entries(ANIMALS).map(([t, A]) => { const ok = animalUnlocked(t);
+      return `<button class="sp ${ok ? '' : 'locked'}" data-act="build-pen" data-t="${t}" ${ok ? '' : 'disabled'}><div class="th">${animalSVG(t, true)}</div>${esc(A.pen)}
+        <div class="small muted">${ok ? `${A.cap} ${A.name.toLowerCase()}s · gives ${A.product.toLowerCase()} ${A.pIcon}` : `🔒 Learn ${A.unlock} words`}</div></button>`; }).join('')}</div>`);
+}
+function animalInfo(ni, ai) {
+  const pen = S.farm.pens[ni], a = pen.animals[ai], A = ANIMALS[pen.t];
+  openModal(`<div class="row"><div style="width:130px">${animalSVG(pen.t, a.adult)}</div>
+    <div><h3>${A.icon} ${esc(a.adult ? A.name : A.baby)}</h3>
+    <div class="small muted">${a.adult ? `Eating — gives ${A.yield} ${A.pIcon} ${A.product.toLowerCase()} in ${fmtSec(animalLeft(pen.t, a))}.` : `Growing up — ${fmtSec(animalLeft(pen.t, a))} until the next meal is done (${a.g || 0}/${A.growUp} meals).`}</div>
+    <div class="small muted">A ${A.name.toLowerCase()} eats ${A.feed} 🌾 per meal. ${a.adult ? `After each meal it gives ${A.product.toLowerCase()} in ${fmtDur(A.produce)}.` : `It needs ${A.growUp} meals to grow up, ${fmtDur(A.grow)} each.`}</div></div></div>
+    <div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn" data-act="close-modal">Close</button></div>`);
 }
 function plotHTML(p, bi, pi) {
   const key = bi + '-' + pi, st = plotState(p);
@@ -2024,12 +2317,18 @@ function plotHTML(p, bi, pi) {
   const anim = justWatered.has(key) ? CAN_SVG + `<div class="drops">${[10, 35, 60, 80].map((x, i) => `<i style="left:${x}%;animation-delay:${i * .15}s"></i>`).join('')}</div>` : '';
   return `<button class="plot ${st === 'ripe' ? 'ripe' : ''}" data-act="plot" data-b="${bi}" data-p="${pi}" title="${esc(PLANTS[p.t].name)} – ${esc(stageName(p.t, p.stage))}">${tag}${anim}${plantSVG(p.t, p.stage, st === 'grow')}</button>`;
 }
+let gardenView = 'fields';
 SCREENS.garden = () => {
   tickPlants();
   const f = S.farm;
   const barnN = Object.values(f.barn).reduce((a, b) => a + b, 0);
   const thirsty = allPlots().filter(({p}) => plotState(p) === 'water').length;
-  app.innerHTML = topBar(`🌻 ${esc(profile().name)}'s garden`) + `
+  const ripeN = allPlots().filter(({p}) => plotState(p) === 'ripe').length, readyA = allAnimals().filter(({a}) => animalState(a) === 'ready').length;
+  const viewTabs = `<div class="subtabs">
+    <button class="subtab ${gardenView === 'fields' ? 'on' : ''}" data-act="garden-view" data-v="fields">🌱 Fields${ripeN ? ` · ${ripeN} ripe` : ''}</button>
+    <button class="subtab ${gardenView === 'animals' ? 'on' : ''}" data-act="garden-view" data-v="animals">🐄 Animals${readyA ? ` · ${readyA} ready` : ''}</button></div>`;
+  if (gardenView === 'animals') return renderRanch(viewTabs, barnN);
+  app.innerHTML = topBar(`🌻 ${esc(profile().name)}'s farm`) + viewTabs + `
   <div class="scene">
     <div class="sky"><div class="sun"></div>
       <div class="cloud" style="top:26px;width:80px;animation-duration:60s"></div>
@@ -2057,14 +2356,48 @@ SCREENS.garden = () => {
     ${fenceSVG()}
   </div>
   <div class="card small">
-    <b>How to play:</b> tap an empty spot to plant a seed · tap 💧 to water · when a plant finishes drinking (⏳) it grows · when it has fruit or flowers, tap 🧺 to pick.
-    Your harvest goes to the barn — take it to the <b>Market</b> to trade for water. ${thirsty && f.water < 1 ? '<br>💧 Out of water! <a href="#" data-act="learn">Learn some words</a> or sell your harvest to get more.' : ''}
+    <b>How to play:</b> tap an empty spot to plant a seed · tap 💧 to water · when a plant finishes drinking (⏳) it grows · when it has fruit, flowers or wood, tap 🧺 to pick.
+    Vegetables grow in minutes; fruit trees and timber trees take much longer but give again and again.
+    Your harvest goes to the barn — take it to the <b>Market</b> to trade for water or animal feed. ${thirsty && f.water < 1 ? '<br>💧 Out of water! <a href="#" data-act="learn">Learn some words</a> or sell your harvest to get more.' : ''}
   </div>`;
 };
+function renderRanch(viewTabs, barnN) {
+  const f = S.farm, hungry = allAnimals().filter(({a}) => animalState(a) === 'hungry').length;
+  app.innerHTML = topBar(`🐄 ${esc(profile().name)}'s farm`) + viewTabs + `
+  <div class="scene">
+    <div class="sky"><div class="sun"></div>
+      <div class="cloud" style="top:30px;width:70px;animation-duration:70s"></div>
+      ${HILLS_SVG}
+      <button class="barn" data-act="barn">${BARN_SVG}<span class="lbl">🧺 Barn: ${barnN}</span></button>
+    </div>
+    ${fenceSVG()}
+    <div class="field ranch">
+      ${f.pens.map(penHTML).join('')}
+      ${Array.from({length:MAX_PENS - f.pens.length}, (_, k) => {
+        const cost = PEN_COST[f.pens.length], next = k === 0, can = f.coins >= cost;
+        return `<div class="bed"><div class="bed-head" style="opacity:.85">🌾 Empty land</div>
+          <button class="land ${next ? 'next' : ''}" ${next ? 'data-act="buy-pen"' : 'disabled'}>${next
+            ? `<span class="sign"><span class="sign-t">🏗️ Build an animal pen</span><b>${cost} 💰</b><span class="small">${can ? 'Chickens, ducks, pigs, goats, sheep, cows' : 'Learn more to save up!'}</span></span>`
+            : `<span class="tufts"></span>`}</button></div>`;
+      }).join('')}
+      ${f.pens.length >= MAX_PENS ? '<div class="note" style="color:#fff">🎉 You have every pen!</div>' : ''}
+    </div>
+    ${fenceSVG()}
+  </div>
+  <div class="card small">
+    <b>How animals work:</b> build a pen, then tap ＋ to buy an animal. Babies need a few meals 🌾 to grow up. A grown animal gives eggs, milk, wool… a while after each meal — tap it to collect.
+    Animals eat <b>feed 🌾</b>, not water. You get feed by learning words and by trading harvest at the Market.
+    ${hungry && f.feed < 1 ? '<br>🌾 Out of feed! <a href="#" data-act="learn">Learn some words</a> or trade harvest for feed.' : ''}
+  </div>`;
+}
 function updateTimers() {
   document.querySelectorAll('[data-wat]').forEach(el => {
     const [bi, pi] = el.dataset.wat.split('-').map(Number), p = S.farm.beds[bi] && S.farm.beds[bi].plots[pi];
     if (p && p.wAt) el.textContent = '⏳ ' + fmtSec(growLeft(p));
+  });
+  document.querySelectorAll('[data-aw]').forEach(el => {
+    const [ni, ai] = el.dataset.aw.split('-').map(Number), pen = S.farm.pens[ni], a = pen && pen.animals[ai];
+    if (a && a.fAt) el.textContent = '⏳ ' + fmtSec(animalLeft(pen.t, a));
   });
 }
 function waterPlot(bi, pi, quiet) {
@@ -2078,66 +2411,84 @@ function waterPlot(bi, pi, quiet) {
 function seedPicker(bi, pi) {
   const have = Object.entries(S.farm.seeds).filter(([t, n]) => n > 0 && PLANTS[t]);
   openModal(`<h3>🌰 Plant a seed in bed ${bi + 1}</h3>` + (have.length
-    ? `<div class="seed-pick">${have.map(([t, n]) => `<button class="sp" data-act="plant" data-t="${t}" data-b="${bi}" data-p="${pi}"><div class="th">${plantSVG(t, RIPE[PLANTS[t].cat])}</div>${esc(PLANTS[t].name)} ×${n}</button>`).join('')}</div>`
+    ? `<div class="seed-pick">${have.map(([t, n]) => `<button class="sp" data-act="plant" data-t="${t}" data-b="${bi}" data-p="${pi}"><div class="th">${plantSVG(t, ripeOf(t))}</div>${esc(PLANTS[t].name)} ×${n}<div class="small muted">${fmtDur(PLANTS[t].grow * ripeOf(t))} to ${lifeOf(t) === 'timber' ? 'cut' : 'pick'}</div></button>`).join('')}</div>`
     : `<p>You don't have any seeds yet.</p>`) +
     `<div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn orange" data-act="tab" data-to="shop">🛒 Buy seeds</button></div>`);
 }
 function plotInfo(bi, pi) {
-  const p = S.farm.beds[bi].plots[pi], sp = PLANTS[p.t], st = plotState(p), ripe = RIPE[sp.cat];
-  const goal = sp.cat === 'veg' ? 'be ready to pick' : sp.cat === 'tree' ? 'grow fruit' : 'bloom';
+  const p = S.farm.beds[bi].plots[pi], sp = PLANTS[p.t], st = plotState(p), ripe = ripeOf(p.t), life = lifeOf(p.t);
+  const goal = {crop:'be ready to pick', tree:'grow fruit', timber:'be ready to cut', flower:'bloom'}[life];
   openModal(`<div class="row"><div style="width:120px;height:140px">${plantSVG(p.t, p.stage, st === 'grow')}</div>
     <div><h3>${sp.icon} ${esc(sp.name)}</h3><div>${esc(stageName(p.t, p.stage))}</div>
     <div class="small muted">${st === 'grow' ? `Drinking water — grows in ${fmtSec(growLeft(p))}.` : st === 'water' ? `Water it ${plural(ripe - p.stage, 'more time')} to ${goal}.` : 'Ripe — pick it!'}</div>
-    <div class="small muted">${sp.cat === 'veg' ? 'Vegetables are picked once.' : sp.cat === 'tree' ? 'Fruit tree: after picking, keep watering and it will blossom and fruit again next season.' : 'Flowers: after picking, keep watering and they will bloom again.'}</div></div></div>
+    <div class="small muted">${{crop:'Crops are picked once.', tree:'Fruit tree: after picking, keep watering and it will blossom and fruit again next season.', timber:'Timber tree: after cutting the wood it grows back from a young tree.', flower:'Flowers: after picking, keep watering and they will bloom again.'}[life]} Each stage takes ${fmtDur(sp.grow)} after watering.</div></div></div>
     <div class="row" style="margin-top:12px"><button class="btn sm danger" data-act="uproot" data-b="${bi}" data-p="${pi}">🪓 Remove this plant</button><span class="spacer"></span><button class="btn" data-act="close-modal">Close</button></div>`);
 }
 function barnModal() {
-  const items = Object.entries(S.farm.barn).filter(([t, n]) => n > 0 && PLANTS[t]);
+  const items = Object.entries(S.farm.barn).filter(([t, n]) => n > 0 && itemInfo(t));
   openModal(`<h3>🧺 Barn</h3>` + (items.length
-    ? items.map(([t, n]) => `<div class="market-row"><span class="ic">${PLANTS[t].icon}</span><b>${esc(PLANTS[t].name)}</b><span class="spacer"></span><span class="pill">×${n}</span></div>`).join('')
-    : '<p class="muted">The barn is empty. Pick vegetables, fruit and flowers in the garden to fill it!</p>') +
-    `<div class="row" style="margin-top:12px"><span class="small muted">Harvest can only be traded for water 💧 at the Market.</span><span class="spacer"></span><button class="btn blue" data-act="tab" data-to="shop" data-sub="market">🏪 Go to the Market</button></div>`);
+    ? items.map(([t, n]) => { const it = itemInfo(t); return `<div class="market-row"><span class="ic">${it.icon}</span><b>${esc(it.name)}</b><span class="spacer"></span><span class="pill">×${n}</span></div>`; }).join('')
+    : '<p class="muted">The barn is empty. Pick crops in the fields and collect from your animals to fill it!</p>') +
+    `<div class="row" style="margin-top:12px"><span class="small muted">Harvest can only be traded for water 💧 or feed 🌾 at the Market.</span><span class="spacer"></span><button class="btn blue" data-act="tab" data-to="shop" data-sub="market">🏪 Go to the Market</button></div>`);
 }
 
 /* =========================================================
    SHOP: seeds and land (with 💰) · Market: trade harvest for 💧
    ========================================================= */
-const shopState = {sub:'seeds', cat:'veg'};
+const shopState = {sub:'seeds', cat:'leafy', trade:'water'};
 const plantUnlocked = t => masteredCount() >= PLANTS[t].unlock;
+const freeSlot = t => { for (let ni = 0; ni < S.farm.pens.length; ni++) { const pen = S.farm.pens[ni]; if (pen.t !== t) continue; const ai = pen.animals.findIndex(a => !a); if (ai >= 0) return [ni, ai]; } return null; };
 SCREENS.shop = () => {
   const f = S.farm, s = shopState;
+  if (!CATS[s.cat]) s.cat = 'leafy';
   let body = '';
   if (s.sub === 'seeds') {
+    const life = LIFE[s.cat];
     body = `<div class="chips" style="margin-bottom:10px">${Object.entries(CATS).map(([k, l]) => `<button class="chip ${s.cat === k ? 'on' : ''}" data-act="shop-cat" data-c="${k}">${l}</button>`).join('')}</div>
-    <div class="small muted" style="margin-bottom:8px">Seeds are bought with coins 💰 you earn by learning. Learn more words to unlock new plants!</div>
+    <div class="small muted" style="margin-bottom:8px">${{crop:'Quick crops: ready in minutes, picked once.', tree:'Fruit trees live for years: slow to grow, then they fruit again and again.', timber:'Timber trees grow slowest of all; cut the wood and they grow back.', flower:'Flowers bloom again after you pick them.'}[life]} Seeds are bought with coins 💰 you earn by learning.</div>
     <div class="shop-grid">${Object.entries(PLANTS).filter(([, p]) => p.cat === s.cat).map(([t, p]) => {
-      const ok = plantUnlocked(t), can = ok && f.coins >= p.cost;
-      return `<div class="item ${ok ? '' : 'locked'}"><div class="th">${plantSVG(t, ok ? RIPE[p.cat] : 1)}</div>
+      const ok = plantUnlocked(t), can = ok && f.coins >= p.cost, rp = ripeOf(t);
+      return `<div class="item ${ok ? '' : 'locked'}"><div class="th">${plantSVG(t, ok ? rp : 1)}</div>
         <b>${p.icon} ${esc(p.name)}</b>
-        <div class="small muted">${ok ? `Water ${RIPE[p.cat]}× · pick ${p.yield} ${p.icon}${p.cat === 'veg' ? '' : ' each season'}` : `🔒 Learn ${plural(p.unlock, 'word')} to unlock (you have ${masteredCount()})`}</div>
+        <div class="small muted">${ok ? `${rp} waterings · ${fmtDur(p.grow)} each<br>gives ${p.yield} ${p.icon}${life === 'crop' ? '' : ' each time'}` : `🔒 Learn ${plural(p.unlock, 'word')} to unlock (you have ${masteredCount()})`}</div>
         <span class="own">You have: ${plural(f.seeds[t] || 0, 'seed')}</span>
         <button class="btn sm ${can ? 'primary' : ''}" data-act="buy-seed" data-t="${t}" ${can ? '' : 'disabled'}>Buy ${p.cost} 💰</button></div>`;
     }).join('')}</div>`;
+  } else if (s.sub === 'animals') {
+    body = `<div class="small muted" style="margin-bottom:8px">Animals eat feed 🌾 and give eggs, milk, wool and more. Each kind needs its own pen (build pens in 🚜 Land).</div>
+    <div class="shop-grid">${Object.entries(ANIMALS).map(([t, A]) => {
+      const ok = animalUnlocked(t), slot = ok && freeSlot(t), hasPen = f.pens.some(p => p.t === t), can = slot && f.coins >= A.cost;
+      return `<div class="item ${ok ? '' : 'locked'}"><div class="th animal">${animalSVG(t, true)}</div>
+        <b>${A.icon} ${esc(A.name)}</b>
+        <div class="small muted">${ok ? `eats ${A.feed} 🌾 · grows up in ${A.growUp} meals<br>gives ${A.yield} ${A.pIcon} every ${fmtDur(A.produce)}` : `🔒 Learn ${plural(A.unlock, 'word')} to unlock (you have ${masteredCount()})`}</div>
+        ${ok && !hasPen ? `<button class="btn sm orange" data-act="shop-sub" data-s="beds">🏗️ Build a ${esc(A.pen.toLowerCase())} first</button>`
+          : `<button class="btn sm ${can ? 'primary' : ''}" data-act="buy-animal" data-t="${t}" ${can ? '' : 'disabled'}>${ok && hasPen && !slot ? 'Pen is full' : `Buy ${A.cost} 💰`}</button>`}</div>`;
+    }).join('')}</div>`;
   } else if (s.sub === 'beds') {
-    const cost = BED_COST[f.beds.length];
+    const cost = BED_COST[f.beds.length], pcost = PEN_COST[f.pens.length];
     body = `<div class="row"><div style="flex:1;min-width:220px"><h3>🚜 New garden bed</h3>
-      <div class="small muted">Each bed holds ${PLOTS_PER_BED} plants. Your garden has ${f.beds.length}/${MAX_BEDS} beds.</div></div>
-      ${f.beds.length < MAX_BEDS ? `<button class="btn ${f.coins >= cost ? 'orange' : ''}" data-act="buy-bed" ${f.coins >= cost ? '' : 'disabled'}>Buy 1 bed · ${cost} 💰</button>` : '<b>Your garden is full size! 🎉</b>'}</div>
+      <div class="small muted">Each bed holds ${PLOTS_PER_BED} plants. You have ${f.beds.length}/${MAX_BEDS} beds.</div></div>
+      ${f.beds.length < MAX_BEDS ? `<button class="btn ${f.coins >= cost ? 'orange' : ''}" data-act="buy-bed" ${f.coins >= cost ? '' : 'disabled'}>Buy 1 bed · ${cost} 💰</button>` : '<b>All beds bought! 🎉</b>'}</div>
       <div class="soil" style="margin-top:12px">${Array.from({length:PLOTS_PER_BED}, () => `<div class="plot" style="cursor:default"><span class="empty">＋</span></div>`).join('')}</div>
-      <div class="small muted" style="margin-top:10px">Land can only be bought with coins 💰 earned by learning, not with harvest.</div>`;
+      <div class="row" style="margin-top:18px"><div style="flex:1;min-width:220px"><h3>🏗️ New animal pen</h3>
+      <div class="small muted">A pen for one kind of animal. You have ${f.pens.length}/${MAX_PENS} pens.</div></div>
+      ${f.pens.length < MAX_PENS ? `<button class="btn ${f.coins >= pcost ? 'orange' : ''}" data-act="buy-pen" ${f.coins >= pcost ? '' : 'disabled'}>Build 1 pen · ${pcost} 💰</button>` : '<b>All pens built! 🎉</b>'}</div>
+      <div class="small muted" style="margin-top:10px">Land and pens can only be bought with coins 💰 earned by learning, not with harvest.</div>`;
   } else {
-    const items = Object.entries(f.barn).filter(([t, n]) => n > 0 && PLANTS[t]);
-    const total = items.reduce((a, [t, n]) => a + n * PLANTS[t].sell, 0);
-    body = `<div class="small muted">Bring your harvest to the market to trade for water 💧. Harvest can <b>not</b> buy seeds or land.</div>` +
-      (items.length ? items.map(([t, n]) => { const p = PLANTS[t]; return `<div class="market-row"><span class="ic">${p.icon}</span>
-        <div><b>${esc(p.name)}</b> ×${n}<div class="small muted">1 ${p.icon} = ${p.sell} 💧</div></div><span class="spacer"></span>
-        <button class="btn sm" data-act="sell" data-t="${t}" data-n="1">Sell 1</button><button class="btn sm blue" data-act="sell" data-t="${t}" data-n="${n}">Sell all +${n * p.sell} 💧</button></div>`; }).join('') +
-        `<div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn primary" data-act="sell-all">🧺 Sell everything · +${total} 💧</button></div>`
-      : `<p class="muted" style="margin-top:10px">Your barn is empty. Go pick vegetables, fruit and flowers, then come back!</p>`);
+    const items = Object.entries(f.barn).filter(([t, n]) => n > 0 && itemInfo(t));
+    const total = items.reduce((a, [t, n]) => a + n * itemInfo(t).sell, 0), cur1 = s.trade === 'feed' ? '🌾' : '💧';
+    body = `<div class="small muted">Trade your harvest for water 💧 (for plants) or feed 🌾 (for animals). Harvest can <b>not</b> buy seeds, animals or land.</div>
+      <div class="chips" style="margin:10px 0">Trade for: <button class="chip ${s.trade === 'water' ? 'on' : ''}" data-act="trade" data-c="water">💧 Water</button><button class="chip ${s.trade === 'feed' ? 'on' : ''}" data-act="trade" data-c="feed">🌾 Feed</button></div>` +
+      (items.length ? items.map(([t, n]) => { const it = itemInfo(t); return `<div class="market-row"><span class="ic">${it.icon}</span>
+        <div><b>${esc(it.name)}</b> ×${n}<div class="small muted">1 ${it.icon} = ${it.sell} ${cur1}</div></div><span class="spacer"></span>
+        <button class="btn sm" data-act="sell" data-t="${t}" data-n="1">Sell 1</button><button class="btn sm blue" data-act="sell" data-t="${t}" data-n="${n}">Sell all +${n * it.sell} ${cur1}</button></div>`; }).join('') +
+        `<div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn primary" data-act="sell-all">🧺 Sell everything · +${total} ${cur1}</button></div>`
+      : `<p class="muted" style="margin-top:10px">Your barn is empty. Pick crops and collect from your animals, then come back!</p>`);
   }
   app.innerHTML = topBar('🛒 Shop') + `
   <div class="subtabs">
     <button class="subtab ${s.sub === 'seeds' ? 'on' : ''}" data-act="shop-sub" data-s="seeds">🌰 Seeds</button>
+    <button class="subtab ${s.sub === 'animals' ? 'on' : ''}" data-act="shop-sub" data-s="animals">🐔 Animals</button>
     <button class="subtab ${s.sub === 'beds' ? 'on' : ''}" data-act="shop-sub" data-s="beds">🚜 Land</button>
     <button class="subtab ${s.sub === 'market' ? 'on' : ''}" data-act="shop-sub" data-s="market">🏪 Market</button>
   </div>
@@ -2275,6 +2626,8 @@ const ACT = {
   'modal-ok': () => { const r = pendingAsk; pendingAsk = null; closeModal(); r && r(true); },
   'goal': el => { S.daily.goal = +el.dataset.g; save(); render(); },
   'learn': (el, e) => { e && e.preventDefault(); closeModal(); startSession(el.dataset.list || null); },
+  'review': el => startReview(el.dataset.n, el.dataset.list || null),
+  'review-pick': el => reviewModal(el.dataset.list || ''),
   'parent': () => parentGate(),
   'gate-ok': () => { if (+$('#gate').value === gateAns) { parentOk = true; closeModal(); go('parent'); } else { $('#gate').classList.add('shake'); toast('Not quite!'); } },
   // children
@@ -2514,7 +2867,52 @@ const ACT = {
     toast(`🚜 Your garden got bed ${S.farm.beds.length}!`); checkBadges(); render();
   },
   'sell': el => sell(el.dataset.t, +el.dataset.n),
-  'sell-all': () => { let w = 0; for (const [t, n] of Object.entries(S.farm.barn)) if (n > 0 && PLANTS[t]) w += sell(t, n, true); if (w) toast(`🏪 Sold all your harvest for ${w} 💧`); render(); },
+  'sell-all': () => { let w = 0; for (const [t, n] of Object.entries(S.farm.barn)) if (n > 0 && itemInfo(t)) w += sell(t, n, true); if (w) toast(`🏪 Sold all your harvest for ${w} ${shopState.trade === 'feed' ? '🌾' : '💧'}`); render(); },
+  'trade': el => { shopState.trade = el.dataset.c; render(); },
+  // animals
+  'garden-view': el => { gardenView = el.dataset.v; render(); },
+  'buy-pen': () => {
+    const cost = PEN_COST[S.farm.pens.length];
+    if (S.farm.pens.length >= MAX_PENS) return;
+    if (S.farm.coins < cost) { Sfx.bad(); return toast(`You need ${cost} 💰 to build a pen. You have ${S.farm.coins} 💰 — learn a few more words! 📚`); }
+    penPicker();
+  },
+  'build-pen': el => {
+    const t = el.dataset.t, A = ANIMALS[t], cost = PEN_COST[S.farm.pens.length];
+    if (!animalUnlocked(t) || S.farm.coins < cost || S.farm.pens.length >= MAX_PENS) return;
+    S.farm.coins -= cost; S.farm.pens.push({t, animals:Array.from({length:A.cap}, () => null)});
+    save(); closeModal(); Sfx.win(); FX.burst(60); checkBadges();
+    toast(`🏗️ Built a ${esc(A.pen.toLowerCase())}! Tap ＋ to buy a ${A.name.toLowerCase()}.`, 3500);
+    gardenView = 'animals'; go('garden');
+  },
+  'buy-animal': el => {
+    const t = el.dataset.t, slot = freeSlot(t);
+    if (slot) ACT.animal({dataset:{n:slot[0], a:slot[1]}});
+  },
+  'animal': el => {
+    const ni = +el.dataset.n, ai = +el.dataset.a, pen = S.farm.pens[ni], a = pen.animals[ai], A = ANIMALS[pen.t], st = animalState(a);
+    if (st === 'empty') {
+      if (S.farm.coins < A.cost) { Sfx.bad(); return toast(`A ${A.name.toLowerCase()} costs ${A.cost} 💰. You have ${S.farm.coins} 💰.`); }
+      S.farm.coins -= A.cost; pen.animals[ai] = {adult:false, g:0, fAt:null, ready:false};
+      save(); Sfx.coin(); checkBadges(); toast(`${A.icon} Welcome, little ${A.baby.toLowerCase()}! Feed it 🌾 to help it grow.`); return render();
+    }
+    if (st === 'hungry') { if (feedAnimal(ni, ai)) { Sfx.pop(); save(); render(); } return; }
+    if (st === 'ready') {
+      S.farm.barn['a:' + pen.t] = (S.farm.barn['a:' + pen.t] || 0) + A.yield; S.farm.collected = (S.farm.collected || 0) + 1;
+      a.ready = false; save(); Sfx.win();
+      const r = el.getBoundingClientRect(); FX.burst(12, [A.pIcon], r.left + r.width / 2, r.top + r.height / 3, 5);
+      toast(`${A.pIcon} Collected ${A.yield} ${A.product.toLowerCase()}! Feed it again for more.`); checkBadges(); return render();
+    }
+    animalInfo(ni, ai);
+  },
+  'feed-pen': el => {
+    const ni = +el.dataset.n; let n = 0;
+    S.farm.pens[ni].animals.forEach((a, ai) => { if (feedAnimal(ni, ai, true)) n++; });
+    if (!n) return toast('🌾 Not enough feed! Learn more words or trade harvest for feed at the Market.');
+    Sfx.pop(); save(); render();
+    const left = S.farm.pens[ni].animals.filter(a => animalState(a) === 'hungry').length;
+    toast(`🌾 Fed ${plural(n, 'animal')}${left ? ` · ${left} still hungry (out of feed)` : ''}`);
+  },
   // data
   'export': () => {
     const profiles = {}; for (const p of R.profiles) profiles[p.id] = stateOf(p.id);
@@ -2544,19 +2942,20 @@ function harvest(bi, pi, el) {
   const p = S.farm.beds[bi].plots[pi], sp = PLANTS[p.t];
   S.farm.barn[p.t] = (S.farm.barn[p.t] || 0) + sp.yield;
   S.farm.harvests[p.t] = (S.farm.harvests[p.t] || 0) + 1; S.farm.totalHarvest++;
-  const after = AFTER[sp.cat];
+  const after = afterOf(p.t), timber = lifeOf(p.t) === 'timber';
   if (after == null) S.farm.beds[bi].plots[pi] = null; else { p.stage = after; p.wAt = null; }
   save(); Sfx.win();
   const r = el.getBoundingClientRect();
   FX.burst(14, [sp.icon], r.left + r.width / 2, r.top + r.height / 3, 5);
-  toast(`🧺 Picked ${sp.yield} ${sp.icon} ${sp.name.toLowerCase()}! Stored in the barn.${after != null ? ' Keep watering for the next season.' : ''}`);
+  toast(timber ? `🪓 Cut ${sp.yield} ${sp.icon} ${(sp.product || sp.name).toLowerCase()}! The tree grows back — keep watering.`
+    : `🧺 Picked ${sp.yield} ${sp.icon} ${sp.name.toLowerCase()}! Stored in the barn.${after != null ? ' Keep watering for the next season.' : ''}`);
   checkBadges(); render();
 }
 function sell(t, n, quiet) {
-  const have = S.farm.barn[t] || 0; n = Math.min(n, have); if (!n) return 0;
-  const w = n * PLANTS[t].sell;
-  S.farm.barn[t] = have - n; S.farm.water += w; save(); Sfx.water();
-  if (!quiet) { toast(`🏪 Sold ${n} ${PLANTS[t].icon} for ${w} 💧`); render(); }
+  const have = S.farm.barn[t] || 0, it = itemInfo(t); n = Math.min(n, have); if (!n || !it) return 0;
+  const w = n * it.sell, feed = shopState.trade === 'feed';
+  S.farm.barn[t] = have - n; if (feed) S.farm.feed += w; else S.farm.water += w; save(); Sfx.water();
+  if (!quiet) { toast(`🏪 Sold ${n} ${it.icon} for ${w} ${feed ? '🌾' : '💧'}`); render(); }
   return w;
 }
 document.body.addEventListener('click', e => {
@@ -2578,6 +2977,7 @@ document.body.addEventListener('change', async e => {
   const el = e.target, f = el.dataset.change; if (!f) return;
   if (f === 'add-list') { addState.list = el.value; render(); }
   else if (f === 'report-list') go('report', {id:el.dataset.id, list:el.value || null});
+  else if (f === 'review-list') reviewModal(el.value);
   else if (f === 'rate') { S.settings.rate = +el.value; save(); $('#ratev').textContent = el.value; }
   else if (f === 'sound') { S.settings.sound = el.checked; save(); }
   else if (f === 'ocr-file' && el.files[0]) {
