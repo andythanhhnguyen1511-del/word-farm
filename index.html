@@ -609,16 +609,20 @@ const Cloud = {
     if (!this.enabled()) return;
     try { await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'); }
     catch (e) { return this.setStatus('error', 'Could not load the cloud library. Check your internet connection.'); }
+    // opened from a "reset password" email: ask for the new password once signed in
+    const recovery = /type=recovery/.test(location.hash);
     this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:'implicit'}});
     const {data} = await this.sb.auth.getSession();
     this.user = data && data.session ? data.session.user : null;
     this.sb.auth.onAuthStateChange((ev, session) => {
       const before = this.user && this.user.id;
       this.user = session ? session.user : null;
+      if (ev === 'PASSWORD_RECOVERY') setTimeout(newPasswordModal, 300);
       if (this.user && this.user.id !== before) this.onSignedIn();
       if (!this.user) this.setStatus('signed-out');
     });
     if (this.user) this.onSignedIn(); else this.setStatus('signed-out');
+    if (recovery && this.user) setTimeout(newPasswordModal, 800);
   },
   onSignedIn() {
     if (R.cloudOwner && R.cloudOwner !== this.user.id) {
@@ -750,6 +754,10 @@ const Cloud = {
     if (error) throw error;
     return !!(data && data.session); // false: Supabase still wants the email confirmed
   },
+  async resetPw(email) {
+    const {error} = await this.sb.auth.resetPasswordForEmail(email, {redirectTo:location.origin + location.pathname});
+    if (error) throw error;
+  },
   async changePw(password) {
     const {error} = await this.sb.auth.updateUser({password});
     if (error) throw error;
@@ -800,7 +808,18 @@ function signInFormHTML() {
     <input type="password" id="cloud-pw" placeholder="Password (at least 6 characters)" autocomplete="current-password" ${inp}>
     <div class="row" style="margin-top:8px"><button class="btn primary" data-act="cloud-login">🔑 Sign in</button>
       <button class="btn" data-act="cloud-signup">➕ Create account</button><span class="spacer"></span>
-      <button class="btn sm" data-act="cloud-send" title="Get a sign-in link by email instead">✉️ Email me a link</button></div>`;
+      <button class="btn sm" data-act="cloud-send" title="Get a sign-in link by email instead">✉️ Email me a link</button></div>
+    <div style="margin-top:6px"><button class="btn sm" data-act="cloud-forgot" style="border:none;background:none;padding:2px 0;color:var(--blue-d);text-decoration:underline">Forgot password?</button></div>`;
+}
+function newPasswordModal() {
+  if (!Cloud.user) return;
+  const inp = 'style="width:100%;border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:6px"';
+  openModal(`<h3>🔑 Set a new password</h3>
+    <div class="small muted">For ${esc(Cloud.user.email || 'your account')}. At least 6 characters.</div>
+    <input type="password" id="new-pw" placeholder="New password" autocomplete="new-password" ${inp}>
+    <input type="password" id="new-pw2" placeholder="Type it again" autocomplete="new-password" ${inp}>
+    <div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn" data-act="close-modal">Cancel</button><button class="btn primary" data-act="cloud-pw-save">Save password</button></div>`);
+  setTimeout(() => { const e = $('#new-pw'); e && e.focus(); }, 50);
 }
 function cloudCardHTML() {
   if (!Cloud.enabled()) return `<div class="card" id="cloud-card"><h3>☁️ Cloud sync</h3>
@@ -2099,11 +2118,22 @@ const ACT = {
       else { el.disabled = false; toast('✉️ Account created. Supabase sent a confirmation email — tap the link in it, then sign in here. (To skip this, turn off "Confirm email" in Supabase.)', 7000); }
     } catch (e) { el.disabled = false; toast('⚠️ ' + esc(/registered/i.test(e.message) ? 'This email already has an account — use Sign in.' : e.message), 5000); }
   },
-  'cloud-pw-change': async () => {
-    const pw = prompt('New password (at least 6 characters):');
-    if (pw == null) return;
-    if (pw.length < 6) return toast('Password needs at least 6 characters.');
-    try { await Cloud.changePw(pw); toast('🔑 Password changed.'); } catch (e) { toast('⚠️ ' + esc(e.message), 4000); }
+  'cloud-pw-change': () => newPasswordModal(),
+  'cloud-pw-save': async el => {
+    const a = $('#new-pw').value || '', b = $('#new-pw2').value || '';
+    if (a.length < 6) { $('#new-pw').classList.add('shake'); return toast('Password needs at least 6 characters.'); }
+    if (a !== b) { $('#new-pw2').classList.add('shake'); return toast('The two passwords are different.'); }
+    el.disabled = true;
+    try { await Cloud.changePw(a); closeModal(); toast('🔑 Password saved. Next time sign in with your email and this password.', 4000); }
+    catch (e) { el.disabled = false; toast('⚠️ ' + esc(e.message), 4000); }
+  },
+  'cloud-forgot': async el => {
+    const email = ($('#cloud-email').value || '').trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('#cloud-email').classList.add('shake'); return toast('Type your email above first, then tap "Forgot password?".'); }
+    el.disabled = true;
+    try { await Cloud.resetPw(email); toast(`✉️ We sent a reset link to ${esc(email)}. Open it on this device to set a new password.`, 6000); }
+    catch (e) { toast('⚠️ ' + esc(e.message), 4000); }
+    el.disabled = false;
   },
   'cloud-restart': () => { Cloud.sentTo = ''; refreshSignIn(); },
   'cloud-sync': () => Cloud.sync(),
@@ -2337,6 +2367,8 @@ document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && e.target.id === 'kid-name') $('[data-act=save-kid]').click();
     if (e.key === 'Enter' && e.target.id === 'cloud-email') $('#cloud-pw').focus();
     if (e.key === 'Enter' && e.target.id === 'cloud-pw') $('[data-act=cloud-login]').click();
+    if (e.key === 'Enter' && e.target.id === 'new-pw') $('#new-pw2').focus();
+    if (e.key === 'Enter' && e.target.id === 'new-pw2') $('[data-act=cloud-pw-save]').click();
     if (e.key === 'Enter' && e.target.id === 'cloud-code') $('[data-act=cloud-code]').click();
     return;
   }
