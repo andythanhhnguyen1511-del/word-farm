@@ -149,6 +149,35 @@ h1{font-size:30px;font-weight:800} h2{font-size:24px;font-weight:800} h3{font-si
 .mascot-row .mascot{font-size:52px}
 .clue-vi{font-size:30px;font-weight:800;color:#d35400;background:#fff5e8;border-radius:20px;padding:30px 16px}
 .done-card .big-ic{font-size:80px;line-height:1}
+.def{font-size:19px;line-height:1.35;color:#4a4a4a;background:#fff8ea;border-radius:14px;padding:8px 12px;margin:8px auto;max-width:560px;text-align:left}
+.def b{color:#d35400}
+.def.sm{font-size:17px}
+
+/* background word preparation */
+#prep{position:fixed;left:50%;transform:translateX(-50%);top:8px;z-index:45;display:none;background:#fff;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.15);padding:6px 16px 9px;font-size:14px;font-weight:700;overflow:hidden;min-width:220px;text-align:center}
+#prep.on{display:block}
+#prep.ok{background:#eaffd6}
+#prep i{position:absolute;left:0;bottom:0;height:4px;background:var(--green);transition:width .3s}
+
+/* thumbnails, picture picker, list editor */
+.thumb{width:64px;height:64px;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#fff8e6;flex:none}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb.sm{width:44px;height:44px}
+.tl{font-size:34px;font-weight:800;color:#5a6;line-height:1}
+.thumb.sm .tl{font-size:24px}
+.tl.big{font-size:44px}
+.pk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:60vh;overflow:auto;margin-top:8px}
+.pk{border:3px solid var(--line);border-radius:14px;background:#fff;padding:0;aspect-ratio:1/1;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.pk img{width:100%;height:100%;object-fit:cover}
+.pk small{font-size:12px;color:var(--muted);font-weight:700}
+.pk:hover{border-color:var(--blue)}
+.pk.on{border-color:var(--green);box-shadow:0 0 0 3px rgba(88,204,2,.3)}
+.erows{display:flex;flex-direction:column;gap:8px}
+.erow{display:grid;grid-template-columns:44px minmax(90px,1fr) minmax(120px,2fr) auto;gap:6px;align-items:center}
+.erow input{padding:6px 10px;border-radius:10px}
+.erow.del{opacity:.45}
+.erow.del input{text-decoration:line-through}
+@media (max-width:560px){ .erow{grid-template-columns:44px 1fr auto} .erow input[data-field=edit-def]{grid-column:2 / 4} }
 
 /* vườn */
 .scene{position:relative;border-radius:28px;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.1);background:#7cc644}
@@ -452,6 +481,13 @@ function normalize(raw) {
     if (w.step == null) w.step = 0;
     if (w.mastered == null) w.mastered = false;
     if (w.mastered && !w.masteredAt) w.masteredAt = w.last || null;
+    if (w.enrichV !== 2) {
+      // older words: Vietnamese meaning and an automatic picture -> English definition and a picture chosen with care
+      w.def = w.def || ''; w.defUser = !!w.def; w.exUser = false; w.examples = [];
+      w.pics = []; w.pic = ''; w.picDone = false; w.enriched = false;
+      delete w.vi; delete w.imgs; delete w.imgIdx; delete w.defs;
+      w.enrichV = 1;
+    }
   }
   T.stickers = (T.stickers || []).filter(id => BADGES.some(b => b.id === id));
   T.v = 3;
@@ -497,7 +533,7 @@ function createProfile(name, avatar, goal) {
 function rollDay() { if (S && S.daily.date !== today()) { S.daily = {goal:S.daily.goal, date:today(), words:[], rewarded:false}; save(false); } }
 function seedSample() {
   const id = addList('Starter: Fruit & Animals');
-  addWords(id, [['apple','quả táo'],['cat','con mèo'],['dog','con chó'],['banana','quả chuối'],['fish','con cá'],['sun','mặt trời'],['book','quyển sách'],['ball','quả bóng']]);
+  addWords(id, ['apple', 'cat', 'dog', 'banana', 'fish', 'sun', 'book', 'ball'].map(w => [w, '']));
 }
 function addList(name, T = S) { const id = uid(); T.lists.push({id, name, created:Date.now()}); return id; }
 function normWord(s) {
@@ -506,17 +542,17 @@ function normWord(s) {
   if (!w || /[^a-z' -]/.test(w)) return '';
   return w;
 }
-const blankWord = (id, listId, word, vi) => ({id, listId, word, vi:(vi || '').trim(), phonetic:'', defs:[], pos:'', examples:[], imgs:[], imgIdx:0, img:'',
+const blankWord = (id, listId, word, def) => ({id, listId, word, def:(def || '').trim(), defUser:!!(def || '').trim(), phonetic:'', pos:'', examples:[], exUser:false, pics:[], pic:'', picDone:false, img:'',
   emoji:EMOJI[word] || '', audio:'', step:0, mastered:false, masteredAt:null, box:0, due:0, wrong:0, right:0, last:0, enriched:false, added:Date.now()});
 function addWords(listId, pairs) {
   const existing = new Set(Object.values(S.words).filter(w => w.listId === listId).map(w => w.word));
   const added = [];
-  for (const [word, vi] of pairs) {
+  for (const [word, def] of pairs) {
     const w = normWord(word);
     if (!w || existing.has(w)) continue;
     existing.add(w);
     const id = uid();
-    S.words[id] = blankWord(id, listId, w, vi);
+    S.words[id] = blankWord(id, listId, w, def);
     S.words[id].added += added.length;
     added.push(id);
   }
@@ -852,77 +888,169 @@ async function fetchJSON(url, ms = 9000) {
   finally { clearTimeout(t); }
 }
 const hasWord = (s, w) => new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(s|es)?\\b', 'i').test(s);
+/* Free sources, no keys:
+   1. Simple English Wiktionary — definitions and example sentences written for English learners, plus a picture the editors chose.
+   2. dictionaryapi.dev — pronunciation and sound, and a definition for words the simple dictionary doesn't have.
+   Wikimedia limits how fast one browser may ask, so its requests go one at a time with a short pause. */
+let wikiNext = 0;
+async function wikiJSON(url) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const wait = Math.max(0, wikiNext - Date.now()); wikiNext = Date.now() + wait + 700;
+    if (wait) await sleep(wait);
+    try { return await fetchJSON(url); }
+    catch (e) { if (String(e.message) === '429' && attempt === 0) { wikiNext = Date.now() + 4000; continue; } throw e; }
+  }
+}
+const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function wikiClean(t) {
+  let s = String(t || '');
+  for (let i = 0; i < 5 && /\{\{[^{}]*\}\}/.test(s); i++) s = s.replace(/\{\{[^{}]*\}\}/g, '');
+  s = s.replace(/<ref[^>]*\/>|<ref[^>]*>[\s\S]*?<\/ref>|<[^>]+>/g, '')
+       .replace(/\[\[(?:[^|\]]*\|)?([^\]]*)\]\]/g, '$1').replace(/'{2,}/g, '').replace(/\s+/g, ' ').trim();
+  return s.replace(/^[,;:\s]+/, '');
+}
+const BASE_FORM = /\{\{\s*(?:plural of|plural form of|third-person singular of|past tense of|past participle of|present participle of|comparative of|superlative of|alternative spelling of|en-plural of)\s*\|\s*([^}|]+)/i;
+async function simpleWiktionary(word, depth = 0) {
+  const d = await wikiJSON('https://simple.wiktionary.org/w/api.php?action=parse&prop=wikitext|images&redirects=1&format=json&formatversion=2&origin=*&page=' + encodeURIComponent(word));
+  if (!d || !d.parse) return null;
+  const lines = String(d.parse.wikitext || '').split('\n');
+  let pos = '', def = '', examples = [], inFirst = false;
+  for (const line of lines) {
+    const h = line.match(/^=+\s*([^=]+?)\s*=+\s*$/);
+    if (h && !def) { pos = h[1].toLowerCase(); continue; }
+    if (/^#[^:*#]/.test(line)) {
+      if (def) break;                              // only the first (main) meaning
+      const cleaned = wikiClean(line.slice(1));
+      if (cleaned.length > 3) { def = cleaned; inFirst = true; }
+      continue;
+    }
+    if (inFirst && /^#:/.test(line)) { const ex = wikiClean(line.slice(2)); if (ex) examples.push(ex); }
+  }
+  const base = (String(d.parse.wikitext).match(BASE_FORM) || [])[1];
+  if (!def && base && depth === 0) return simpleWiktionary(base.trim(), 1);   // "words" -> "word"
+  const pics = (d.parse.images || []).filter(n => /\.(jpe?g|png|gif|webp)$/i.test(n) && !/logo|icon|flag_of|symbol|wiktionary|wikipedia/i.test(n))
+    .map(n => 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(n) + '?width=320');
+  if (!def && !pics.length) return null;
+  return {def, pos, examples, pics, base:depth ? word : ''};
+}
+async function dictionaryApi(word) {
+  const d = await fetchJSON('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(word));
+  if (!Array.isArray(d)) return null;
+  const phs = d.flatMap(x => x.phonetics || []);
+  const m = (d[0].meanings || [])[0] || {};
+  const defs = (m.definitions || []).slice(0, 3).map(x => x.definition.replace(/\s*\([^)]*\)\.?$/, '').trim()).filter(Boolean);
+  return {
+    phonetic:d.map(x => x.phonetic).find(Boolean) || phs.map(p => p.text).find(Boolean) || '',
+    audio:phs.map(p => p.audio).find(a => a && /-us\./.test(a)) || phs.map(p => p.audio).find(Boolean) || '',
+    pos:m.partOfSpeech || '', def:defs.sort((a, b) => a.length - b.length)[0] || '',
+    examples:(m.definitions || []).slice(0, 2).map(x => x.example).filter(e => e && e.length <= 90 && /[.!?]$/.test(e))
+  };
+}
+const singular = w => /ies$/.test(w) ? w.slice(0, -3) + 'y' : /(ches|shes|xes|sses)$/.test(w) ? w.slice(0, -2) : /[^s]s$/.test(w) ? w.slice(0, -1) : '';
+function shortDef(s) {
+  s = String(s || '').trim();
+  if (s.length > 170) s = s.split(/(?<=[.;])\s/)[0];
+  if (s.length > 170) s = s.slice(0, 167).replace(/\s+\S*$/, '') + '…';
+  return s ? s[0].toUpperCase() + s.slice(1) : '';
+}
+const mentions = (s, words) => words.some(x => x && new RegExp('\\b' + reEsc(x), 'i').test(s));
 async function enrich(w) {
   if (!navigator.onLine) return;
-  const jobs = [];
-  jobs.push(fetchJSON('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(w.word)).then(d => {
-    if (!Array.isArray(d)) return;
-    const phs = d.flatMap(x => x.phonetics || []);
-    w.phonetic = w.phonetic || d.map(x => x.phonetic).find(Boolean) || phs.map(p => p.text).find(Boolean) || '';
-    w.audio = phs.map(p => p.audio).find(a => a && /-us\./.test(a)) || phs.map(p => p.audio).find(Boolean) || '';
-    const defs = [], ex = [];
-    // only the main meaning, so example sentences stay simple and use the everyday sense
-    for (const en of d.slice(0, 1)) for (const m of (en.meanings || []).slice(0, 1)) for (const df of (m.definitions || []).slice(0, 2)) {
-      if (defs.length < 2) defs.push({pos:m.partOfSpeech, text:df.definition});
-      if (df.example && df.example.length <= 80 && /^[A-Za-z"][^;]*[.!?]"?$/.test(df.example) && hasWord(df.example, w.word)) ex.push(df.example.replace(/^./, c => c.toUpperCase()));
-    }
-    w.defs = defs; w.pos = defs[0] ? defs[0].pos : '';
-    if (!w.examples.length) {
-      const api = [...new Set(ex)].sort((a, b) => a.length - b.length).slice(0, 1);
-      w.examples = [...templateExamples(w).slice(0, 2 - api.length), ...api];
-    }
-  }).catch(() => {}));
-  if (!w.vi) jobs.push(fetchJSON('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(w.word) + '&langpair=en|vi').then(d => {
-    const t = d && d.responseData && d.responseData.translatedText;
-    if (t && t.toLowerCase() !== w.word && !/MYMEMORY|QUERY LENGTH/i.test(t)) w.vi = t.toLowerCase();
-  }).catch(() => {}));
-  if (!w.imgs.length) jobs.push(findImages(w.word).then(l => { w.imgs = l; w.imgIdx = 0; }).catch(() => {}));
-  await Promise.all(jobs);
-  if (!w.examples.length) w.examples = templateExamples(w);
-  w.enriched = true;
+  const sing = singular(w.word);
+  const [wk, dic] = await Promise.all([
+    simpleWiktionary(w.word).then(r => r || (sing ? simpleWiktionary(sing) : null)).catch(() => null),
+    dictionaryApi(w.word).then(r => r || (sing ? dictionaryApi(sing) : null)).catch(() => null)
+  ]);
+  const base = (wk && wk.base) || sing;
+  if (dic) { w.phonetic = w.phonetic || dic.phonetic; w.audio = w.audio || dic.audio; }
+  w.pos = (wk && wk.pos) || (dic && dic.pos) || '';
+  if (!w.defUser) w.def = shortDef((wk && wk.def) || (dic && dic.def) || '');
+  if (!w.exUser) {
+    const ex = [...((wk && wk.examples) || []), ...((dic && dic.examples) || [])]
+      .map(s => s.replace(/^./, c => c.toUpperCase())).filter(s => s.length <= 90 && mentions(s, [w.word, base]));
+    w.examples = [...new Set(ex)].slice(0, 2);
+    if (w.examples.length < 2) w.examples.push(...templateExamples(w).slice(0, 2 - w.examples.length));
+  }
+  if (!w.picDone) {
+    // the dictionary's own picture is chosen by its editors for this meaning, so it becomes the default;
+    // without one the word keeps its emoji or letter card until a grown-up picks a picture
+    w.pics = (wk && wk.pics) || [];
+    if (!w.pic && w.pics.length) w.pic = w.pics[0];
+    w.picDone = true;
+  }
+  w.enriched = true; w.enrichV = 2;
   if (S && S.words[w.id] === w) save();
 }
-async function findImages(word) {
-  let out = [];
-  try {
-    const d = await fetchJSON('https://api.openverse.org/v1/images/?q=' + encodeURIComponent(word) + '&page_size=12&mature=false');
-    out = (d.results || []).map(r => r.thumbnail || r.url).filter(Boolean);
-  } catch (e) {}
-  if (!out.length) {
-    try {
-      const d = await fetchJSON('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(word));
-      if (d.thumbnail && d.thumbnail.source) out = [d.thumbnail.source];
-    } catch (e) {}
-  }
-  return out.slice(0, 12);
+const inflight = new Map();
+function enrichOnce(w) {
+  if (!inflight.has(w.id)) inflight.set(w.id, enrich(w).catch(() => {}).finally(() => inflight.delete(w.id)));
+  return inflight.get(w.id);
+}
+// more pictures to choose from: dictionary picture, drawings first, then photos
+async function findPictures(w) {
+  const q = encodeURIComponent(w.word), out = [...(w.pics || [])];
+  const ov = cat => fetchJSON(`https://api.openverse.org/v1/images/?q=${q}&page_size=10&mature=false${cat ? '&category=' + cat : ''}`, 20000)
+    .then(d => (d.results || []).map(r => r.thumbnail || r.url).filter(Boolean)).catch(() => []);
+  const [ill, art, photo] = await Promise.all([ov('illustration'), ov('digitized_artwork'), ov('')]);
+  out.push(...ill, ...art.slice(0, 4), ...photo);
+  return [...new Set(out)].slice(0, 18);
 }
 function templateExamples(w) {
-  const x = w.word, art = /^(sun|moon|sky|sea|earth|wind|rain|snow)$/.test(x) ? 'the' : /^[aeiou]/.test(x) ? 'an' : 'a';
-  if (art === 'the') return [`Look at the ${x}!`, `I like the ${x}.`];
-  if (w.pos === 'verb') return [`I like to ${x}.`, `Can you ${x}?`];
-  if (w.pos === 'adjective') return [`It is very ${x}.`, `I feel ${x} today.`];
-  return [`I can see ${art} ${x}.`, `This is my ${x}.`];
+  const x = w.word;
+  if (/verb/.test(w.pos)) return [`I can ${x}.`, `Let's ${x} together!`];
+  if (/adjective/.test(w.pos)) return [`It looks ${x}.`, `They look ${x}!`];
+  if (/adverb/.test(w.pos)) return [`Do it ${x}!`, `She did it ${x}.`];
+  return [`Look at the ${x}!`, `I like the ${x}.`];
 }
+/* Background preparation of new words, with a progress counter.
+   It keeps going while the child moves around the app, so another list can be learned meanwhile. */
 const enrichQ = []; let enriching = false;
-function queueEnrich(ids) { enrichQ.push(...ids); runEnrich(); }
+const Prep = {total:0, done:0, doneAt:0};
+function queueEnrich(ids) {
+  const fresh = ids.filter(id => !enrichQ.includes(id) && S && S.words[id] && !S.words[id].enriched);
+  if (!fresh.length) return;
+  enrichQ.push(...fresh); Prep.total += fresh.length; Prep.doneAt = 0; renderPrep();
+  runEnrich();
+}
 async function runEnrich() {
   if (enriching) return; enriching = true;
   while (enrichQ.length) {
     const w = S && S.words[enrichQ.shift()];
-    if (!w || w.enriched) continue;
-    try { await enrich(w); } catch (e) {}
-    onEnriched();
+    if (w && !w.enriched && navigator.onLine) await enrichOnce(w);
+    Prep.done = Math.min(Prep.total, Prep.done + 1); renderPrep(); onEnriched();
   }
-  enriching = false; onEnriched();
+  enriching = false; Prep.doneAt = Date.now(); renderPrep(); onEnriched();
+  setTimeout(() => { if (!enriching && Prep.doneAt && Date.now() - Prep.doneAt >= 3500) { Prep.total = Prep.done = 0; renderPrep(); } }, 3600);
 }
-function onEnriched() { const el = $('#enrich-note'); if (el) el.innerHTML = enrichNote(); }
+function renderPrep() {
+  let el = $('#prep');
+  if (!el) { el = document.createElement('div'); el.id = 'prep'; document.body.appendChild(el); }
+  if (!Prep.total) { el.className = ''; el.innerHTML = ''; return; }
+  const doneAll = !enriching && Prep.done >= Prep.total;
+  el.className = 'on' + (doneAll ? ' ok' : '');
+  el.innerHTML = navigator.onLine || doneAll
+    ? `<span>${doneAll ? '✅' : '⏳'} ${doneAll ? 'Words ready' : 'Getting words ready'}: <b>${Prep.done}/${Prep.total}</b></span><i style="width:${Prep.done / Prep.total * 100}%"></i>`
+    : `<span>📴 Offline — will finish preparing words later (${Prep.done}/${Prep.total})</span>`;
+}
+let enrichRenderT = 0;
+function onEnriched() {
+  const el = $('#enrich-note'); if (el) el.innerHTML = enrichNote();
+  // refresh the list screen as words become ready (not while someone is typing)
+  if (['list'].includes(cur.name) && !enrichRenderT) enrichRenderT = setTimeout(() => {
+    enrichRenderT = 0;
+    const typing = document.activeElement && document.activeElement.matches && document.activeElement.matches('input,textarea');
+    if (cur.name === 'list' && !typing && !$('#modal').classList.contains('on')) render();
+  }, 800);
+}
 function enrichNote() {
   if (!S) return '';
   const n = Object.values(S.words).filter(w => !w.enriched).length;
-  if (!n) return '';
-  return navigator.onLine ? `⏳ Getting pictures and examples ready for ${plural(n, 'word')}…` : `📴 Offline: ${plural(n, 'word')} ${n === 1 ? 'is' : 'are'} using emoji pictures.`;
+  if (!n || navigator.onLine) return '';
+  return `📴 Offline: ${plural(n, 'word')} will get definitions and pictures when you're back online.`;
 }
-function imgSrc(w) { if (w.img === 'idb' && IMG[w.id]) return IMG[w.id]; return w.imgs[w.imgIdx] || ''; }
+function imgSrc(w) { if (w.img === 'idb' && IMG[w.id]) return IMG[w.id]; return w.pic || ''; }
+const needsPic = w => !imgSrc(w) && !w.emoji;
+const maskWord = (s, w) => esc(s).replace(new RegExp('\\b(' + [w.word, singular(w.word)].filter(Boolean).map(x => reEsc(esc(x))).join('|') + ')\\w*', 'gi'), '___');
 function fallbackHTML(w, cls) {
   return w.emoji ? `<div class="wemoji ${cls}">${w.emoji}</div>` : `<div class="wletter ${cls}">${esc(w.word[0].toUpperCase())}</div>`;
 }
@@ -1201,7 +1329,7 @@ $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') ACT['c
 // ---------- navigation ----------
 const app = $('#app');
 let cur = {name:'learn', p:{}};
-const TAB_OF = {learn:'learn', list:'learn', add:'learn', parent:'learn', report:'learn', summary:'learn', garden:'garden', shop:'shop', game:null, profiles:null};
+const TAB_OF = {learn:'learn', list:'learn', 'edit-list':'learn', add:'learn', parent:'learn', report:'learn', summary:'learn', garden:'garden', shop:'shop', game:null, profiles:null};
 function go(name, p = {}) {
   if (name === 'shop' && p.sub) { shopState.sub = p.sub; p = {}; }
   if (!S && !['profiles', 'parent', 'report'].includes(name)) name = 'profiles';
@@ -1295,34 +1423,118 @@ SCREENS.learn = () => {
 SCREENS.list = ({id}) => {
   const l = S.lists.find(x => x.id === id); if (!l) return go('learn');
   const ws = listWords(id);
+  const noPic = ws.filter(w => w.enriched && needsPic(w)).length, waiting = ws.filter(w => !w.enriched).length;
   app.innerHTML = topBar('📒 Word list', 'learn') + `
   <div class="card">
     <input type="text" value="${esc(l.name)}" data-field="list-name" data-id="${id}" style="font-weight:800;font-size:20px">
     <div class="row" style="margin-top:10px"><button class="btn primary" data-act="learn" data-list="${id}" ${ws.length ? '' : 'disabled'}>▶️ Learn this list</button>
+      <button class="btn" data-act="edit-list" data-id="${id}">✏️ Edit list</button>
       <button class="btn" data-act="go" data-to="add" data-list="${id}">➕ Add words</button>
+      ${noPic ? `<button class="btn orange" data-act="pick-all" data-id="${id}">🖼 Choose pictures (${noPic})</button>` : ''}
       ${R.profiles.length > 1 ? `<button class="btn" data-act="copy-list" data-id="${id}">📋 Copy to another child</button>` : ''}<span class="spacer"></span>
       <button class="btn sm danger" data-act="del-list" data-id="${id}">🗑 Delete list</button></div>
+    ${waiting ? `<div class="small muted" style="margin-top:8px">⏳ ${plural(waiting, 'word')} still getting ready — you can already learn the others, or go and learn another list.</div>` : ''}
   </div>
   <div class="wgrid">${ws.map(w => { const s = wordStatus(w), n = roundsFor(w).length;
-    return `<button class="wcell" data-act="word" data-id="${w.id}"><span class="ic">${w.emoji || s.ic}</span><span class="wd">${esc(w.word)}</span>
-      <span class="st">${s.ic} ${s.txt}</span>${w.mastered ? '' : `<span class="mini"><i style="width:${w.step / n * 100}%"></i></span>`}</button>`; }).join('')}</div>
+    return `<button class="wcell" data-act="word" data-id="${w.id}"><span class="thumb">${thumbHTML(w)}</span><span class="wd">${esc(w.word)}</span>
+      <span class="st">${w.enriched ? `${s.ic} ${s.txt}` : '⏳ getting ready…'}</span>${w.mastered ? '' : `<span class="mini"><i style="width:${w.step / n * 100}%"></i></span>`}</button>`; }).join('')}</div>
   <div class="note" id="enrich-note">${enrichNote()}</div>`;
 };
+const thumbHTML = w => imgSrc(w) ? `<img src="${esc(imgSrc(w))}" alt="" referrerpolicy="no-referrer" data-fb="${esc(`<span class='tl'>${w.emoji || esc(w.word[0].toUpperCase())}</span>`)}">` : `<span class="tl">${w.emoji || esc(w.word[0].toUpperCase())}</span>`;
+
+/* ----- picture picker ----- */
+let pickQueue = null; // ids still to go when choosing pictures one after another
+async function pictureModal(id) {
+  const w = S.words[id]; if (!w) return closeModal();
+  const step = pickQueue ? `<div class="small muted">${pickQueue.done + 1} of ${pickQueue.total}</div>` : '';
+  const head = `<h3>🖼 Choose a picture for “${esc(w.word)}”</h3>${step}${w.def ? `<div class="small muted" style="margin-bottom:6px">${esc(w.def)}</div>` : ''}`;
+  const extras = `
+    ${w.emoji ? `<button class="pk" data-act="pick-pic" data-id="${id}" data-u="emoji"><span class="tl big">${w.emoji}</span><small>Emoji</small></button>` : ''}
+    <button class="pk" data-act="pick-pic" data-id="${id}" data-u=""><span class="tl big">${esc(w.word[0].toUpperCase())}</span><small>No picture</small></button>
+    <label class="pk"><span class="tl big">📷</span><small>My own photo</small><input type="file" accept="image/*" data-change="img-upload" data-id="${id}" hidden></label>`;
+  const foot = `<div class="row" style="margin-top:12px">${pickQueue ? `<button class="btn" data-act="pick-skip">Skip</button>` : ''}<span class="spacer"></span><button class="btn" data-act="close-modal">${pickQueue ? 'Stop' : 'Close'}</button></div>`;
+  openModal(head + `<div class="pk-grid" id="pk-grid">${extras}<div class="small muted" style="grid-column:1/-1">🔎 Looking for pictures…</div></div>` + foot);
+  if (!navigator.onLine) { $('#pk-grid').innerHTML = extras + `<div class="small muted" style="grid-column:1/-1">📴 Offline — connect to see more pictures.</div>`; return; }
+  let pics = w.picsAll;
+  if (!pics || !pics.length) { pics = await findPictures(w); if (pics.length > (w.pics || []).length) { w.picsAll = pics; save(false); } }
+  const g = $('#pk-grid'); if (!g || !$('#mcard h3') || !$('#mcard h3').textContent.includes(w.word)) return;
+  const cur0 = imgSrc(w);
+  g.innerHTML = pics.map(u => `<button class="pk ${u === cur0 ? 'on' : ''}" data-act="pick-pic" data-id="${id}" data-u="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></button>`).join('') + extras +
+    (pics.length ? '' : `<div class="small muted" style="grid-column:1/-1">No pictures found right now — use the emoji, no picture, or your own photo. <button class="btn sm" data-act="pick-retry" data-id="${id}">🔄 Try again</button></div>`);
+}
+function nextPick() {
+  if (!pickQueue) return closeModal();
+  pickQueue.done++;
+  const id = pickQueue.ids.shift();
+  if (!id) { pickQueue = null; closeModal(); toast('🖼 All pictures chosen!'); if (cur.name === 'list') render(); return; }
+  pictureModal(id);
+}
+
+/* ----- edit a whole list: spelling, definition, picture, add and remove words ----- */
+let editRows = null;
+SCREENS['edit-list'] = ({id}) => {
+  const l = S.lists.find(x => x.id === id); if (!l) return go('learn');
+  if (!editRows || editRows.listId !== id) editRows = {listId:id, rows:listWords(id).map(w => ({id:w.id, word:w.word, def:w.def || '', oldDef:w.def || '', del:false}))};
+  app.innerHTML = topBar('✏️ Edit list').replace('<div class="title">', `<button class="back" data-act="edit-cancel">⬅</button><div class="title">`) + `
+  <div class="card"><h3>${esc(l.name)}</h3>
+    <div class="small muted">Fix spelling, change the definition or the picture, remove words or add new ones, then tap <b>Save changes</b>. A word whose spelling changes is looked up again and starts learning from the beginning.</div></div>
+  <div class="card" id="edit-rows">${editRowsHTML()}</div>
+  <div class="row" style="margin:6px 0 20px"><button class="btn" data-act="edit-add">+ Add a word</button><span class="spacer"></span>
+    <button class="btn" data-act="edit-cancel">Cancel</button><button class="btn primary" data-act="edit-save">💾 Save changes</button></div>`;
+};
+// the back button of this screen goes to the list itself
+function editRowsHTML() {
+  return `<div class="erows">${editRows.rows.map((r, i) => { const w = r.id && S.words[r.id];
+    return `<div class="erow ${r.del ? 'del' : ''}"><span class="thumb sm">${w ? thumbHTML(w) : '<span class="tl">＋</span>'}</span>
+      <input type="text" value="${esc(r.word)}" data-field="edit-word" data-i="${i}" placeholder="english word" ${r.del ? 'disabled' : ''}>
+      <input type="text" value="${esc(r.def)}" data-field="edit-def" data-i="${i}" placeholder="definition (optional, English)" ${r.del ? 'disabled' : ''}>
+      <span class="row" style="gap:4px;flex-wrap:nowrap">${w && !r.del ? `<button class="btn sm" data-act="pick-one" data-id="${w.id}" title="Choose picture">🖼</button>` : ''}
+      <button class="btn sm ${r.del ? '' : 'danger'}" data-act="edit-del" data-i="${i}" title="${r.del ? 'Keep this word' : 'Remove this word'}">${r.del ? '↺' : '✕'}</button></span></div>`; }).join('') || '<div class="small muted">No words yet.</div>'}</div>`;
+}
+function saveEditList() {
+  const listId = editRows.listId, seen = new Set(), bad = [];
+  for (const r of editRows.rows) {
+    if (r.del) continue;
+    const n = normWord(r.word);
+    if (!n) { if (r.id || r.word.trim()) bad.push(r.word || '(empty)'); continue; }
+    if (seen.has(n)) { bad.push(n + ' (twice)'); continue; }
+    seen.add(n);
+  }
+  if (bad.length) { toast(`⚠️ Please fix: ${esc(bad.join(', '))}`, 4000); return false; }
+  let renamed = 0, edited = 0, removed = 0;
+  const toPrep = [], newPairs = [];
+  for (const r of editRows.rows) {
+    const w = r.id && S.words[r.id], n = normWord(r.word), def = r.def.trim();
+    if (!w) { if (n) newPairs.push([n, def]); continue; }
+    if (r.del) { delete S.words[w.id]; dropImage(w.id); removed++; continue; }
+    if (n !== w.word) {
+      Object.assign(w, {word:n, emoji:EMOJI[n] || '', phonetic:'', audio:'', pos:'', examples:[], exUser:false, pics:[], picsAll:null, picDone:false,
+        pic:'', enriched:false, step:0, mastered:false, masteredAt:null, box:0, due:0});
+      if (w.img === 'idb') { w.img = ''; dropImage(w.id); }
+      w.def = def !== r.oldDef && def ? def : ''; w.defUser = !!w.def;
+      renamed++; toPrep.push(w.id);
+    } else if (def !== (w.def || '')) { w.def = def; w.defUser = !!def; edited++; if (!def) { w.enriched = false; toPrep.push(w.id); } }
+  }
+  const added = addWords(listId, newPairs);
+  save(); queueEnrich([...toPrep, ...added]);
+  editRows = null;
+  toast(`💾 Saved${renamed ? ` · ${renamed} respelled` : ''}${edited ? ` · ${edited} definitions changed` : ''}${added.length ? ` · ${added.length} added` : ''}${removed ? ` · ${removed} removed` : ''}`, 3500);
+  return true;
+}
 function wordModal(id) {
   const w = S.words[id]; if (!w) return closeModal();
   const s = wordStatus(w);
   openModal(`
     <div class="pic">${wordImgHTML(w, 'big')}</div>
     <div class="row center">
-      <button class="btn sm" data-act="img-next" data-id="${id}">🔄 Change picture</button>
-      <label class="btn sm">📷 My own photo<input type="file" accept="image/*" data-change="img-upload" data-id="${id}" hidden></label>
+      <button class="btn sm orange" data-act="pick-one" data-id="${id}">🖼 Choose picture</button>
       ${w.img === 'idb' ? `<button class="btn sm" data-act="img-clear" data-id="${id}">✖ Remove my photo</button>` : ''}
     </div>
     <div class="w-big">${esc(w.word)} <button class="spk" data-act="say" data-text="${esc(w.word)}" data-id="${id}">🔊</button></div>
-    <div class="phon" style="text-align:center">${esc(w.phonetic)}</div>
-    <label class="fl">Meaning (Vietnamese)</label><input type="text" value="${esc(w.vi)}" data-field="vi" data-id="${id}" placeholder="Enter the meaning…">
-    <label class="fl">Example sentences (one per line)</label><textarea data-field="examples" data-id="${id}" style="min-height:90px">${esc(w.examples.join('\n'))}</textarea>
-    ${w.defs.length ? `<div class="small muted" style="margin-top:6px">${w.defs.map(d => `<i>${esc(d.pos)}</i>: ${esc(d.text)}`).join('<br>')}</div>` : ''}
+    <div class="phon" style="text-align:center">${esc(w.phonetic)}${w.pos ? ` · <i>${esc(w.pos)}</i>` : ''}</div>
+    ${w.enriched ? '' : '<div class="small muted" style="text-align:center">⏳ Still getting this word ready…</div>'}
+    <label class="fl">Definition (simple English)</label><textarea data-field="def" data-id="${id}" style="min-height:64px" placeholder="e.g. An apple is a sweet, round fruit.">${esc(w.def || '')}</textarea>
+    <label class="fl">Example sentences (one per line)</label><textarea data-field="examples" data-id="${id}" style="min-height:80px">${esc(w.examples.join('\n'))}</textarea>
     <div class="small" style="margin-top:8px">${s.ic} ${s.txt}${w.masteredAt ? ` on ${fmtDate(w.masteredAt)}` : ''} · ✓ ${w.right} correct · ✗ ${w.wrong} wrong</div>
     <div class="row" style="margin-top:10px"><button class="btn sm" data-act="refetch" data-id="${id}">🌐 Reload data</button>
       <button class="btn sm" data-act="reset-word" data-id="${id}">↺ Learn again</button><span class="spacer"></span>
@@ -1331,7 +1543,7 @@ function wordModal(id) {
 function copyListModal(listId) {
   const others = R.profiles.filter(p => p.id !== R.active);
   openModal(`<h3>📋 Copy “${esc(S.lists.find(l => l.id === listId).name)}” to…</h3>
-    <div class="small muted">The words, meanings and pictures are copied. Progress starts fresh for the other child.</div>
+    <div class="small muted">The words, definitions and pictures are copied. Progress starts fresh for the other child.</div>
     <div class="kids">${others.map(p => `<button class="kid-card" data-act="do-copy" data-id="${p.id}" data-list="${listId}"><span class="av">${p.avatar}</span><b>${esc(p.name)}</b></button>`).join('')}</div>`);
 }
 async function copyList(listId, toId) {
@@ -1340,7 +1552,8 @@ async function copyList(listId, toId) {
   let n = 0;
   for (const w of listWords(listId)) {
     const id = uid();
-    T.words[id] = Object.assign(blankWord(id, newId, w.word, w.vi), {phonetic:w.phonetic, defs:w.defs, pos:w.pos, examples:[...w.examples], imgs:[...w.imgs], imgIdx:w.imgIdx, emoji:w.emoji, audio:w.audio, enriched:w.enriched, added:Date.now() + n});
+    T.words[id] = Object.assign(blankWord(id, newId, w.word, w.def), {defUser:!!w.defUser, phonetic:w.phonetic, pos:w.pos, examples:[...w.examples], exUser:!!w.exUser,
+      pics:[...(w.pics || [])], pic:w.pic || '', picDone:!!w.picDone, emoji:w.emoji, audio:w.audio, enriched:w.enriched, enrichV:w.enrichV, added:Date.now() + n});
     if (w.img === 'idb' && IMG[w.id]) { IMG[id] = IMG[w.id]; T.words[id].img = 'idb'; await IDB.put(id, IMG[w.id]).catch(() => {}); if (R.cloudOwner) Cloud.photoAdded(id); }
     n++;
   }
@@ -1357,11 +1570,12 @@ const VI_RE = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêề
 const VI_COMMON = new Set('con cai cay qua la cua va cho ban anh em chi me bo ong ba co chu toi nha xe hoa mau so ngay thang nam mot hai bon sau bay tam chin muoi'.split(' '));
 function parseVocab(text, fromOCR = false) {
   const out = [], seen = new Set(draft.map(d => normWord(d.word)));
-  const push = (w, vi = '') => {
+  const push = (w, def = '') => {
     w = normWord(String(w));
     if (!w || (w.length < 2 && w !== 'a' && w !== 'i')) return;
     if (w.split(' ').length > 3 || seen.has(w)) return;
-    seen.add(w); out.push({word:w, vi:String(vi).trim().replace(/^[-–—:=\s]+/, '')});
+    def = String(def).trim().replace(/^[-–—:=\s]+/, '');
+    seen.add(w); out.push({word:w, def:VI_RE.test(def) ? '' : def}); // Vietnamese meanings are left out: definitions are in English now
   };
   for (let line of String(text).split(/\r?\n/)) {
     line = line.replace(/^\s*(\d+|[a-zA-Z])[.)]\s+/, '').replace(/^\s*[-•*·●▪►✓]\s*/, '').trim();
@@ -1424,7 +1638,7 @@ function draftHTML() {
     <div class="small muted" style="margin-bottom:6px">Fix any words the reader got wrong. Meanings can stay empty — the app will look them up.</div>
     <div class="draft">${draft.map((d, i) => `<div class="drow"><span class="n">${i + 1}</span>
       <input type="text" value="${esc(d.word)}" data-field="draft-word" data-i="${i}" placeholder="english">
-      <input type="text" value="${esc(d.vi)}" data-field="draft-vi" data-i="${i}" placeholder="meaning (optional)">
+      <input type="text" value="${esc(d.def)}" data-field="draft-def" data-i="${i}" placeholder="definition (optional, English)">
       <button class="icon-btn" data-act="draft-del" data-i="${i}">✕</button></div>`).join('')}</div>
     <div class="row" style="margin-top:10px"><button class="btn sm" data-act="draft-add">+ Add row</button><span class="spacer"></span>
       <button class="btn primary" data-act="draft-save">💾 Save ${plural(draft.length, 'word')}</button></div>`;
@@ -1486,7 +1700,7 @@ async function startSession(listId) {
   cur = {name:'game', p:{}}; renderTabbar();
   if (need.length && navigator.onLine) {
     app.innerHTML = `<div class="card mascot-card" style="margin-top:30vh"><div class="mascot">🐰</div><div class="bubble">Wait a moment — Bunny is getting the pictures ready…</div></div>`;
-    await Promise.race([Promise.all(need.map(w => enrich(w).catch(() => {}))), sleep(5000)]);
+    await Promise.race([Promise.all(need.map(w => enrichOnce(w))), sleep(6000)]);
   }
   if (b.free) toast('🌟 You know all your words! Let\'s review a few for fun.');
   startItem();
@@ -1543,15 +1757,15 @@ function renderGameBody() {
     el.innerHTML = `<div class="pic">${wordImgHTML(w, 'big')}</div>
       <div class="w-big">${esc(w.word)} ${say}</div>
       <div class="phon">${esc(w.phonetic)}</div>
-      <div class="vi">${esc(w.vi)}</div>
+      ${w.def ? `<div class="def">${hl(w.def, w.word)}</div>` : ''}
       <div class="examples">${w.examples.slice(0, 2).map((s, k) => `<div class="ex"><button class="spk sm" data-act="say-ex" data-k="${k}">🔊</button><span>${hl(s, w.word)}</span></div>`).join('')}</div>
       <button class="btn primary big" data-act="card-ok">I've got it! ➜</button>`;
     return;
   }
   const head = c.r.k === 'type'
-    ? `<div class="pic">${imgSrc(w) || w.emoji ? wordImgHTML(w, '') : `<div class="clue-vi">${esc(w.vi || '?')}</div>`}</div>
-       <div class="row center"><span class="vi" style="font-size:20px">${esc(w.vi)}</span>${say}<button class="btn sm" data-act="say-slow" title="Say it slowly">🐢</button></div>`
-    : `<div class="pic">${wordImgHTML(w, 'sm')}</div><div class="row center"><span class="vi" style="font-size:20px">${esc(w.vi)}</span>${say}</div>`;
+    ? `<div class="pic">${wordImgHTML(w, '')}</div>
+       ${w.def ? `<div class="def sm">${maskWord(w.def, w)}</div>` : ''}<div class="row center">${say}<button class="btn sm" data-act="say-slow" title="Say it slowly">🐢</button></div>`
+    : `<div class="pic">${wordImgHTML(w, 'sm')}</div>${w.def ? `<div class="def sm">${maskWord(w.def, w)}</div>` : ''}<div class="row center">${say}</div>`;
   if (c.slots) {
     const s = c.slots;
     el.innerHTML = head + `
@@ -1588,7 +1802,7 @@ function resultHTML() {
     <h2>You learned the word</h2>
     <div class="pic">${wordImgHTML(w, 'sm')}</div>
     <div class="w-big ok">${esc(w.word)} <button class="spk" data-act="say-word">🔊</button></div>
-    <div class="vi" style="font-size:20px">${esc(w.vi)}</div>
+    ${w.def ? `<div class="def sm">${hl(w.def, w.word)}</div>` : ''}
     <div class="reward">${rewardText(r)}</div>
     ${r.notes.map(n => `<div class="note2">${esc(n)}</div>`).join('')}
     <button class="btn primary big" style="margin-top:10px" data-act="next">${G.qi + 1 < G.items.length ? 'Next word ➜' : 'See results ➜'}</button></div>`;
@@ -1982,7 +2196,7 @@ SCREENS.parent = () => {
     <div class="row" style="margin-top:8px"><button class="btn sm" data-act="export">⬇️ Back up all children</button>
       <label class="btn sm">⬆️ Restore from file<input type="file" accept="application/json,.json" data-change="import" hidden></label>
       <span class="spacer"></span><button class="btn sm danger" data-act="reset-all">🗑 Delete everything</button></div>
-    <div class="small muted" style="margin-top:8px">Pictures come from Openverse/Wikipedia, meanings from MyMemory, pronunciation and examples from dictionaryapi.dev. If a picture isn't right, open the word in its list to change it or upload your own.</div></div>`;
+    <div class="small muted" style="margin-top:8px">Definitions, example sentences and the first picture come from the Simple English Wiktionary; pronunciation from dictionaryapi.dev; more pictures from Openverse. All free. If something isn't right, open the list and tap ✏️ Edit list or the word itself to change it.</div></div>`;
 };
 SCREENS.report = ({id, list}) => {
   if (!parentOk) return go(S ? 'learn' : 'profiles');
@@ -2017,28 +2231,29 @@ SCREENS.report = ({id, list}) => {
   <div class="card"><div class="row"><h3>⭐ Words learned (${learned.length})</h3><span class="spacer"></span>
       <select data-change="report-list" data-id="${id}" style="width:auto"><option value="">All lists</option>${T.lists.map(l => `<option value="${l.id}" ${l.id === list ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select>
       <button class="btn sm" data-act="csv" data-id="${id}">⬇️ CSV</button></div>
-    ${learned.length ? `<div class="tbl-wrap"><table class="hard"><tr><th>Word</th><th>Meaning</th><th>List</th><th>Learned on</th><th>Memory</th><th>Next review</th><th>✓/✗</th></tr>
-      ${learned.map(w => `<tr><td><b>${esc(w.word)}</b></td><td>${esc(w.vi)}</td><td class="small">${esc(listName(w.listId))}</td><td>${fmtDate(w.masteredAt)}</td>
+    ${learned.length ? `<div class="tbl-wrap"><table class="hard"><tr><th>Word</th><th>Definition</th><th>List</th><th>Learned on</th><th>Memory</th><th>Next review</th><th>✓/✗</th></tr>
+      ${learned.map(w => `<tr><td><b>${esc(w.word)}</b></td><td class="small">${esc(clip(w.def))}</td><td class="small">${esc(listName(w.listId))}</td><td>${fmtDate(w.masteredAt)}</td>
         <td class="stars" title="Review level ${w.box || 1} of 5">${stars(w.box)}</td><td>${w.due <= Date.now() ? '<b style="color:#a66b00">today</b>' : fmtDate(w.due)}</td><td>${w.right}/${w.wrong}</td></tr>`).join('')}</table></div>`
       : '<p class="muted">No words learned yet.</p>'}</div>
   <div class="card"><h3>📝 Learning now (${inProg.length})</h3>
     ${inProg.length ? `<div class="wchips">${inProg.map(w => `<span class="wchip">${esc(w.word)} · ${w.step}/${roundsFor(w).length}</span>`).join('')}</div>` : '<p class="muted">Nothing in progress.</p>'}
     ${notYet.length ? `<div class="small muted" style="margin-top:10px">Not started yet: ${notYet.map(w => esc(w.word)).join(', ')}</div>` : ''}</div>
-  <div class="card"><h3>🧩 Needs practice</h3>${hard.length ? `<table class="hard"><tr><th>Word</th><th>Meaning</th><th>Wrong</th><th>Correct</th><th>Status</th></tr>
-    ${hard.map(w => `<tr><td><b>${esc(w.word)}</b></td><td>${esc(w.vi)}</td><td>${w.wrong}</td><td>${w.right}</td><td>${wordStatus(w).txt}</td></tr>`).join('')}</table>` : '<div class="small muted">No mistakes yet.</div>'}</div>
+  <div class="card"><h3>🧩 Needs practice</h3>${hard.length ? `<table class="hard"><tr><th>Word</th><th>Definition</th><th>Wrong</th><th>Correct</th><th>Status</th></tr>
+    ${hard.map(w => `<tr><td><b>${esc(w.word)}</b></td><td class="small">${esc(clip(w.def))}</td><td>${w.wrong}</td><td>${w.right}</td><td>${wordStatus(w).txt}</td></tr>`).join('')}</table>` : '<div class="small muted">No mistakes yet.</div>'}</div>
   <div class="card"><h3>📒 Progress by list</h3>${T.lists.map(l => { const ws = listWords(l.id, T), m = ws.filter(w => w.mastered).length;
     return `<div class="row" style="margin:6px 0"><span style="min-width:160px;flex:1">${esc(l.name)}</span><div class="goal-bar" style="flex:2;margin:0"><i style="width:${ws.length ? m / ws.length * 100 : 0}%"></i></div><b>${m}/${ws.length}</b></div>`; }).join('') || '<p class="muted">No lists.</p>'}</div>
   <div class="card"><h3>🏅 Badges & garden</h3>
     <div class="stickers">${BADGES.map(b => `<div class="stk ${T.stickers.includes(b.id) ? '' : 'off'}"><span class="se">${b.icon}</span>${esc(b.name)}</div>`).join('')}</div>
     <div class="small muted" style="margin-top:10px">Garden: ${plural(T.farm.beds.length, 'bed')} · ${plural(T.farm.beds.flatMap(b => b.plots).filter(Boolean).length, 'plant')} · ${plural(T.farm.totalHarvest, 'harvest')} · 💰 ${T.farm.coins} · 💧 ${T.farm.water}</div></div>`;
 };
+const clip = (s, n = 70) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
 function reportCSV(id) {
   const T = stateOf(id), p = profile(id);
   const listName = l => (T.lists.find(x => x.id === l) || {}).name || '';
   const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const rows = [['word', 'meaning', 'list', 'status', 'learned_on', 'review_level', 'next_review', 'correct', 'wrong']];
+  const rows = [['word', 'definition', 'list', 'status', 'learned_on', 'review_level', 'next_review', 'correct', 'wrong']];
   for (const w of Object.values(T.words).sort((a, b) => a.added - b.added))
-    rows.push([w.word, w.vi, listName(w.listId), wordStatus(w).txt, w.masteredAt ? dstr(new Date(w.masteredAt)) : '', w.mastered ? w.box : '', w.mastered ? dstr(new Date(w.due)) : '', w.right, w.wrong]);
+    rows.push([w.word, w.def || '', listName(w.listId), wordStatus(w).txt, w.masteredAt ? dstr(new Date(w.masteredAt)) : '', w.mastered ? w.box : '', w.mastered ? dstr(new Date(w.due)) : '', w.right, w.wrong]);
   const blob = new Blob(['﻿' + rows.map(r => r.map(q).join(',')).join('\r\n')], {type:'text/csv'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `word-farm-${p.name.replace(/\s+/g, '-')}-${today()}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
@@ -2047,7 +2262,16 @@ function reportCSV(id) {
 const ACT = {
   'go': el => go(el.dataset.to, el.dataset.list ? {list:el.dataset.list} : {}),
   'tab': (el, e) => { e && e.preventDefault(); closeModal(); go(el.dataset.to, el.dataset.sub ? {sub:el.dataset.sub} : {}); },
-  'close-modal': () => { closeModal(); if (pendingAsk) { pendingAsk(false); pendingAsk = null; } },
+  'close-modal': () => {
+    closeModal(); if (pendingAsk) { pendingAsk(false); pendingAsk = null; }
+    if (pickQueue) { pickQueue = null; if (cur.name === 'list') render(); }
+  },
+  'refetch': async el => {
+    const w = S.words[el.dataset.id]; if (!navigator.onLine) return toast('📴 No internet connection.');
+    toast('🌐 Looking the word up again…');
+    Object.assign(w, {enriched:false, defUser:false, exUser:false, examples:[], phonetic:'', audio:'', picDone:false, picsAll:null});
+    await enrichOnce(w); wordModal(w.id); if (cur.name === 'list') render();
+  },
   'modal-ok': () => { const r = pendingAsk; pendingAsk = null; closeModal(); r && r(true); },
   'goal': el => { S.daily.goal = +el.dataset.g; save(); render(); },
   'learn': (el, e) => { e && e.preventDefault(); closeModal(); startSession(el.dataset.list || null); },
@@ -2158,18 +2382,46 @@ const ACT = {
   },
   'word': el => wordModal(el.dataset.id),
   'say': el => Speech.say(el.dataset.text, el.dataset.id && S ? S.words[el.dataset.id] : null),
-  'img-next': async el => {
-    const w = S.words[el.dataset.id];
-    if (w.img === 'idb') w.img = '';
-    else if (w.imgs.length > 1) w.imgIdx = (w.imgIdx + 1) % w.imgs.length;
-    else if (navigator.onLine) { toast('🔎 Looking for pictures…'); w.imgs = await findImages(w.word); w.imgIdx = w.imgs.length > 1 ? 1 : 0; if (!w.imgs.length) toast('No pictures found — upload your own!'); }
-    save(); wordModal(w.id);
+  // pictures
+  'pick-one': el => { pickQueue = null; pictureModal(el.dataset.id); },
+  'pick-all': el => {
+    const ids = listWords(el.dataset.id).filter(w => w.enriched && needsPic(w)).map(w => w.id);
+    if (!ids.length) return;
+    pickQueue = {ids:ids.slice(1), total:ids.length, done:0, back:cur.name};
+    pictureModal(ids[0]);
   },
+  'pick-pic': el => {
+    const w = S.words[el.dataset.id], u = el.dataset.u;
+    if (w.img === 'idb') { w.img = ''; dropImage(w.id); }
+    if (u === 'emoji') w.pic = '';
+    else if (!u) { w.pic = ''; w.emoji = ''; }
+    else w.pic = u;
+    w.picDone = true; save(); Sfx.pop();
+    if (pickQueue) return nextPick();
+    closeModal(); if (['list', 'edit-list'].includes(cur.name)) render();
+    if (cur.name !== 'edit-list') wordModal(w.id);
+  },
+  'pick-skip': () => nextPick(),
+  'pick-retry': el => { const w = S.words[el.dataset.id]; w.picsAll = null; pictureModal(w.id); },
   'img-clear': el => { const w = S.words[el.dataset.id]; w.img = ''; dropImage(w.id); save(); wordModal(w.id); },
-  'refetch': async el => {
-    const w = S.words[el.dataset.id]; if (!navigator.onLine) return toast('📴 No internet connection.');
-    toast('🌐 Reloading…'); w.enriched = false; w.imgs = []; w.examples = []; w.phonetic = '';
-    await enrich(w); wordModal(w.id);
+  // edit a list
+  'edit-list': el => { editRows = null; go('edit-list', {id:el.dataset.id}); },
+  'edit-add': () => {
+    editRows.rows.push({id:null, word:'', def:'', oldDef:'', del:false});
+    $('#edit-rows').innerHTML = editRowsHTML();
+    const ins = document.querySelectorAll('[data-field="edit-word"]'); ins[ins.length - 1].focus();
+  },
+  'edit-del': el => {
+    const r = editRows.rows[+el.dataset.i];
+    if (!r.id) editRows.rows.splice(+el.dataset.i, 1); else r.del = !r.del;
+    $('#edit-rows').innerHTML = editRowsHTML();
+  },
+  'edit-cancel': () => { const id = editRows && editRows.listId; editRows = null; go(id ? 'list' : 'learn', {id}); },
+  'edit-save': async () => {
+    const n = editRows.rows.filter(r => r.del && r.id).length;
+    if (n && !await askModal(`Remove ${plural(n, 'word')} from this list? Their learning progress is removed too.`, 'Remove and save', true)) return;
+    const id = editRows.listId;
+    if (saveEditList()) go('list', {id});
   },
   'reset-word': el => { const w = S.words[el.dataset.id]; Object.assign(w, {step:0, mastered:false, masteredAt:null, box:0, due:0}); save(); wordModal(w.id); if (cur.name === 'list') render(); toast('↺ This word will be learned again from the start.'); },
   'del-word': async el => {
@@ -2185,12 +2437,12 @@ const ACT = {
   },
   'ocr-run': () => runOCR(),
   'draft-del': el => { draft.splice(+el.dataset.i, 1); refreshDraft(); },
-  'draft-add': () => { draft.push({word:'', vi:''}); refreshDraft(); const ins = document.querySelectorAll('[data-field="draft-word"]'); ins[ins.length - 1].focus(); },
+  'draft-add': () => { draft.push({word:'', def:''}); refreshDraft(); const ins = document.querySelectorAll('[data-field="draft-word"]'); ins[ins.length - 1].focus(); },
   'draft-clear': () => { draft = []; refreshDraft(); },
   'draft-save': () => {
     let listId = addState.list;
     if (listId === 'new') { listId = addList(addState.newName.trim() || ('List ' + new Date().toLocaleDateString('en-US'))); addState.list = listId; addState.newName = ''; }
-    const ids = addWords(listId, draft.map(d => [d.word, d.vi]));
+    const ids = addWords(listId, draft.map(d => [d.word, d.def]));
     const skipped = draft.length - ids.length;
     draft = []; addState.ocr = null;
     toast(`💾 Added ${plural(ids.length, 'new word')}!${skipped ? ` (skipped ${skipped} duplicate or invalid)` : ''}`, 3200);
@@ -2314,11 +2566,13 @@ document.body.addEventListener('click', e => {
 document.body.addEventListener('input', e => {
   const el = e.target, f = el.dataset.field; if (!f) return;
   if (f === 'draft-word') draft[+el.dataset.i].word = el.value;
-  else if (f === 'draft-vi') draft[+el.dataset.i].vi = el.value;
+  else if (f === 'draft-def') draft[+el.dataset.i].def = el.value;
+  else if (f === 'edit-word') editRows.rows[+el.dataset.i].word = el.value;
+  else if (f === 'edit-def') editRows.rows[+el.dataset.i].def = el.value;
   else if (f === 'new-name') addState.newName = el.value;
   else if (f === 'list-name') { const l = S.lists.find(x => x.id === el.dataset.id); if (l) { l.name = el.value.trim() || l.name; save(); } }
-  else if (f === 'vi') { S.words[el.dataset.id].vi = el.value.trim(); save(); }
-  else if (f === 'examples') { S.words[el.dataset.id].examples = el.value.split('\n').map(s => s.trim()).filter(Boolean); save(); }
+  else if (f === 'def') { const w = S.words[el.dataset.id]; w.def = el.value.trim(); w.defUser = true; save(); }
+  else if (f === 'examples') { const w = S.words[el.dataset.id]; w.examples = el.value.split('\n').map(s => s.trim()).filter(Boolean); w.exUser = true; save(); }
 });
 document.body.addEventListener('change', async e => {
   const el = e.target, f = el.dataset.change; if (!f) return;
@@ -2333,9 +2587,11 @@ document.body.addEventListener('change', async e => {
   }
   else if (f === 'img-upload' && el.files[0]) {
     const w = S.words[el.dataset.id];
-    try { const data = await resizeImage(el.files[0]); IMG[w.id] = data; await IDB.put(w.id, data); w.img = 'idb'; save(); if (R.cloudOwner) Cloud.photoAdded(w.id); toast('📷 Using your photo!'); }
+    try { const data = await resizeImage(el.files[0]); IMG[w.id] = data; await IDB.put(w.id, data); w.img = 'idb'; w.picDone = true; save(); if (R.cloudOwner) Cloud.photoAdded(w.id); toast('📷 Using your photo!'); }
     catch (err) { toast('Could not open this image.'); }
-    wordModal(w.id);
+    if (pickQueue) { nextPick(); return; }
+    if (['list', 'edit-list'].includes(cur.name)) render();
+    if (cur.name === 'edit-list') closeModal(); else wordModal(w.id);
   }
   else if (f === 'import' && el.files[0]) {
     try {
