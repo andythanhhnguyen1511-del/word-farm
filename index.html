@@ -1,0 +1,2390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Word Farm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#58cc02; --green-d:#46a302; --blue:#1cb0f6; --blue-d:#1899d6;
+  --orange:#ff9600; --orange-d:#e08600; --red:#ff4b4b; --red-d:#ea2b2b;
+  --yellow:#ffc800; --purple:#ce82ff; --ink:#3c3c3c; --muted:#777;
+  --line:#e5e5e5; --card:#fff;
+  --font:'Baloo 2','Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--font);color:var(--ink);font-size:18px;
+  background:linear-gradient(#bfe9ff 0,#e3f6ff 40%,#eaf8d8 75%,#cdeca8 100%) fixed;}
+button,input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+#app{max-width:760px;margin:0 auto;padding:12px 14px 110px;min-height:100vh}
+#app.wide{max-width:1400px}
+@media (max-width:700px){ .soil{grid-template-columns:repeat(5,minmax(0,1fr))!important} }
+#fx{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:60}
+h1,h2,h3{margin:.2em 0;line-height:1.15}
+h1{font-size:30px;font-weight:800} h2{font-size:24px;font-weight:800} h3{font-size:20px;font-weight:700}
+.muted{color:var(--muted)} .small{font-size:15px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row.center{justify-content:center}
+.spacer{flex:1}
+
+/* nút */
+.btn{border:2px solid var(--line);border-bottom-width:5px;background:#fff;border-radius:16px;padding:10px 16px;font-weight:700;cursor:pointer;line-height:1.1;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.btn:active{transform:translateY(3px);border-bottom-width:2px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--green);border-color:var(--green-d);color:#fff}
+.btn.blue{background:var(--blue);border-color:var(--blue-d);color:#fff}
+.btn.orange{background:var(--orange);border-color:var(--orange-d);color:#fff}
+.btn.danger{background:#fff;border-color:#ffc1c1;color:var(--red-d)}
+.btn.big{font-size:22px;padding:14px 22px;border-radius:20px;width:100%}
+.btn.sm{font-size:15px;padding:6px 10px;border-radius:12px;border-bottom-width:4px}
+.icon-btn{border:none;background:none;font-size:26px;cursor:pointer;padding:4px 8px;color:#aaa;font-weight:800}
+.spk{border:none;background:#e8f7ff;border-radius:50%;width:46px;height:46px;font-size:24px;cursor:pointer;flex:none;box-shadow:0 3px 0 #c2e8fb}
+.spk:active{transform:translateY(2px);box-shadow:none}
+.spk.sm{width:34px;height:34px;font-size:17px}
+.spk.huge{width:96px;height:96px;font-size:48px;box-shadow:0 6px 0 #b6e2f9}
+
+.card{background:var(--card);border-radius:24px;padding:18px;box-shadow:0 4px 0 rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.06);margin:12px 0}
+.pill{background:#fff;border-radius:999px;padding:4px 12px;font-weight:800;box-shadow:0 2px 0 rgba(0,0,0,.08);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+
+/* đầu trang + thanh tab */
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.top .title{font-size:24px;font-weight:800;display:flex;align-items:center;gap:6px}
+.hud{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.back{border:none;background:#fff;border-radius:14px;padding:6px 12px;font-weight:800;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.1)}
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:center;gap:8px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);box-shadow:0 -4px 18px rgba(0,0,0,.1)}
+#tabbar.hide{display:none}
+.tb{flex:1;max-width:220px;border:none;background:none;border-radius:16px;padding:6px 4px;font-weight:800;font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;color:#8a8a8a}
+.tb .i{font-size:28px;line-height:1.1}
+.tb.on{background:#eaf8d8;color:#3f7d00}
+.tb .dot{position:absolute;margin-left:28px;background:var(--red);color:#fff;border-radius:999px;font-size:12px;padding:0 6px}
+
+/* trang học */
+.mascot-card{display:flex;gap:12px;align-items:center}
+.mascot{font-size:64px;line-height:1;flex:none;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px) rotate(-3deg)}}
+.bubble{background:#fff;border-radius:18px;padding:10px 14px;position:relative;font-weight:600;box-shadow:0 3px 0 rgba(0,0,0,.08)}
+.bubble:before{content:'';position:absolute;left:-10px;top:50%;margin-top:-8px;border:8px solid transparent;border-right-color:#fff;border-left:0}
+.goal-bar{height:22px;background:#e9e9e9;border-radius:999px;overflow:hidden;margin:8px 0}
+.goal-bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--yellow),var(--orange));border-radius:999px;transition:width .4s}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:2px solid var(--line);border-bottom-width:4px;border-radius:14px;padding:6px 12px;background:#fff;font-weight:800;cursor:pointer}
+.chip.on{background:#fff7d6;border-color:var(--yellow);color:#a66b00}
+.learn-btn{border:none;width:100%;border-radius:26px;padding:18px;background:var(--green);color:#fff;font-weight:800;font-size:28px;cursor:pointer;box-shadow:0 7px 0 var(--green-d);display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 14px}
+.learn-btn:active{transform:translateY(5px);box-shadow:0 2px 0 var(--green-d)}
+.learn-btn .sub{display:block;font-size:15px;font-weight:600}
+.list-card{cursor:pointer}
+.wchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.wchip{font-size:14px;font-weight:700;border-radius:10px;padding:1px 8px;background:#f1f1f1;color:#666}
+.wchip.done{background:#eaffd6;color:#3f7d00}
+.wchip.due{background:#fff2d6;color:#a66b00}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.wcell{border:none;background:#fff;border-radius:18px;padding:10px 8px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.08);display:flex;flex-direction:column;align-items:center;gap:2px}
+.wcell .ic{font-size:28px;line-height:1.1}
+.wcell .wd{font-weight:800;font-size:17px;word-break:break-word;text-align:center}
+.wcell .st{font-size:13px;color:var(--muted)}
+.mini{width:80%;height:7px;background:#eee;border-radius:9px;overflow:hidden}
+.mini i{display:block;height:100%;background:var(--green)}
+.note{font-size:15px;color:var(--muted);text-align:center;margin-top:8px}
+
+/* hình của từ */
+.pic{display:flex;justify-content:center;align-items:center;margin:6px auto}
+.wimg{width:200px;height:200px;object-fit:cover;border-radius:20px;background:#f3f3f3;box-shadow:0 4px 0 rgba(0,0,0,.08)}
+.wimg.big{width:min(260px,66vw);height:min(260px,66vw)}
+.wimg.sm{width:130px;height:130px}
+.wemoji{font-size:120px;line-height:1.1;width:200px;height:200px;display:flex;align-items:center;justify-content:center;background:#fff8e6;border-radius:20px}
+.wemoji.big{width:min(260px,66vw);height:min(260px,66vw);font-size:140px}
+.wemoji.sm{width:130px;height:130px;font-size:80px}
+.wletter{font-size:110px;font-weight:800;color:#fff;width:200px;height:200px;display:flex;align-items:center;justify-content:center;border-radius:20px;background:linear-gradient(135deg,var(--blue),var(--purple))}
+.wletter.big{width:min(260px,66vw);height:min(260px,66vw)}
+.wletter.sm{width:130px;height:130px;font-size:70px}
+
+/* trò chơi */
+.gbar{display:flex;align-items:center;gap:8px}
+.wcount{font-weight:800;color:#5a8f00;white-space:nowrap}
+.rdots{flex:1;display:flex;gap:6px;align-items:center}
+.rdots i{flex:1;height:14px;border-radius:999px;background:#e5e5e5}
+.rdots i.ok{background:var(--green)}
+.rdots i.now{background:var(--yellow);box-shadow:0 0 0 3px rgba(255,200,0,.3)}
+.combo{font-weight:800;color:var(--orange);min-width:36px;text-align:center}
+.combo.hot{animation:pulse .8s infinite}
+@keyframes pulse{50%{transform:scale(1.2)}}
+.glabel{text-align:center;font-weight:800;color:#5a8f00;margin-top:8px;font-size:17px}
+.gbody{text-align:center}
+.w-big{font-size:44px;font-weight:800;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap}
+.w-big.ok{color:var(--green-d)}
+.phon{color:var(--muted);font-size:18px}
+.vi{font-size:24px;font-weight:700;color:#d35400}
+.examples{text-align:left;margin:10px 0}
+.ex{display:flex;gap:10px;align-items:center;background:#f7fbff;border-radius:14px;padding:8px 10px;margin:6px 0;font-size:19px}
+.ex b{color:var(--blue-d)}
+.word-slots{display:flex;justify-content:center;gap:5px;margin:18px 0;flex-wrap:nowrap}
+.slot{width:clamp(26px,calc((100vw - 70px)/var(--n)),56px);height:clamp(40px,calc((100vw - 70px)/var(--n)*1.25),66px);max-width:56px;
+  border-radius:12px;border:3px solid #ddd;background:#fff;font-size:clamp(20px,calc((100vw - 70px)/var(--n)*.7),36px);font-weight:800;display:flex;align-items:center;justify-content:center;padding:0;text-transform:lowercase}
+.slot.given{border-color:transparent;background:#eef7e6;color:#4a7d00}
+.slot.blank{border-style:dashed;border-color:#b9b9b9;cursor:pointer;background:#fffdf3}
+.slot.filled{border-style:solid;border-color:var(--blue);color:var(--blue-d);background:#eef9ff}
+.slot.active{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,150,0,.25)}
+.slot.locked{border-style:solid;border-color:var(--green);background:#eaffd6;color:var(--green-d)}
+.slot.bad{border-color:var(--red);background:#ffecec;color:var(--red-d)}
+.gap{width:14px}
+.tray{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:10px 0 6px}
+.ltile{width:60px;height:64px;border-radius:16px;border:2px solid #d6d6d6;border-bottom-width:6px;background:#fff;font-size:32px;font-weight:800;cursor:pointer}
+.ltile:active{transform:translateY(3px);border-bottom-width:3px}
+.ltile.used{visibility:hidden}
+.ltile.bad{opacity:.25;text-decoration:line-through;cursor:not-allowed}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.kb{display:flex;flex-direction:column;gap:6px;align-items:center;margin-top:8px;user-select:none}
+.kb .kr{display:flex;gap:5px;justify-content:center;width:100%}
+.key{flex:1;max-width:52px;height:52px;border-radius:12px;border:2px solid #d6d6d6;border-bottom-width:5px;background:#fff;font-size:22px;font-weight:800;cursor:pointer;padding:0}
+.key:active{transform:translateY(2px);border-bottom-width:3px}
+.key.wide{max-width:90px;flex:1.6;background:#fff3e0}
+.result .reward{font-size:24px;font-weight:800;color:#b37400;margin:6px 0}
+.result .note2{font-size:18px;font-weight:700;margin:4px 0}
+.mascot-row{display:flex;gap:10px;align-items:center;margin-top:14px}
+.mascot-row .mascot{font-size:52px}
+.clue-vi{font-size:30px;font-weight:800;color:#d35400;background:#fff5e8;border-radius:20px;padding:30px 16px}
+.done-card .big-ic{font-size:80px;line-height:1}
+
+/* vườn */
+.scene{position:relative;border-radius:28px;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.1);background:#7cc644}
+.sky{position:relative;height:170px;background:linear-gradient(#7fcfff,#c9ecff 85%);overflow:hidden}
+.sky svg.hills{position:absolute;left:0;bottom:0;width:100%;height:90px}
+.sun{position:absolute;left:24px;top:16px;width:54px;height:54px;border-radius:50%;background:radial-gradient(#fff6a8,#ffd23f 60%,#ffb800);box-shadow:0 0 30px #ffe066}
+.cloud{position:absolute;height:26px;background:#fff;border-radius:30px;opacity:.95;animation:drift linear infinite}
+.cloud:before,.cloud:after{content:'';position:absolute;background:#fff;border-radius:50%}
+.cloud:before{width:34px;height:34px;left:12px;top:-16px}
+.cloud:after{width:26px;height:26px;left:38px;top:-10px}
+@keyframes drift{from{transform:translateX(-140px)}to{transform:translateX(1100px)}}
+.barn{position:absolute;right:16px;bottom:6px;width:150px;height:130px;cursor:pointer;border:none;background:none;padding:0}
+.barn:active{transform:scale(.97)}
+.barn .lbl{position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);background:#fff;border-radius:10px;padding:0 8px;font-size:13px;font-weight:800;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.fence{display:block;width:100%;height:34px;margin-top:-14px;position:relative}
+.field{padding:6px 16px 16px;box-shadow:inset 10px 0 0 #c58b4e,inset -10px 0 0 #c58b4e,inset 13px 0 0 #a8713c,inset -13px 0 0 #a8713c;background:repeating-linear-gradient(115deg,#7cc644 0 22px,#76bf3f 22px 44px)}
+.bed{margin:14px 0 4px}
+.bed-head{display:flex;align-items:center;gap:8px;margin:0 4px 4px;color:#fff;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.land{display:flex;align-items:center;justify-content:center;width:100%;min-height:clamp(96px,11vw,150px);border-radius:20px;cursor:pointer;
+  border:3px dashed rgba(255,255,255,.65);background:radial-gradient(circle at 20% 30%,#8fd65a 0 6px,transparent 7px),radial-gradient(circle at 70% 60%,#8fd65a 0 5px,transparent 6px),repeating-linear-gradient(115deg,#86cf50 0 18px,#7fc84a 18px 36px)}
+.land:hover{border-color:#fff}
+.land.next{border-color:#ffe08a}
+.sign{display:flex;flex-direction:column;align-items:center;gap:0;background:linear-gradient(#e0a868,#c58b4e);color:#4e2c0c;border:3px solid #8d5a2b;border-radius:12px;padding:6px 16px;box-shadow:0 5px 0 #6b4220;font-weight:800;position:relative}
+.sign:after{content:'';position:absolute;left:50%;bottom:-17px;width:8px;height:14px;margin-left:-4px;background:#8d5a2b;border-radius:0 0 3px 3px;z-index:-1}
+.sign b{font-size:22px;color:#7a3e00}
+.sign-t{font-size:16px}
+.land:active .sign{transform:translateY(3px);box-shadow:0 2px 0 #6b4220}
+.soil{border-radius:20px;padding:6px;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;
+  background:repeating-linear-gradient(180deg,#9a6534 0 9px,#8b5a2b 9px 13px);box-shadow:0 6px 0 #5e3a18,inset 0 4px 0 rgba(255,255,255,.12)}
+.plot{position:relative;border:none;background:radial-gradient(ellipse at 50% 85%,rgba(0,0,0,.18),transparent 60%);border-radius:14px;padding:0;cursor:pointer;aspect-ratio:5/6;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
+.plot:hover{background:radial-gradient(ellipse at 50% 85%,rgba(255,255,255,.22),transparent 65%)}
+.plot.sel{outline:3px solid var(--yellow)}
+.psvg{width:100%;height:100%;overflow:visible;display:block}
+.psvg .sway{transform-box:view-box;transform-origin:50% 92%;animation:sway 4s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+.plot.ripe .psvg .sway{animation:sway 1.6s ease-in-out infinite}
+.plot .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);font-size:30px;font-weight:800}
+.ptag{position:absolute;top:2px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:800;border-radius:10px;padding:0 7px;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.2);z-index:2}
+.ptag.water{background:#e1f5ff;color:#0b7bb3;animation:bob 1.4s ease-in-out infinite}
+.ptag.grow{background:#fff;color:#555}
+.ptag.ripe{background:var(--orange);color:#fff;animation:pulse 1s infinite}
+.can{position:absolute;right:-6px;top:-18px;width:56px;height:56px;pointer-events:none;z-index:5;animation:pour 1.2s ease-in-out forwards}
+@keyframes pour{0%{transform:rotate(0) translateY(-10px);opacity:0}20%{opacity:1}40%,80%{transform:rotate(-35deg)}100%{transform:rotate(0);opacity:0}}
+.drops{position:absolute;left:30%;top:20%;width:40%;height:60%;pointer-events:none;z-index:4}
+.drops i{position:absolute;width:5px;height:9px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#4fc3f7;animation:fall .8s linear infinite}
+@keyframes fall{from{transform:translateY(0);opacity:1}to{transform:translateY(40px);opacity:0}}
+.barn-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 4px 0}
+.seed-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.sp{border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;background:#fff;cursor:pointer;padding:6px;text-align:center;font-weight:800}
+.sp .th{height:90px}
+
+/* cửa hàng */
+.subtabs{display:flex;gap:8px;margin:8px 0}
+.subtab{flex:1;border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;padding:8px;background:#fff;font-weight:800;cursor:pointer}
+.subtab.on{background:#fff7d6;border-color:var(--yellow);color:#a66b00}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.item{border:2px solid var(--line);border-radius:18px;padding:8px 10px 10px;text-align:center;background:#fff;display:flex;flex-direction:column;gap:4px}
+.item .th{height:110px;background:linear-gradient(#e8f7ff,#e8f7ff 70%,#a8d66b 70%);border-radius:12px}
+.item.locked{opacity:.6}
+.item .own{font-size:13px;color:var(--muted)}
+.market-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.market-row .ic{font-size:34px}
+
+/* thêm từ */
+.tabs{display:flex;gap:8px;margin:10px 0}
+.tab{flex:1;border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;padding:10px;background:#fff;font-weight:800;cursor:pointer}
+.tab.on{background:#e8f7ff;border-color:var(--blue);color:var(--blue-d)}
+textarea,input[type=text],input[type=number],select{width:100%;border:2px solid var(--line);border-radius:14px;padding:10px 12px;background:#fff;outline:none}
+textarea:focus,input:focus,select:focus{border-color:var(--blue)}
+textarea{min-height:150px;resize:vertical}
+.draft{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto;padding-right:4px}
+.drow{display:grid;grid-template-columns:28px 1fr 1fr 40px;gap:6px;align-items:center}
+.drow input{padding:6px 10px;border-radius:10px}
+.drow .n{color:var(--muted);font-size:14px;text-align:right}
+.ocr-prev{max-width:100%;max-height:260px;border-radius:14px;display:block;margin:8px auto}
+.bar{height:14px;background:#eee;border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--blue);width:0;transition:width .2s}
+label.fl{display:block;font-weight:700;margin:8px 0 4px}
+
+/* phụ huynh */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.stat{background:#f7f9fc;border-radius:16px;padding:12px}
+.stat .v{font-size:30px;font-weight:800}
+.stat .l{font-size:14px;color:var(--muted)}
+.chart{display:flex;gap:8px;align-items:flex-end;height:140px;padding-top:10px}
+.chart .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--muted);height:100%;justify-content:flex-end}
+.chart .c i{display:block;width:100%;background:var(--blue);border-radius:8px 8px 3px 3px;min-height:3px}
+table.hard{width:100%;border-collapse:collapse;font-size:16px}
+table.hard td,table.hard th{padding:6px;border-bottom:1px solid var(--line);text-align:left}
+.stickers{display:flex;flex-wrap:wrap;gap:10px}
+.stk{width:86px;text-align:center;font-size:12px;font-weight:700;color:var(--muted)}
+.stk .se{font-size:40px;display:block}
+.stk.off .se{filter:grayscale(1) opacity(.3)}
+
+/* children / profiles */
+.pill.kid{border:none;cursor:pointer;background:#fff7d6;color:#7a4b00;font-family:inherit;font-size:inherit}
+.kids{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:14px}
+.kid-card{border:3px solid var(--line);border-bottom-width:7px;border-radius:24px;background:#fff;padding:14px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:19px}
+.kid-card:active{transform:translateY(3px);border-bottom-width:4px}
+.kid-card.on{border-color:var(--green)}
+.kid-card.add{border-style:dashed;color:var(--muted)}
+.kid-card .av{font-size:62px;line-height:1.1}
+.avs{display:flex;flex-wrap:wrap;gap:6px}
+.av-opt input,.chip-r input{position:absolute;opacity:0;pointer-events:none}
+.av-opt span{display:flex;width:52px;height:52px;align-items:center;justify-content:center;font-size:34px;border-radius:14px;border:3px solid var(--line);cursor:pointer;background:#fff}
+.av-opt input:checked+span{border-color:var(--green);background:#eaffd6}
+.chip-r input:checked+.chip{background:#fff7d6;border-color:var(--yellow);color:#a66b00}
+.kid-rows{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.kid-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#f7f9fc;border-radius:18px;padding:10px 12px}
+.kid-row .av{font-size:46px}
+.tbl-wrap{overflow-x:auto}
+td.stars{color:#f5b400;letter-spacing:1px;white-space:nowrap}
+
+/* modal + toast */
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-start;justify-content:center;z-index:50;overflow:auto;padding:24px 12px}
+#modal.on{display:flex}
+#modal .mcard{background:#fff;border-radius:26px;max-width:560px;width:100%;padding:18px;position:relative;animation:pop .2s}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+#modal .x{position:absolute;right:10px;top:6px}
+#toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;z-index:70;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:min(92vw,520px)}
+.toast{background:#333;color:#fff;border-radius:16px;padding:10px 16px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.2);animation:pop .2s;text-align:center}
+.floaty{position:fixed;left:50%;top:40%;transform:translate(-50%,0);font-size:30px;font-weight:800;color:#b37400;z-index:65;pointer-events:none;animation:floatup 1.3s forwards;text-shadow:0 2px 0 #fff}
+@keyframes floatup{to{transform:translate(-50%,-90px);opacity:0}}
+@media (max-width:420px){
+  body{font-size:17px}
+  .w-big{font-size:36px}
+  .ltile{width:52px;height:58px;font-size:28px}
+  .key{height:46px;font-size:19px}
+  .barn{width:110px;height:96px}
+  .sky{height:140px}
+  .ptag{font-size:10px;padding:0 4px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav id="tabbar"></nav>
+<div id="modal"><div class="mcard" id="mcard"></div></div>
+<div id="toasts"></div>
+<canvas id="fx"></canvas>
+<noscript>This page needs JavaScript.</noscript>
+<script>
+'use strict';
+/* =========================================================
+   Word Farm — English vocabulary for kids
+   One HTML file. Data is stored in this browser, one profile per child.
+   All plant, barn and fence drawings are hand-made SVG.
+   ========================================================= */
+
+/* ===== Cloud sync (Supabase) =====
+   Leave both empty to keep everything on this device only.
+   To turn cloud sync on, follow SETUP-CLOUD.md and paste your project's URL and anon (public) key here.
+   The anon key is meant to be public: Row Level Security in supabase-setup.sql protects each family's data. */
+const SUPABASE_URL = 'https://jtxsyxeajfpcgcmlljwl.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_WlXReUVSL7ICoy3zYeSXNA_EFu5drNg';
+
+// ---------- helpers ----------
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+const DAY = 864e5;
+const dstr = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const today = () => dstr(new Date());
+const yesterday = () => dstr(new Date(Date.now() - DAY));
+const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rand = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const P = n => +(+n).toFixed(1);
+const plural = (n, w, ws) => `${n} ${n === 1 ? w : (ws || w + 's')}`;
+const fmtDate = t => t ? new Date(t).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '—';
+
+// ---------- static data ----------
+const EMOJI = {
+  apple:'🍎',banana:'🍌',orange:'🍊',grape:'🍇',grapes:'🍇',strawberry:'🍓',watermelon:'🍉',mango:'🥭',pear:'🍐',peach:'🍑',cherry:'🍒',lemon:'🍋',pineapple:'🍍',coconut:'🥥',kiwi:'🥝',avocado:'🥑',
+  tomato:'🍅',carrot:'🥕',corn:'🌽',potato:'🥔',broccoli:'🥦',mushroom:'🍄',egg:'🥚',bread:'🍞',cake:'🍰',milk:'🥛',rice:'🍚',pizza:'🍕',candy:'🍬',
+  'ice cream':'🍦',cookie:'🍪',cheese:'🧀',water:'💧',juice:'🥤',tea:'🍵',coffee:'☕',soup:'🍲',noodles:'🍜',hamburger:'🍔',chocolate:'🍫',honey:'🍯',sandwich:'🥪',
+  cat:'🐱',dog:'🐶',fish:'🐟',bird:'🐦',cow:'🐮',pig:'🐷',duck:'🦆',chicken:'🐔',hen:'🐔',horse:'🐴',sheep:'🐑',goat:'🐐',rabbit:'🐰',mouse:'🐭',lion:'🦁',tiger:'🐯',
+  bear:'🐻',monkey:'🐵',elephant:'🐘',giraffe:'🦒',zebra:'🦓',frog:'🐸',snake:'🐍',turtle:'🐢',bee:'🐝',butterfly:'🦋',ant:'🐜',owl:'🦉',penguin:'🐧',fox:'🦊',panda:'🐼',
+  dolphin:'🐬',whale:'🐳',shark:'🦈',crab:'🦀',octopus:'🐙',spider:'🕷️',camel:'🐫',kangaroo:'🦘',crocodile:'🐊',parrot:'🦜',chick:'🐤',unicorn:'🦄',dinosaur:'🦕',
+  sun:'☀️',moon:'🌙',star:'⭐',cloud:'☁️',rain:'🌧️',snow:'❄️',tree:'🌳',flower:'🌸',leaf:'🍃',rainbow:'🌈',sea:'🌊',mountain:'⛰️',fire:'🔥',wind:'🌬️',earth:'🌍',
+  book:'📖',pen:'🖊️',pencil:'✏️',bag:'🎒',school:'🏫',ball:'⚽',doll:'🧸',teddy:'🧸',car:'🚗',bus:'🚌',bike:'🚲',bicycle:'🚲',train:'🚆',plane:'✈️',boat:'⛵',ship:'🚢',
+  house:'🏠',home:'🏠',door:'🚪',bed:'🛏️',clock:'⏰',phone:'📱',computer:'💻',television:'📺',key:'🔑',hat:'🎩',shoe:'👟',shoes:'👟',shirt:'👕',
+  dress:'👗',sock:'🧦',socks:'🧦',glasses:'👓',umbrella:'☂️',gift:'🎁',balloon:'🎈',robot:'🤖',drum:'🥁',guitar:'🎸',piano:'🎹',ruler:'📏',scissors:'✂️',crayon:'🖍️',
+  eye:'👁️',ear:'👂',nose:'👃',mouth:'👄',hand:'✋',foot:'🦶',leg:'🦵',tooth:'🦷',heart:'❤️',
+  baby:'👶',boy:'👦',girl:'👧',man:'👨',woman:'👩',teacher:'👩‍🏫',doctor:'👩‍⚕️',family:'👪',friend:'🤝',king:'🤴',queen:'👸',
+  happy:'😊',sad:'😢',angry:'😠',cold:'🥶',hot:'🥵',sleep:'😴',run:'🏃',swim:'🏊',eat:'🍽️',drink:'🥤',read:'📖',write:'✍️',sing:'🎤',dance:'💃',jump:'🤸',play:'🎮',
+  cry:'😢',smile:'😊',laugh:'😂',red:'❤️',blue:'💙',green:'💚',yellow:'💛',black:'🖤',purple:'💜',
+  one:'1️⃣',two:'2️⃣',three:'3️⃣',four:'4️⃣',five:'5️⃣',six:'6️⃣',seven:'7️⃣',eight:'8️⃣',nine:'9️⃣',ten:'🔟'
+};
+const AVATARS = ['🐰','🐻','🐱','🐶','🦊','🐼','🐸','🐯','🦁','🐵','🐧','🦄','🐨','🐷','🐥','🐙'];
+
+/* Plants. cat: veg (harvest once), tree (fruit trees: blossom → fruit, many seasons), flower (bloom again and again).
+   cost: seed price in 💰 (coins only come from learning). unlock: words learned needed. yield: items per harvest.
+   sell: 💧 per item at the Market. grow: seconds a plant needs to grow after each watering. */
+const PLANTS = {
+  lettuce:  {cat:'veg', name:'Lettuce',  icon:'🥬', cost:5,  unlock:0,  yield:3, sell:1, grow:20, kind:'lettuce'},
+  carrot:   {cat:'veg', name:'Carrot',   icon:'🥕', cost:6,  unlock:0,  yield:3, sell:1, grow:25, kind:'carrot'},
+  tomato:   {cat:'veg', name:'Tomato',   icon:'🍅', cost:10, unlock:2,  yield:4, sell:1, grow:30, kind:'tomato', flower:true},
+  corn:     {cat:'veg', name:'Corn',     icon:'🌽', cost:12, unlock:4,  yield:3, sell:2, grow:35, kind:'corn', flower:true},
+  pumpkin:  {cat:'veg', name:'Pumpkin',  icon:'🎃', cost:16, unlock:7,  yield:2, sell:4, grow:40, kind:'pumpkin', flower:true},
+  sunflower:{cat:'flower', name:'Sunflower', icon:'🌻', cost:8,  unlock:0,  yield:2, sell:2, grow:30, kind:'sunflower'},
+  tulip:    {cat:'flower', name:'Tulip',     icon:'🌷', cost:10, unlock:1,  yield:2, sell:2, grow:30, kind:'tulip', color:'#ff5c8a'},
+  daisy:    {cat:'flower', name:'Daisy',     icon:'🌼', cost:12, unlock:3,  yield:3, sell:2, grow:35, kind:'daisy'},
+  rose:     {cat:'flower', name:'Rose',      icon:'🌹', cost:16, unlock:5,  yield:2, sell:3, grow:40, kind:'rose'},
+  lavender: {cat:'flower', name:'Lavender',  icon:'💜', cost:20, unlock:9,  yield:3, sell:3, grow:45, kind:'lavender'},
+  apple:    {cat:'tree', name:'Apple',  icon:'🍎', cost:25, unlock:1,  yield:5, sell:1, grow:45, kind:'tree', leaf:'#4caf50', fruit:'#e53935', bloom:'#ffd1dc'},
+  orange:   {cat:'tree', name:'Orange', icon:'🍊', cost:30, unlock:3,  yield:5, sell:1, grow:50, kind:'tree', leaf:'#3f9f45', fruit:'#ff9800', bloom:'#ffffff'},
+  lemon:    {cat:'tree', name:'Lemon',  icon:'🍋', cost:30, unlock:5,  yield:6, sell:1, grow:50, kind:'tree', leaf:'#43a047', fruit:'#cddc39', bloom:'#ffffff', shape:'oval'},
+  peach:    {cat:'tree', name:'Peach',  icon:'🍑', cost:40, unlock:8,  yield:5, sell:2, grow:55, kind:'tree', leaf:'#5cb85c', fruit:'#ffab91', bloom:'#ff8fb1'},
+  pear:     {cat:'tree', name:'Pear',   icon:'🍐', cost:45, unlock:11, yield:5, sell:2, grow:60, kind:'tree', leaf:'#4caf50', fruit:'#c0ca33', bloom:'#ffffff', shape:'pear'},
+  mango:    {cat:'tree', name:'Mango',  icon:'🥭', cost:50, unlock:14, yield:5, sell:2, grow:60, kind:'tree', leaf:'#2e7d32', fruit:'#ffc107', bloom:'#fff59d', shape:'oval'},
+  banana:   {cat:'tree', name:'Banana', icon:'🍌', cost:60, unlock:18, yield:6, sell:2, grow:60, kind:'banana'}
+};
+const CATS = {veg:'🥕 Vegetables', tree:'🍎 Fruit trees', flower:'🌻 Flowers'};
+const RIPE = {veg:4, tree:5, flower:3};        // stage that can be harvested
+const AFTER = {veg:null, tree:3, flower:2};     // after harvest: veg is gone, trees go back to "grown tree", flowers back to "budding"
+const STAGES = {
+  veg:['Seed','Sprout','Seedling','Growing','Ready to pick'],
+  tree:['Seed','Sprout','Sapling','Grown tree','Blossoming','Fruiting'],
+  flower:['Seed','Sprout','Budding','Blooming']
+};
+const stageName = (t, s) => (PLANTS[t].cat === 'veg' && s === 3 && PLANTS[t].flower) ? 'Flowering' : STAGES[PLANTS[t].cat][s];
+// Price of bed 1, 2, 3… (the first bed is free). Up to 8 beds, 10 plants per bed.
+const BED_COST = [0, 60, 100, 150, 210, 280, 360, 450];
+const MAX_BEDS = BED_COST.length;
+const PLOTS_PER_BED = 10;
+const GOALS = [5, 10, 15, 20];
+const GOAL_REWARD = {5:[15, 5], 10:[30, 10], 15:[45, 15], 20:[60, 20]}; // [💰, 💧]
+const INTERVALS = [0, 1, 2, 4, 7, 14];
+const PRAISE = ['Great job!','Awesome!','Super!','Correct!','Well done!','Hooray!','Amazing!'];
+const WRONG = ['Almost! Try again!','That\'s okay, keep going!','Look carefully!','Try another letter!'];
+const BADGES = [
+  {id:'first-word', icon:'🌟', name:'First word learned', test:T => mastered(T) >= 1},
+  {id:'ten-words',  icon:'🏅', name:'10 words learned',  test:T => mastered(T) >= 10},
+  {id:'fifty-words',icon:'🏆', name:'50 words learned',  test:T => mastered(T) >= 50},
+  {id:'goal',       icon:'🎯', name:'Daily goal reached', test:T => T.flags.goal},
+  {id:'combo5',     icon:'⚡', name:'5 in a row', test:T => T.flags.combo5},
+  {id:'streak3',    icon:'🔥', name:'3-day streak', test:T => T.streak.count >= 3},
+  {id:'streak7',    icon:'🌈', name:'7-day streak', test:T => T.streak.count >= 7},
+  {id:'harvest1',   icon:'🧺', name:'First harvest', test:T => T.farm.totalHarvest >= 1},
+  {id:'harvest20',  icon:'🚜', name:'20 harvests', test:T => T.farm.totalHarvest >= 20},
+  {id:'beds4',      icon:'🏡', name:'Garden with 4 beds', test:T => T.farm.beds.length >= 4},
+  {id:'beds8',      icon:'🏞️', name:'Garden with 8 beds', test:T => T.farm.beds.length >= 8}
+];
+
+/* ---------- storage ----------
+   ROOT_KEY: the list of children and who is active.
+   PKEY(id): one child's whole state (word lists, progress, garden, stats).
+   OLD_KEY: data from the version before profiles existed, moved into the first child. */
+const ROOT_KEY = 'nttv_root', OLD_KEY = 'nttv_v1', PKEY = id => 'nttv_p_' + id;
+let R = null;   // {profiles:[{id,name,avatar,created}], active}
+let S = null;   // state of the active child
+const newBed = () => ({plots:Array.from({length:PLOTS_PER_BED}, () => null)});
+function defaultState() {
+  return {
+    v:3, lists:[], words:{},
+    farm:{coins:10, water:6, seeds:{lettuce:2, sunflower:1}, beds:[newBed()], barn:{}, harvests:{}, totalHarvest:0},
+    daily:{goal:5, date:today(), words:[], rewarded:false},
+    streak:{count:0, last:null},
+    stickers:[], flags:{},
+    settings:{rate:0.85, sound:true},
+    stats:{correct:0, wrong:0, days:{}}
+  };
+}
+function saveRoot() { try { localStorage.setItem(ROOT_KEY, JSON.stringify(R)); } catch (e) {} }
+function loadRoot() {
+  try { R = JSON.parse(localStorage.getItem(ROOT_KEY)); } catch (e) {}
+  if (R && Array.isArray(R.profiles)) return;
+  R = {profiles:[], active:null};
+  const old = localStorage.getItem(OLD_KEY);
+  if (old) {
+    const id = uid();
+    R.profiles.push({id, name:'My child', avatar:'🐰', created:Date.now()});
+    R.active = id;
+    localStorage.setItem(PKEY(id), old);
+    localStorage.removeItem(OLD_KEY);
+  }
+  saveRoot();
+}
+function normalize(raw) {
+  const d = defaultState();
+  if (!raw) return d;
+  const T = Object.assign(d, raw);
+  for (const k of ['daily', 'streak', 'settings', 'stats', 'flags']) T[k] = Object.assign(defaultState()[k], raw[k] || {});
+  if (!raw.v || raw.v < 2) {
+    // v1: words had level 0..7 and the garden had fertilizer. Keep coins, turn fertilizer into water, start a fresh garden.
+    const f = raw.farm || {};
+    T.farm = Object.assign(defaultState().farm, {coins:f.coins || 10, water:(f.water || 0) + (f.fert || 0) * 2 + 6});
+    for (const w of Object.values(T.words)) { w.mastered = (w.level || 0) >= 7; w.step = w.mastered ? roundsFor(w).length : 0; delete w.level; }
+  }
+  T.farm = Object.assign(defaultState().farm, T.farm);
+  if (T.farm.beds.some(b => b.plots.length !== PLOTS_PER_BED)) {
+    // older beds had 4 spots: keep the beds bought (max 8), each now has 10 spots, keep every plant
+    const plants = T.farm.beds.flatMap(b => b.plots).filter(Boolean);
+    const n = Math.min(MAX_BEDS, Math.max(T.farm.beds.length, Math.ceil(plants.length / PLOTS_PER_BED), 1));
+    T.farm.beds = Array.from({length:n}, newBed);
+    plants.slice(0, n * PLOTS_PER_BED).forEach((p, i) => { T.farm.beds[Math.floor(i / PLOTS_PER_BED)].plots[i % PLOTS_PER_BED] = p; });
+  }
+  for (const w of Object.values(T.words)) {
+    if (w.step == null) w.step = 0;
+    if (w.mastered == null) w.mastered = false;
+    if (w.mastered && !w.masteredAt) w.masteredAt = w.last || null;
+  }
+  T.stickers = (T.stickers || []).filter(id => BADGES.some(b => b.id === id));
+  T.v = 3;
+  return T;
+}
+function loadState(id) {
+  let raw = null;
+  try { raw = JSON.parse(localStorage.getItem(PKEY(id))); } catch (e) {}
+  return normalize(raw);
+}
+// mark = false: housekeeping only (e.g. a new day started); it must not count as a newer copy for cloud sync,
+// otherwise a device that was offline for a while could overwrite newer progress from another device.
+function save(mark = true) {
+  if (!S || !R.active) return;
+  try { localStorage.setItem(PKEY(R.active), JSON.stringify(S)); } catch (e) { toast('⚠️ Browser storage is full — progress could not be saved.'); }
+  if (mark) markDirty(R.active);
+}
+// Remember that a child changed on this device, so cloud sync uploads it (a few seconds later).
+function markDirty(id) {
+  const p = R.profiles.find(x => x.id === id); if (!p) return;
+  const now = Date.now();
+  p.updatedAt = now;
+  R.dirty = R.dirty || {}; R.dirty[id] = now;
+  saveRoot();
+  if (typeof Cloud !== 'undefined') Cloud.schedule();
+}
+const profile = id => R.profiles.find(p => p.id === (id || R.active));
+function switchProfile(id) {
+  G = null;
+  R.active = id; saveRoot();
+  S = loadState(id); rollDay();
+  queueEnrich(Object.values(S.words).filter(w => !w.enriched).map(w => w.id));
+}
+function createProfile(name, avatar, goal) {
+  const id = uid();
+  R.profiles.push({id, name, avatar, created:Date.now()});
+  switchProfile(id);
+  S.daily.goal = goal;
+  seedSample(); save();
+  queueEnrich(Object.keys(S.words));
+  return id;
+}
+function rollDay() { if (S && S.daily.date !== today()) { S.daily = {goal:S.daily.goal, date:today(), words:[], rewarded:false}; save(false); } }
+function seedSample() {
+  const id = addList('Starter: Fruit & Animals');
+  addWords(id, [['apple','quả táo'],['cat','con mèo'],['dog','con chó'],['banana','quả chuối'],['fish','con cá'],['sun','mặt trời'],['book','quyển sách'],['ball','quả bóng']]);
+}
+function addList(name, T = S) { const id = uid(); T.lists.push({id, name, created:Date.now()}); return id; }
+function normWord(s) {
+  let w = String(s || '').toLowerCase().replace(/[’`´]/g, "'").replace(/\s+/g, ' ').trim();
+  w = w.replace(/^[^a-z]+|[^a-z]+$/g, '');
+  if (!w || /[^a-z' -]/.test(w)) return '';
+  return w;
+}
+const blankWord = (id, listId, word, vi) => ({id, listId, word, vi:(vi || '').trim(), phonetic:'', defs:[], pos:'', examples:[], imgs:[], imgIdx:0, img:'',
+  emoji:EMOJI[word] || '', audio:'', step:0, mastered:false, masteredAt:null, box:0, due:0, wrong:0, right:0, last:0, enriched:false, added:Date.now()});
+function addWords(listId, pairs) {
+  const existing = new Set(Object.values(S.words).filter(w => w.listId === listId).map(w => w.word));
+  const added = [];
+  for (const [word, vi] of pairs) {
+    const w = normWord(word);
+    if (!w || existing.has(w)) continue;
+    existing.add(w);
+    const id = uid();
+    S.words[id] = blankWord(id, listId, w, vi);
+    S.words[id].added += added.length;
+    added.push(id);
+  }
+  save();
+  return added;
+}
+const listWords = (listId, T = S) => Object.values(T.words).filter(w => w.listId === listId).sort((a, b) => a.added - b.added);
+const mastered = (T = S) => Object.values(T.words).filter(w => w.mastered).length;
+const masteredCount = () => mastered(S);
+const dueReviews = (T = S) => Object.values(T.words).filter(w => w.mastered && w.due <= Date.now());
+const letterIdx = w => [...w.word].map((ch, i) => /[a-z]/.test(ch) ? i : -1).filter(i => i >= 0);
+/* Rounds for one word: meet the word → 1 blank → 2 blanks (letters to pick) → 3 → 4 blanks (type them) → type the whole word.
+   There are always fewer blanks than letters, so short words have fewer rounds. */
+function roundsFor(w) {
+  const n = letterIdx(w).length, r = [{k:'card'}];
+  for (const b of [1, 2, 3, 4]) if (b < n) r.push({k:'blank', b, choices:b <= 2});
+  r.push({k:'type'});
+  return r;
+}
+function wordStatus(w) {
+  if (w.mastered) return w.due <= Date.now() ? {cls:'due', ic:'🔁', txt:'Review'} : {cls:'done', ic:'⭐', txt:'Learned'};
+  const n = roundsFor(w).length;
+  return w.step ? {cls:'', ic:'📝', txt:`Learning ${w.step}/${n}`} : {cls:'', ic:'🆕', txt:'New word'};
+}
+
+// ---------- IndexedDB for your own photos ----------
+const IMG = {};
+const IDB = {
+  db:null,
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('nttv', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('imgs');
+      r.onsuccess = () => { this.db = r.result; res(this.db); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async put(k, v) { const db = await this.open(); return new Promise((res, rej) => { const t = db.transaction('imgs', 'readwrite'); t.objectStore('imgs').put(v, k); t.oncomplete = res; t.onerror = () => rej(t.error); }); },
+  async del(k) { const db = await this.open(); return new Promise(res => { const t = db.transaction('imgs', 'readwrite'); t.objectStore('imgs').delete(k); t.oncomplete = res; t.onerror = res; }); },
+  async all() {
+    const db = await this.open();
+    return new Promise(res => {
+      const out = {}; const req = db.transaction('imgs').objectStore('imgs').openCursor();
+      req.onsuccess = () => { const c = req.result; if (c) { out[c.key] = c.value; c.continue(); } else res(out); };
+      req.onerror = () => res(out);
+    });
+  }
+};
+function dropImage(id) { if (IMG[id]) { delete IMG[id]; IDB.del(id).catch(() => {}); if (typeof Cloud !== 'undefined') Cloud.photoRemoved([id]); } }
+function resizeImage(file, max = 360) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file); const im = new Image();
+    im.onload = () => {
+      const sc = Math.min(1, max / Math.max(im.width, im.height));
+      const cv = document.createElement('canvas'); cv.width = Math.round(im.width * sc); cv.height = Math.round(im.height * sc);
+      cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+      res(cv.toDataURL('image/jpeg', 0.82));
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('img')); };
+    im.src = url;
+  });
+}
+
+/* =========================================================
+   CLOUD SYNC (Supabase)
+   This device stays the main copy: everything works offline. When a parent is signed in,
+   changed children are uploaded a few seconds after each change, and newer copies from
+   other devices are downloaded when the app opens or comes back to the front.
+   If two devices change the same child, the most recent change wins.
+   ========================================================= */
+const loadScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load')); document.head.appendChild(s); });
+const dataUrlToBlob = u => fetch(u).then(r => r.blob());
+const blobToDataUrl = b => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(b); });
+const Cloud = {
+  sb:null, user:null, status:'off', err:'', lastSync:0, lastPull:0, busy:false, again:false, pushT:0, sentTo:'', needPhotoScan:false,
+  enabled() { return !!(SUPABASE_URL && SUPABASE_ANON_KEY) || !!this.sb; },
+  // --- the few calls to Supabase, kept together ---
+  api:{
+    list:() => Cloud.sb.from('children').select('id,updated_at,deleted'),
+    get:ids => Cloud.sb.from('children').select('id,name,avatar,state,updated_at,created_at').in('id', ids),
+    stamps:ids => Cloud.sb.from('children').select('id,updated_at').in('id', ids),
+    upsert:rows => Cloud.sb.from('children').upsert(rows, {onConflict:'owner,id'}),
+    photoPath:id => `${Cloud.user.id}/${id}.jpg`,
+    photoUp:(id, blob) => Cloud.sb.storage.from('photos').upload(Cloud.api.photoPath(id), blob, {upsert:true, contentType:'image/jpeg'}),
+    photoDown:id => Cloud.sb.storage.from('photos').download(Cloud.api.photoPath(id)),
+    photoDel:ids => Cloud.sb.storage.from('photos').remove(ids.map(Cloud.api.photoPath))
+  },
+  async init() {
+    if (!this.enabled()) return;
+    try { await loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js'); }
+    catch (e) { return this.setStatus('error', 'Could not load the cloud library. Check your internet connection.'); }
+    this.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true, flowType:'implicit'}});
+    const {data} = await this.sb.auth.getSession();
+    this.user = data && data.session ? data.session.user : null;
+    this.sb.auth.onAuthStateChange((ev, session) => {
+      const before = this.user && this.user.id;
+      this.user = session ? session.user : null;
+      if (this.user && this.user.id !== before) this.onSignedIn();
+      if (!this.user) this.setStatus('signed-out');
+    });
+    if (this.user) this.onSignedIn(); else this.setStatus('signed-out');
+  },
+  onSignedIn() {
+    if (R.cloudOwner && R.cloudOwner !== this.user.id) {
+      // this device still holds another account's children: keep them apart by starting clean
+      clearLocalData(); R.cloudOwner = this.user.id; saveRoot(); S = null; G = null;
+    }
+    if (!R.cloudOwner) {
+      // first sign-in on this device: upload the photos of the children already here
+      R.cloudOwner = this.user.id;
+      R.photoUp = [...new Set([...(R.photoUp || []), ...R.profiles.flatMap(p => Object.values(stateOf(p.id).words).filter(w => w.img === 'idb' && IMG[w.id]).map(w => w.id))])];
+      saveRoot();
+    }
+    this.needPhotoScan = true;
+    this.sync();
+  },
+  setStatus(s, err = '') {
+    this.status = s; this.err = err;
+    const pill = $('#cloud-pill'); if (pill) pill.outerHTML = cloudPillHTML();
+    const card = $('#cloud-card'); if (card && !(document.activeElement && card.contains(document.activeElement))) card.outerHTML = cloudCardHTML();
+  },
+  schedule() {
+    if (!this.user || this.pushT) return;
+    this.pushT = setTimeout(() => { this.pushT = 0; this.sync(true); }, 5000);
+  },
+  async sync(pushOnly = false) {
+    if (!this.user) return;
+    if (this.busy) { this.again = true; return; }
+    if (!navigator.onLine) return this.setStatus('offline');
+    this.busy = true; this.setStatus('syncing');
+    try {
+      if (!pushOnly) await this.pull();
+      await this.pushDeletes();
+      await this.push();
+      await this.syncPhotos();
+      this.lastSync = Date.now(); this.setStatus('synced');
+    } catch (e) {
+      console.warn('cloud sync', e);
+      this.setStatus('error', (e && e.message) || 'Sync failed.');
+    } finally {
+      this.busy = false;
+      if (this.again) { this.again = false; setTimeout(() => this.sync(), 500); }
+    }
+  },
+  async pull() {
+    const {data, error} = await this.api.list(); if (error) throw error;
+    const onServer = new Set(data.map(r => r.id)), need = [];
+    let changed = false;
+    for (const r of data) {
+      const p = profile(r.id), t = Date.parse(r.updated_at);
+      if (r.deleted) { if (p && !(R.dirty && R.dirty[r.id] > t)) { removeLocalProfile(r.id); changed = true; } continue; }
+      if (!p || t > (p.updatedAt || 0)) need.push(r.id);
+    }
+    if (need.length) {
+      const {data:rows, error:e2} = await this.api.get(need); if (e2) throw e2;
+      for (const r of rows) if (this.applyRemote(r)) changed = true;
+    }
+    for (const p of R.profiles) if (!onServer.has(p.id) && !(R.dirty && R.dirty[p.id])) { R.dirty = R.dirty || {}; R.dirty[p.id] = p.updatedAt || Date.now(); }
+    saveRoot();
+    this.lastPull = Date.now();
+    if (changed) afterRemoteChange();
+  },
+  applyRemote(r) {
+    if (r.id === R.active && G) return false; // don't swap data under a child who is in the middle of a lesson; next sync will do it
+    const t = Date.parse(r.updated_at);
+    localStorage.setItem(PKEY(r.id), JSON.stringify(r.state));
+    let p = profile(r.id);
+    if (!p) { p = {id:r.id}; R.profiles.push(p); }
+    Object.assign(p, {name:r.name, avatar:r.avatar, created:Date.parse(r.created_at) || Date.now(), updatedAt:t});
+    if (R.dirty) delete R.dirty[r.id];
+    if (r.id === R.active) { S = loadState(r.id); }
+    this.needPhotoScan = true;
+    return true;
+  },
+  async pushDeletes() {
+    const ids = [...(R.deletedIds || [])]; if (!ids.length) return;
+    const now = new Date().toISOString();
+    const {error} = await this.api.upsert(ids.map(id => ({owner:this.user.id, id, name:'(deleted)', avatar:'', state:{}, updated_at:now, deleted:true})));
+    if (error) throw error;
+    R.deletedIds = (R.deletedIds || []).filter(id => !ids.includes(id)); saveRoot();
+  },
+  async push() {
+    const snap = Object.assign({}, R.dirty || {}), ids = Object.keys(snap).filter(id => profile(id));
+    if (!ids.length) return;
+    const {data, error} = await this.api.stamps(ids); if (error) throw error;
+    const srv = new Map(data.map(r => [r.id, Date.parse(r.updated_at)]));
+    const rows = [];
+    for (const id of ids) {
+      const p = profile(id);
+      if (srv.has(id) && srv.get(id) > (p.updatedAt || 0)) continue; // another device saved a newer copy: the next download wins
+      rows.push({owner:this.user.id, id, name:p.name, avatar:p.avatar, state:stateOf(id),
+        created_at:new Date(p.created || Date.now()).toISOString(), updated_at:new Date(p.updatedAt || Date.now()).toISOString(), deleted:false});
+    }
+    if (rows.length) { const {error:e2} = await this.api.upsert(rows); if (e2) throw e2; }
+    for (const id of ids) if (R.dirty && R.dirty[id] === snap[id]) delete R.dirty[id]; // keep it if it changed again meanwhile
+    saveRoot();
+  },
+  async syncPhotos() {
+    for (const id of [...(R.photoUp || [])]) {
+      if (IMG[id]) { const {error} = await this.api.photoUp(id, await dataUrlToBlob(IMG[id])); if (error) throw error; }
+      R.photoUp = R.photoUp.filter(x => x !== id); saveRoot();
+    }
+    const del = [...(R.photoDel || [])];
+    if (del.length) { await this.api.photoDel(del); R.photoDel = (R.photoDel || []).filter(x => !del.includes(x)); saveRoot(); }
+    if (this.needPhotoScan) {
+      this.needPhotoScan = false;
+      const missing = R.profiles.flatMap(p => Object.values(stateOf(p.id).words).filter(w => w.img === 'idb' && !IMG[w.id]).map(w => w.id));
+      let got = 0;
+      for (const id of missing.slice(0, 40)) {
+        const {data, error} = await this.api.photoDown(id);
+        if (error || !data) continue;
+        IMG[id] = await blobToDataUrl(data); await IDB.put(id, IMG[id]).catch(() => {}); got++;
+      }
+      if (got && cur.name !== 'game') render();
+    }
+  },
+  photoAdded(id) { R.photoUp = [...new Set([...(R.photoUp || []), id])]; saveRoot(); this.schedule(); },
+  photoRemoved(ids) { if (!R.cloudOwner) return; R.photoDel = [...new Set([...(R.photoDel || []), ...ids])]; saveRoot(); this.schedule(); },
+  async sendLink(email) {
+    const {error} = await this.sb.auth.signInWithOtp({email, options:{emailRedirectTo:location.origin + location.pathname, shouldCreateUser:true}});
+    if (error) throw error;
+    this.sentTo = email;
+  },
+  async signInPw(email, password) {
+    const {error} = await this.sb.auth.signInWithPassword({email, password});
+    if (error) throw error;
+  },
+  async signUpPw(email, password) {
+    const {data, error} = await this.sb.auth.signUp({email, password, options:{emailRedirectTo:location.origin + location.pathname}});
+    if (error) throw error;
+    return !!(data && data.session); // false: Supabase still wants the email confirmed
+  },
+  async changePw(password) {
+    const {error} = await this.sb.auth.updateUser({password});
+    if (error) throw error;
+  },
+  async verifyCode(code) {
+    const {error} = await this.sb.auth.verifyOtp({email:this.sentTo, token:code, type:'email'});
+    if (error) throw error;
+  },
+  async signOut() {
+    if (Object.keys(R.dirty || {}).length || (R.deletedIds || []).length || (R.photoUp || []).length) { await this.sync(true); }
+    if (this.status === 'error') throw new Error('Some changes could not be uploaded yet: ' + this.err);
+    await this.sb.auth.signOut();
+    clearLocalData();
+  }
+};
+function clearLocalData() {
+  for (const p of R.profiles) localStorage.removeItem(PKEY(p.id));
+  for (const k of Object.keys(IMG)) { IDB.del(k).catch(() => {}); delete IMG[k]; }
+  R = {profiles:[], active:null}; saveRoot(); S = null; G = null;
+}
+function removeLocalProfile(id) {
+  const T = stateOf(id);
+  for (const w of Object.values(T.words)) if (IMG[w.id]) { delete IMG[w.id]; IDB.del(w.id).catch(() => {}); }
+  localStorage.removeItem(PKEY(id));
+  R.profiles = R.profiles.filter(x => x.id !== id);
+  if (R.dirty) delete R.dirty[id];
+  if (R.active === id) { R.active = null; S = null; G = null; }
+}
+function afterRemoteChange() {
+  if (R.active && !profile(R.active)) { R.active = null; S = null; }
+  saveRoot();
+  const typing = document.activeElement && document.activeElement.matches && document.activeElement.matches('input,textarea');
+  if (cur.name !== 'game' && !typing && !$('#modal').classList.contains('on')) render();
+}
+const CLOUD_ICON = {syncing:['🔄', 'Saving to the cloud…'], synced:['☁️', 'Saved in the cloud'], error:['⚠️', 'Cloud sync problem'], offline:['📴', 'Offline — will sync later']};
+function cloudPillHTML() {
+  const i = Cloud.user && CLOUD_ICON[Cloud.status];
+  return i ? `<span class="pill" id="cloud-pill" title="${esc(i[1] + (Cloud.err ? ': ' + Cloud.err : ''))}">${i[0]}</span>` : '<span id="cloud-pill" hidden></span>';
+}
+function signInFormHTML() {
+  if (Cloud.sentTo) return `<div class="small">We sent a sign-in email to <b>${esc(Cloud.sentTo)}</b>. Tap the link in it on this device — or type the 6-digit code from the email here:</div>
+    <div class="row" style="margin-top:8px"><input type="text" id="cloud-code" inputmode="numeric" maxlength="10" placeholder="123456" style="flex:1;min-width:120px;font-size:20px;letter-spacing:3px">
+      <button class="btn primary" data-act="cloud-code">Sign in</button></div>
+    <div class="row" style="margin-top:6px"><button class="btn sm" data-act="cloud-restart">Use another email</button></div>`;
+  const inp = 'style="width:100%;border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-top:6px"';
+  return `<div class="small muted">Sign in with a parent account to keep every child's progress safe in the cloud and use Word Farm on several devices.</div>
+    <input type="email" id="cloud-email" placeholder="parent@email.com" autocomplete="email" ${inp}>
+    <input type="password" id="cloud-pw" placeholder="Password (at least 6 characters)" autocomplete="current-password" ${inp}>
+    <div class="row" style="margin-top:8px"><button class="btn primary" data-act="cloud-login">🔑 Sign in</button>
+      <button class="btn" data-act="cloud-signup">➕ Create account</button><span class="spacer"></span>
+      <button class="btn sm" data-act="cloud-send" title="Get a sign-in link by email instead">✉️ Email me a link</button></div>`;
+}
+function cloudCardHTML() {
+  if (!Cloud.enabled()) return `<div class="card" id="cloud-card"><h3>☁️ Cloud sync</h3>
+    <div class="small muted">Cloud sync isn't set up on this copy of Word Farm, so data is saved only in this browser. Whoever hosts this page can turn it on (see SETUP-CLOUD.md).</div></div>`;
+  if (!Cloud.sb) return `<div class="card" id="cloud-card"><h3>☁️ Cloud sync</h3><div class="small muted">${Cloud.status === 'error' ? esc(Cloud.err) : 'Connecting…'}</div></div>`;
+  if (!Cloud.user) return `<div class="card" id="cloud-card"><h3>☁️ Cloud sync</h3>${signInFormHTML()}</div>`;
+  const i = CLOUD_ICON[Cloud.status] || ['☁️', 'Ready'];
+  const ago = Cloud.lastSync ? Math.round((Date.now() - Cloud.lastSync) / 60000) : null;
+  return `<div class="card" id="cloud-card"><h3>☁️ Cloud sync</h3>
+    <div>Signed in as <b>${esc(Cloud.user.email || '')}</b></div>
+    <div class="small ${Cloud.status === 'error' ? '' : 'muted'}" style="${Cloud.status === 'error' ? 'color:var(--red-d)' : ''}">${i[0]} ${i[1]}${Cloud.err ? ': ' + esc(Cloud.err) : ''}${ago != null && Cloud.status === 'synced' ? ` · last sync ${ago ? ago + ' min ago' : 'just now'}` : ''}</div>
+    <div class="row" style="margin-top:8px"><button class="btn sm blue" data-act="cloud-sync">🔄 Sync now</button><button class="btn sm" data-act="cloud-pw-change">🔑 Change password</button><span class="spacer"></span><button class="btn sm danger" data-act="cloud-signout">Sign out on this device</button></div></div>`;
+}
+function cloudCreds() {
+  const email = ($('#cloud-email').value || '').trim(), pw = $('#cloud-pw').value || '';
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('#cloud-email').classList.add('shake'); toast('Please type a valid email address.'); return null; }
+  if (pw.length < 6) { $('#cloud-pw').classList.add('shake'); toast('Password needs at least 6 characters.'); return null; }
+  return {email, pw};
+}
+function refreshSignIn() {
+  if ($('#modal').classList.contains('on') && $('#mcard h3') && $('#mcard h3').textContent.includes('Sign in')) signInModal();
+  const card = $('#cloud-card'); if (card) card.outerHTML = cloudCardHTML();
+}
+function signInModal() { openModal(`<h3>☁️ Sign in</h3>${signInFormHTML()}`); setTimeout(() => { const e = $('#cloud-email') || $('#cloud-code'); e && e.focus(); }, 50); }
+
+// ---------- word data: meaning, examples, pictures ----------
+async function fetchJSON(url, ms = 9000) {
+  const c = new AbortController(); const t = setTimeout(() => c.abort(), ms);
+  try { const r = await fetch(url, {signal:c.signal}); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  finally { clearTimeout(t); }
+}
+const hasWord = (s, w) => new RegExp('\\b' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(s|es)?\\b', 'i').test(s);
+async function enrich(w) {
+  if (!navigator.onLine) return;
+  const jobs = [];
+  jobs.push(fetchJSON('https://api.dictionaryapi.dev/api/v2/entries/en/' + encodeURIComponent(w.word)).then(d => {
+    if (!Array.isArray(d)) return;
+    const phs = d.flatMap(x => x.phonetics || []);
+    w.phonetic = w.phonetic || d.map(x => x.phonetic).find(Boolean) || phs.map(p => p.text).find(Boolean) || '';
+    w.audio = phs.map(p => p.audio).find(a => a && /-us\./.test(a)) || phs.map(p => p.audio).find(Boolean) || '';
+    const defs = [], ex = [];
+    // only the main meaning, so example sentences stay simple and use the everyday sense
+    for (const en of d.slice(0, 1)) for (const m of (en.meanings || []).slice(0, 1)) for (const df of (m.definitions || []).slice(0, 2)) {
+      if (defs.length < 2) defs.push({pos:m.partOfSpeech, text:df.definition});
+      if (df.example && df.example.length <= 80 && /^[A-Za-z"][^;]*[.!?]"?$/.test(df.example) && hasWord(df.example, w.word)) ex.push(df.example.replace(/^./, c => c.toUpperCase()));
+    }
+    w.defs = defs; w.pos = defs[0] ? defs[0].pos : '';
+    if (!w.examples.length) {
+      const api = [...new Set(ex)].sort((a, b) => a.length - b.length).slice(0, 1);
+      w.examples = [...templateExamples(w).slice(0, 2 - api.length), ...api];
+    }
+  }).catch(() => {}));
+  if (!w.vi) jobs.push(fetchJSON('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(w.word) + '&langpair=en|vi').then(d => {
+    const t = d && d.responseData && d.responseData.translatedText;
+    if (t && t.toLowerCase() !== w.word && !/MYMEMORY|QUERY LENGTH/i.test(t)) w.vi = t.toLowerCase();
+  }).catch(() => {}));
+  if (!w.imgs.length) jobs.push(findImages(w.word).then(l => { w.imgs = l; w.imgIdx = 0; }).catch(() => {}));
+  await Promise.all(jobs);
+  if (!w.examples.length) w.examples = templateExamples(w);
+  w.enriched = true;
+  if (S && S.words[w.id] === w) save();
+}
+async function findImages(word) {
+  let out = [];
+  try {
+    const d = await fetchJSON('https://api.openverse.org/v1/images/?q=' + encodeURIComponent(word) + '&page_size=12&mature=false');
+    out = (d.results || []).map(r => r.thumbnail || r.url).filter(Boolean);
+  } catch (e) {}
+  if (!out.length) {
+    try {
+      const d = await fetchJSON('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(word));
+      if (d.thumbnail && d.thumbnail.source) out = [d.thumbnail.source];
+    } catch (e) {}
+  }
+  return out.slice(0, 12);
+}
+function templateExamples(w) {
+  const x = w.word, art = /^(sun|moon|sky|sea|earth|wind|rain|snow)$/.test(x) ? 'the' : /^[aeiou]/.test(x) ? 'an' : 'a';
+  if (art === 'the') return [`Look at the ${x}!`, `I like the ${x}.`];
+  if (w.pos === 'verb') return [`I like to ${x}.`, `Can you ${x}?`];
+  if (w.pos === 'adjective') return [`It is very ${x}.`, `I feel ${x} today.`];
+  return [`I can see ${art} ${x}.`, `This is my ${x}.`];
+}
+const enrichQ = []; let enriching = false;
+function queueEnrich(ids) { enrichQ.push(...ids); runEnrich(); }
+async function runEnrich() {
+  if (enriching) return; enriching = true;
+  while (enrichQ.length) {
+    const w = S && S.words[enrichQ.shift()];
+    if (!w || w.enriched) continue;
+    try { await enrich(w); } catch (e) {}
+    onEnriched();
+  }
+  enriching = false; onEnriched();
+}
+function onEnriched() { const el = $('#enrich-note'); if (el) el.innerHTML = enrichNote(); }
+function enrichNote() {
+  if (!S) return '';
+  const n = Object.values(S.words).filter(w => !w.enriched).length;
+  if (!n) return '';
+  return navigator.onLine ? `⏳ Getting pictures and examples ready for ${plural(n, 'word')}…` : `📴 Offline: ${plural(n, 'word')} ${n === 1 ? 'is' : 'are'} using emoji pictures.`;
+}
+function imgSrc(w) { if (w.img === 'idb' && IMG[w.id]) return IMG[w.id]; return w.imgs[w.imgIdx] || ''; }
+function fallbackHTML(w, cls) {
+  return w.emoji ? `<div class="wemoji ${cls}">${w.emoji}</div>` : `<div class="wletter ${cls}">${esc(w.word[0].toUpperCase())}</div>`;
+}
+function wordImgHTML(w, cls = '') {
+  const src = imgSrc(w);
+  if (!src) return fallbackHTML(w, cls);
+  return `<img class="wimg ${cls}" src="${esc(src)}" alt="" data-fb="${esc(fallbackHTML(w, cls))}" referrerpolicy="no-referrer">`;
+}
+document.addEventListener('error', e => {
+  const t = e.target;
+  if (t && t.tagName === 'IMG' && t.dataset.fb) { const d = document.createElement('div'); d.innerHTML = t.dataset.fb; t.replaceWith(d.firstChild); }
+}, true);
+
+// ---------- voice & sounds ----------
+const Speech = {
+  voice:null,
+  init() {
+    if (!('speechSynthesis' in window)) return;
+    const choose = () => {
+      const vs = speechSynthesis.getVoices().filter(v => /^en[-_]/i.test(v.lang));
+      this.voice = vs.find(v => /en[-_]US/i.test(v.lang) && /(Google|Aria|Jenny|Samantha|Natural|Zira)/i.test(v.name)) || vs.find(v => /en[-_]US/i.test(v.lang)) || vs[0] || null;
+    };
+    choose(); speechSynthesis.onvoiceschanged = choose;
+  },
+  say(text, w, rate) {
+    const r = rate || (S ? S.settings.rate : .85);
+    if ('speechSynthesis' in window && (this.voice || !(w && w.audio))) {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; if (this.voice) u.voice = this.voice; u.rate = r; u.pitch = 1.05;
+      speechSynthesis.speak(u); return;
+    }
+    if (w && w.audio) new Audio(w.audio).play().catch(() => {});
+  }
+};
+const Sfx = {
+  ctx:null,
+  c() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); return this.ctx; },
+  tone(f, t0, dur, type = 'sine', vol = .15) {
+    if (S && !S.settings.sound) return;
+    try {
+      const c = this.c(), o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .05);
+    } catch (e) {}
+  },
+  ok()  { this.tone(660, 0, .15, 'triangle'); this.tone(880, .1, .28, 'triangle'); },
+  bad() { this.tone(240, 0, .22, 'sine', .12); this.tone(190, .12, .3, 'sine', .1); },
+  coin(){ this.tone(988, 0, .08, 'square', .05); this.tone(1319, .07, .2, 'square', .05); },
+  pop() { this.tone(520, 0, .06, 'triangle', .08); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * .12, .3, 'triangle', .14)); },
+  water(){ for (let i = 0; i < 6; i++) this.tone(1300 - i * 140, i * .06, .08, 'sine', .05); }
+};
+
+// ---------- effects ----------
+const FX = {
+  cv:null, ctx:null, p:[], raf:0,
+  init() {
+    this.cv = $('#fx'); this.ctx = this.cv.getContext('2d');
+    const rs = () => { this.cv.width = innerWidth * devicePixelRatio; this.cv.height = innerHeight * devicePixelRatio; };
+    rs(); addEventListener('resize', rs);
+  },
+  burst(n = 80, emojis = null, x = innerWidth / 2, y = innerHeight / 3, spread = 8) {
+    const cols = ['#58cc02', '#ffc800', '#ff4b4b', '#1cb0f6', '#ce82ff', '#ff9600'];
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * spread;
+      this.p.push({born:performance.now(), x, y, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp - 5, life:80 + Math.random() * 40, c:pick(cols), e:emojis ? pick(emojis) : null,
+        s:emojis ? 22 + Math.random() * 12 : 6 + Math.random() * 6, rot:Math.random() * 6});
+    }
+    if (!this.raf) this.loop();
+  },
+  loop() {
+    const c = this.ctx, d = devicePixelRatio, now = performance.now();
+    c.clearRect(0, 0, this.cv.width, this.cv.height);
+    this.p = this.p.filter(p => p.life-- > 0 && now - p.born < 3500);
+    for (const p of this.p) {
+      p.vy += .25; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.rot += .1;
+      c.save(); c.globalAlpha = Math.min(1, p.life / 30); c.translate(p.x * d, p.y * d); c.rotate(p.e ? p.rot * .2 : p.rot);
+      if (p.e) { c.font = `${p.s * d}px serif`; c.textAlign = 'center'; c.fillText(p.e, 0, 0); }
+      else { c.fillStyle = p.c; c.fillRect(-p.s * d / 2, -p.s * d / 4, p.s * d, p.s * d / 2); }
+      c.restore();
+    }
+    this.raf = this.p.length ? requestAnimationFrame(() => this.loop()) : 0;
+    if (!this.raf) c.clearRect(0, 0, this.cv.width, this.cv.height);
+  }
+};
+function toast(msg, ms = 2600) {
+  const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = msg;
+  $('#toasts').appendChild(t); setTimeout(() => t.remove(), ms);
+}
+function floatText(txt) {
+  const f = document.createElement('div'); f.className = 'floaty'; f.textContent = txt;
+  document.body.appendChild(f); setTimeout(() => f.remove(), 1300);
+}
+function give({coins = 0, water = 0}) { S.farm.coins += coins; S.farm.water += water; if (coins) Sfx.coin(); save(); }
+const rewardText = ({coins = 0, water = 0}) => [coins && `+${coins} 💰`, water && `+${water} 💧`].filter(Boolean).join('  ');
+function checkBadges() {
+  for (const b of BADGES) if (!S.stickers.includes(b.id) && b.test(S)) {
+    S.stickers.push(b.id);
+    setTimeout(() => { toast(`${b.icon} New badge: <b>${esc(b.name)}</b>`, 3200); Sfx.win(); }, 700);
+  }
+  save();
+}
+
+/* =========================================================
+   SVG DRAWINGS: plants, barn, fence, watering can
+   Plant canvas: 100 × 120, ground at y ≈ 110.
+   ========================================================= */
+const leafE = (cx, cy, rx, ry, rot, fill) => `<ellipse cx="${P(cx)}" cy="${P(cy)}" rx="${P(rx)}" ry="${P(ry)}" transform="rotate(${P(rot)} ${P(cx)} ${P(cy)})" fill="${fill}"/>`;
+const circ = (cx, cy, r, fill, extra = '') => `<circle cx="${P(cx)}" cy="${P(cy)}" r="${P(r)}" fill="${fill}" ${extra}/>`;
+function petals(cx, cy, n, r, len, wid, fill, rot0 = 0) {
+  let s = '';
+  for (let i = 0; i < n; i++) { const a = rot0 + i * 360 / n, rad = a * Math.PI / 180; s += leafE(cx + Math.cos(rad) * r, cy + Math.sin(rad) * r, len, wid, a, fill); }
+  return s;
+}
+const blossom = (cx, cy, r, petal, center = '#ffd54f') => petals(cx, cy, 5, r * .8, r * .7, r * .5, petal) + circ(cx, cy, r * .45, center);
+function fruitG(x, y, r, sp) {
+  const shine = `<ellipse cx="${P(x - r * .35)}" cy="${P(y - r * .3)}" rx="${P(r * .3)}" ry="${P(r * .2)}" fill="#fff" opacity=".55"/>`;
+  let body;
+  if (sp.shape === 'oval') body = `<ellipse cx="${P(x)}" cy="${P(y + 1)}" rx="${P(r * .8)}" ry="${P(r * 1.15)}" fill="${sp.fruit}"/>`;
+  else if (sp.shape === 'pear') body = circ(x, y + r * .35, r, sp.fruit) + circ(x, y - r * .45, r * .62, sp.fruit);
+  else body = circ(x, y, r, sp.fruit);
+  return `<path d="M${P(x)} ${P(y - r)} q1 -3 3 -4" stroke="#6b3f1d" stroke-width="1.4" fill="none"/>` + leafE(x + 3, y - r - 3, 2.6, 1.3, -20, '#2e7d32') + body + shine;
+}
+const soilMound = wet => `<ellipse cx="50" cy="111" rx="33" ry="6.5" fill="${wet ? '#4a2a10' : '#6e4320'}"/>` + (wet ? `<ellipse cx="42" cy="110" rx="6" ry="1.6" fill="#7fb8d8" opacity=".5"/>` : '');
+const seedG = () => `<path d="M33 112 Q50 97 67 112 Z" fill="#8b5a2b"/><ellipse cx="50" cy="104" rx="4.5" ry="3.2" fill="#d8b07a"/><ellipse cx="49" cy="103" rx="1.6" ry="1" fill="#fff" opacity=".6"/>`;
+const sproutG = (c = '#5cb85c') => `<path d="M50 111 Q49 101 50 94" stroke="#4a9a3a" stroke-width="3" fill="none" stroke-linecap="round"/>` + leafE(43, 93, 7.5, 3.8, -28, c) + leafE(57, 93, 7.5, 3.8, 28, c);
+
+const TREE_FLOWERS = [[30, 50], [44, 34], [58, 30], [70, 46], [38, 60], [62, 60], [50, 48], [26, 64], [76, 62], [54, 40], [40, 46], [66, 36]];
+const TREE_FRUITS = [[32, 58], [48, 42], [64, 52], [74, 66], [42, 66], [58, 68], [26, 70], [55, 30]];
+function treeG(sp, st) {
+  if (st === 2) return `<rect x="48.5" y="80" width="3" height="31" rx="1.5" fill="#8d5a2b"/>` + circ(50, 74, 12, sp.leaf) + circ(44, 78, 8, sp.leaf) + circ(57, 77, 8, sp.leaf) + circ(48, 70, 5, '#fff', 'opacity=".15"');
+  const dark = 'rgba(0,0,0,.14)';
+  let s = `<path d="M44 111 L46 66 Q50 58 54 66 L56 111 Z" fill="#8d5a2b"/><path d="M48 80 Q40 72 34 66" stroke="#8d5a2b" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M52 76 Q60 68 66 64" stroke="#8d5a2b" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  const blobs = [[50, 46, 27], [28, 58, 18], [72, 58, 18], [36, 36, 17], [64, 36, 17], [50, 64, 18]];
+  s += blobs.map(([x, y, r]) => circ(x + 2, y + 3, r, dark)).join('');
+  s += blobs.map(([x, y, r]) => circ(x, y, r, sp.leaf)).join('');
+  s += circ(40, 34, 9, '#fff', 'opacity=".14"') + circ(26, 54, 6, '#fff', 'opacity=".12"');
+  if (st === 4) s += `<g class="bloom">` + TREE_FLOWERS.map(([x, y]) => blossom(x, y, 4.2, sp.bloom)).join('') + `</g>`;
+  if (st === 5) s += `<g class="fruits">` + TREE_FRUITS.map(([x, y]) => fruitG(x, y, 5.6, sp)).join('') + `</g>`;
+  return s;
+}
+function bananaG(st) {
+  const leaf = (rot, len) => `<path d="M50 52 q${P(len * .45)} -10 ${P(len)} 0 q-${P(len * .5)} 6 -${P(len)} 0z" fill="#58b947" stroke="#3f8f34" stroke-width="1" transform="rotate(${rot} 50 52)"/>`;
+  if (st === 2) return `<rect x="47.5" y="80" width="5" height="31" rx="2" fill="#9bbf4a"/>` + [-150, -110, -60, -20].map(r => `<path d="M50 82 q8 -6 18 0 q-9 4 -18 0z" fill="#58b947" transform="rotate(${r} 50 82)"/>`).join('');
+  let s = `<path d="M45 111 Q47 80 47 54 L53 54 Q53 80 55 111 Z" fill="#a5c35a"/><path d="M47 70 h6 M47 86 h6 M46 100 h8" stroke="#86a240" stroke-width="1.5"/>`;
+  s += [-170, -135, -100, -70, -35, -5].map((r, i) => leaf(r, 36 + (i % 2) * 6)).join('');
+  if (st === 4) s += `<path d="M53 58 q8 6 6 18" stroke="#6b8e23" stroke-width="2" fill="none"/><path d="M59 74 q-6 6 0 16 q6 -10 0 -16z" fill="#9c2a4c"/>`;
+  if (st === 5) s += `<path d="M53 58 q6 4 6 10" stroke="#6b8e23" stroke-width="2" fill="none"/>` +
+    [[56, 68], [61, 70], [56, 75], [62, 77], [57, 82], [63, 84]].map(([x, y]) => `<path d="M${x} ${y} q5 6 12 1" stroke="#ffd600" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M${x} ${y} q5 6 12 1" stroke="#fff59d" stroke-width="1.2" fill="none" stroke-linecap="round" transform="translate(0 -1)"/>`).join('');
+  return s;
+}
+function vegG(kind, st) {
+  const G1 = '#5cb85c', G2 = '#3f9a3a', G3 = '#8bd26b';
+  if (kind === 'lettuce') {
+    const k = [0, 0, .55, .8, 1][st];
+    return circ(50, 104 - 8 * k, 20 * k, G2) + circ(38, 104 - 6 * k, 13 * k, G1) + circ(62, 104 - 6 * k, 13 * k, G1) + circ(50, 100 - 10 * k, 13 * k, G3) + circ(50, 98 - 12 * k, 7 * k, '#c5ec9e');
+  }
+  if (kind === 'carrot') {
+    const n = st === 2 ? 4 : 7, len = st === 2 ? 11 : st === 3 ? 16 : 19;
+    let s = '';
+    for (let i = 0; i < n; i++) { const a = -150 + i * (120 / (n - 1)); s += leafE(50 + Math.cos(a * Math.PI / 180) * len * .7, 102 + Math.sin(a * Math.PI / 180) * len * .7, len * .7, 2.4, a, i % 2 ? G1 : G2); }
+    if (st === 4) s = `<path d="M41 104 Q50 101 59 104 L51 121 Z" fill="#ff8a1f"/><path d="M44 108 h7 M46 113 h5" stroke="#d96a0a" stroke-width="1.3"/>` + s;
+    return s;
+  }
+  if (kind === 'tomato') {
+    let s = st >= 3 ? `<rect x="64" y="54" width="3" height="58" rx="1.5" fill="#a5774a"/>` : '';
+    const h = st === 2 ? 22 : 46;
+    s += `<path d="M50 111 Q46 ${111 - h / 2} 52 ${111 - h}" stroke="#4a9a3a" stroke-width="3" fill="none"/>`;
+    const lv = st === 2 ? [[42, 98], [58, 96], [48, 90]] : [[40, 98], [60, 96], [38, 84], [60, 82], [44, 72], [58, 68], [50, 62]];
+    s += lv.map(([x, y], i) => leafE(x, y, 8, 4.5, i % 2 ? 25 : -25, i % 3 ? G1 : G2)).join('');
+    if (st === 3) s += [[46, 80], [56, 74], [42, 92]].map(([x, y]) => blossom(x, y, 3.4, '#ffe14d', '#f9a825')).join('');
+    if (st === 4) s += [[46, 82], [57, 76], [42, 93], [55, 92], [50, 68]].map(([x, y]) => circ(x, y, 5.6, '#e53935') + circ(x - 1.8, y - 1.8, 1.6, '#fff', 'opacity=".6"') + `<path d="M${x - 2} ${y - 5.5} l2 1.5 l2 -1.5" stroke="#2e7d32" stroke-width="1.5" fill="none"/>`).join('');
+    return s;
+  }
+  if (kind === 'corn') {
+    const h = st === 2 ? 30 : 74;
+    let s = `<path d="M50 111 L50 ${111 - h}" stroke="#6aa84f" stroke-width="${st === 2 ? 3 : 4.5}" stroke-linecap="round"/>`;
+    const lv = st === 2 ? [[100, 1], [92, -1]] : [[100, 1], [92, -1], [80, 1], [70, -1], [60, 1], [52, -1]];
+    s += lv.map(([y, d]) => `<path d="M50 ${y} q${d * 14} -12 ${d * 22} -2 q${-d * 12} -4 ${-d * 22} 2z" fill="${G1}"/>`).join('');
+    if (st >= 3) s += `<path d="M50 ${111 - h} l-5 -8 M50 ${111 - h} l0 -9 M50 ${111 - h} l5 -8" stroke="#d4a72c" stroke-width="2" stroke-linecap="round"/>`;
+    if (st === 4) s += `<ellipse cx="57" cy="72" rx="5" ry="12" fill="#ffd54f"/><path d="M54 66 h6 M54 70 h6 M54 74 h6 M54 78 h6" stroke="#f5b400" stroke-width="1"/><path d="M50 86 q2 -16 10 -24 q-4 14 -2 26z" fill="#7cb342"/>`;
+    return s;
+  }
+  if (kind === 'pumpkin') {
+    const big = (x, y, r) => circ(x, y, r, G2) + `<path d="M${x} ${y} l${-r * .6} ${-r * .4} M${x} ${y} l${r * .6} ${-r * .4} M${x} ${y} l0 ${-r * .8}" stroke="${G3}" stroke-width="1.2"/>`;
+    let s = `<path d="M30 108 Q50 100 72 106" stroke="#5b8f2a" stroke-width="2.5" fill="none"/>`;
+    s += st === 2 ? big(42, 100, 8) + big(58, 98, 9) : big(26, 98, 11) + big(76, 99, 11) + big(52, 88, 13);
+    if (st === 3) s += blossom(38, 98, 6, '#ffb300', '#ff8f00');
+    if (st === 4) s += `<ellipse cx="42" cy="101" rx="16" ry="11" fill="#ff8f1f"/><ellipse cx="36" cy="101" rx="7" ry="11" fill="#ff9d3a"/><ellipse cx="48" cy="101" rx="7" ry="11" fill="#ff9d3a"/><ellipse cx="42" cy="101" rx="5" ry="11" fill="#ffad55"/><rect x="40.5" y="86" width="3" height="6" rx="1" fill="#6d4c2b"/>`;
+    return s;
+  }
+  return '';
+}
+function flowerG(sp, st) {
+  const k = sp.kind;
+  if (k === 'sunflower') {
+    const top = st === 2 ? 60 : 40;
+    let s = `<path d="M50 111 Q48 ${(111 + top) / 2} 50 ${top}" stroke="#4a9a3a" stroke-width="4" fill="none"/>` + leafE(40, 88, 10, 5, -25, '#5cb85c') + leafE(60, 80, 10, 5, 25, '#4caf50');
+    if (st === 2) return s + circ(50, top - 4, 7, '#7cb342') + petals(50, top - 4, 8, 6, 3, 1.6, '#ffe082');
+    return s + petals(50, top - 6, 14, 13, 7, 3.2, '#ffcc00') + petals(50, top - 6, 14, 9, 6, 2.6, '#ffb300', 12) + circ(50, top - 6, 9, '#6d4c2b') + circ(48, top - 8, 3, '#8d6e4a');
+  }
+  if (k === 'tulip') {
+    const xs = [38, 50, 62], tops = [70, 60, 72];
+    return xs.map((x, i) => {
+      const t = tops[i];
+      const s = `<path d="M${x} 111 L${x} ${t}" stroke="#4a9a3a" stroke-width="3"/>` + leafE(x - 5, 100, 4, 10, -15, '#5cb85c');
+      if (st === 2) return s + `<ellipse cx="${x}" cy="${t - 4}" rx="4" ry="7" fill="#9ccc65"/><ellipse cx="${x}" cy="${t - 6}" rx="3" ry="4" fill="${sp.color}" opacity=".6"/>`;
+      const c = [sp.color, '#ffca28', '#ab47bc'][i];
+      return s + `<path d="M${x - 8} ${t - 12} Q${x - 9} ${t + 2} ${x} ${t + 1} Q${x + 9} ${t + 2} ${x + 8} ${t - 12} L${x + 4} ${t - 6} L${x} ${t - 14} L${x - 4} ${t - 6} Z" fill="${c}"/>`;
+    }).join('');
+  }
+  if (k === 'daisy') {
+    const s = circ(50, 100, 16, '#4caf50') + circ(36, 104, 10, '#5cb85c') + circ(64, 104, 10, '#5cb85c');
+    const pts = [[40, 90], [54, 86], [64, 96], [46, 100], [34, 100], [58, 102]];
+    if (st === 2) return s + pts.slice(0, 4).map(([x, y]) => circ(x, y, 3, '#c5e1a5')).join('');
+    return s + pts.map(([x, y]) => petals(x, y, 10, 4.5, 3.4, 1.4, '#ffffff') + circ(x, y, 2.6, '#ffc107')).join('');
+  }
+  if (k === 'rose') {
+    const s = circ(50, 96, 18, '#2e7d32') + circ(34, 102, 11, '#388e3c') + circ(66, 102, 11, '#388e3c') + circ(50, 84, 12, '#388e3c');
+    const pts = [[42, 86], [58, 84], [50, 96], [36, 98], [64, 98]];
+    if (st === 2) return s + pts.map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2.6" ry="3.6" fill="#e53935"/>`).join('');
+    return s + pts.map(([x, y]) => circ(x, y, 6.2, '#d81b60') + circ(x, y, 4.4, '#ec407a') + `<path d="M${x - 2.5} ${y} a2.5 2.5 0 1 1 2.5 2.5" stroke="#ad1457" stroke-width="1.2" fill="none"/>`).join('');
+  }
+  if (k === 'lavender') {
+    const xs = [34, 42, 50, 58, 66], tops = [70, 62, 56, 63, 72];
+    return xs.map((x, i) => {
+      let s = `<path d="M50 111 Q${(50 + x) / 2} 95 ${x} ${tops[i]}" stroke="#7da453" stroke-width="2" fill="none"/>`;
+      const n = st === 2 ? 3 : 6;
+      for (let j = 0; j < n; j++) s += `<ellipse cx="${x + (j % 2 ? 1.5 : -1.5)}" cy="${tops[i] + j * 3.4}" rx="2.4" ry="2" fill="${st === 2 ? '#b39ddb' : (j % 2 ? '#7e57c2' : '#9575cd')}"/>`;
+      return s;
+    }).join('') + leafE(42, 106, 9, 2.4, -20, '#8bc34a') + leafE(58, 106, 9, 2.4, 20, '#8bc34a');
+  }
+  return '';
+}
+function plantSVG(t, st, wet = false) {
+  const sp = PLANTS[t];
+  let inner;
+  if (st === 0) inner = seedG();
+  else if (st === 1) inner = sproutG();
+  else if (sp.cat === 'tree') inner = sp.kind === 'banana' ? bananaG(st) : treeG(sp, st);
+  else if (sp.cat === 'veg') inner = vegG(sp.kind, st);
+  else inner = flowerG(sp, st);
+  if (st >= 2 && sp.cat !== 'tree') inner = `<g transform="translate(50 111) scale(1.3) translate(-50 -111)">${inner}</g>`; // vegetables and flowers are shorter, so draw them bigger
+  const delay = -((t.length * 7 + st * 3) % 40) / 10;
+  return `<svg class="psvg" viewBox="0 0 100 120" aria-hidden="true">${soilMound(wet)}<g class="sway" style="animation-delay:${delay}s">${inner}</g></svg>`;
+}
+const BARN_SVG = `<svg viewBox="0 0 150 130" width="100%" height="100%">
+  <rect x="100" y="38" width="34" height="84" rx="4" fill="#cfd8dc"/><path d="M100 40 Q117 18 134 40 Z" fill="#90a4ae"/><path d="M104 60 h26 M104 80 h26 M104 100 h26" stroke="#b0bec5" stroke-width="2"/>
+  <path d="M14 58 L58 22 L102 58 Z" fill="#8e1b1b"/><rect x="18" y="56" width="80" height="66" fill="#d32f2f"/>
+  <path d="M10 60 L58 20 L106 60" stroke="#fff" stroke-width="5" fill="none" stroke-linejoin="round"/>
+  <rect x="44" y="34" width="28" height="16" fill="#fff"/><rect x="47" y="37" width="22" height="10" fill="#5d4037"/>
+  <rect x="38" y="78" width="40" height="44" fill="#fff"/><rect x="42" y="82" width="32" height="40" fill="#b71c1c"/>
+  <path d="M42 82 L74 122 M74 82 L42 122" stroke="#fff" stroke-width="4"/>
+  <path d="M18 56 h80" stroke="#fff" stroke-width="3"/><rect x="18" y="118" width="80" height="4" fill="#7f1d1d"/>
+  <ellipse cx="112" cy="122" rx="12" ry="6" fill="#e6c25a"/><rect x="100" y="112" width="24" height="10" rx="4" fill="#f2d16b"/><path d="M104 114 h16 M104 118 h16" stroke="#d9b648" stroke-width="1.2"/>
+</svg>`;
+const HILLS_SVG = `<svg class="hills" viewBox="0 0 1000 90" preserveAspectRatio="none"><path d="M0 60 Q120 10 260 48 T540 40 T820 30 T1000 46 V90 H0Z" fill="#a5d66f"/><path d="M0 76 Q180 40 360 70 T720 62 T1000 70 V90 H0Z" fill="#8cc751"/>
+  <g fill="#5e9e36"><circle cx="160" cy="44" r="12"/><circle cx="176" cy="48" r="9"/><circle cx="610" cy="40" r="11"/><circle cx="626" cy="44" r="8"/></g></svg>`;
+const fenceSVG = () => `<svg class="fence" viewBox="0 0 1000 34" preserveAspectRatio="none"><rect x="0" y="12" width="1000" height="5" fill="#c58b4e"/><rect x="0" y="23" width="1000" height="5" fill="#c58b4e"/>${Array.from({length:40}, (_, i) => `<path d="M${i * 25 + 6} 34 V6 l5 -5 l5 5 V34z" fill="#e0a868" stroke="#a8713c" stroke-width="1"/>`).join('')}</svg>`;
+const CAN_SVG = `<svg class="can" viewBox="0 0 60 60"><path d="M12 22 h26 v22 a4 4 0 0 1 -4 4 h-18 a4 4 0 0 1 -4 -4z" fill="#26a69a"/><path d="M38 28 L54 16 l3 3 L40 34z" fill="#26a69a"/><ellipse cx="55" cy="17" rx="4" ry="2.5" fill="#00897b" transform="rotate(-38 55 17)"/><path d="M16 22 q9 -14 18 0" stroke="#00897b" stroke-width="4" fill="none"/><rect x="12" y="30" width="26" height="4" fill="#80cbc4"/></svg>`;
+
+// ---------- modal ----------
+function openModal(html) { $('#mcard').innerHTML = `<button class="icon-btn x" data-act="close-modal">✕</button>` + html; $('#modal').classList.add('on'); }
+function closeModal() { $('#modal').classList.remove('on'); $('#mcard').innerHTML = ''; }
+let pendingAsk = null;
+function askModal(text, okLabel = 'OK', danger = false) {
+  if (pendingAsk) { pendingAsk(false); pendingAsk = null; }
+  return new Promise(res => {
+    openModal(`<h3>${text}</h3><div class="row" style="justify-content:flex-end;margin-top:14px"><button class="btn" data-act="close-modal">Cancel</button><button class="btn ${danger ? 'orange' : 'primary'}" data-act="modal-ok">${okLabel}</button></div>`);
+    pendingAsk = res;
+  });
+}
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') ACT['close-modal'](); });
+
+// ---------- navigation ----------
+const app = $('#app');
+let cur = {name:'learn', p:{}};
+const TAB_OF = {learn:'learn', list:'learn', add:'learn', parent:'learn', report:'learn', summary:'learn', garden:'garden', shop:'shop', game:null, profiles:null};
+function go(name, p = {}) {
+  if (name === 'shop' && p.sub) { shopState.sub = p.sub; p = {}; }
+  if (!S && !['profiles', 'parent', 'report'].includes(name)) name = 'profiles';
+  cur = {name, p};
+  if (name !== 'game' && window.speechSynthesis) speechSynthesis.cancel();
+  render(); scrollTo(0, 0);
+}
+function render() {
+  if (!S && !['profiles', 'parent', 'report'].includes(cur.name)) cur = {name:'profiles', p:{}};
+  (SCREENS[cur.name] || SCREENS.learn)(cur.p);
+  app.classList.toggle('wide', cur.name === 'garden');
+  renderTabbar();
+}
+function renderTabbar() {
+  const t = S && TAB_OF[cur.name], tb = $('#tabbar');
+  tb.classList.toggle('hide', !t);
+  if (!t) return;
+  const ripe = allPlots().filter(({p}) => plotState(p) === 'ripe').length;
+  const thirsty = allPlots().filter(({p}) => plotState(p) === 'water').length;
+  tb.innerHTML = [['learn', '📚', 'Learn'], ['garden', '🌻', 'Garden'], ['shop', '🛒', 'Shop']].map(([k, i, l]) =>
+    `<button class="tb ${t === k ? 'on' : ''}" data-act="tab" data-to="${k}"><span class="i">${i}</span>${l}${k === 'garden' && (ripe || thirsty) ? `<span class="dot">${ripe ? ripe + ' ripe' : thirsty + '💧'}</span>` : ''}</button>`).join('');
+}
+const streakNow = (T = S) => (T.streak.last === today() || T.streak.last === yesterday()) ? T.streak.count : 0;
+const kidChip = () => { const p = profile(); return p ? `<button class="pill kid" data-act="go" data-to="profiles" title="Switch child">${p.avatar} ${esc(p.name)}</button>` : ''; };
+const hudHTML = () => S ? `<div class="hud">${cloudPillHTML()}${kidChip()}<span class="pill" title="Day streak">🔥 ${streakNow()}</span><span class="pill" title="Coins – earned by learning">💰 ${S.farm.coins}</span><span class="pill" title="Water for your plants">💧 ${S.farm.water}</span></div>` : '';
+const topBar = (title, back) => `<div class="top">${back ? `<button class="back" data-act="go" data-to="${back}">⬅</button>` : ''}<div class="title">${title}</div>${hudHTML()}</div>`;
+const SCREENS = {};
+
+// ===== Who's learning? =====
+SCREENS.profiles = () => {
+  app.innerHTML = `<div class="top"><div class="title">🌻 Word Farm</div></div>
+  <div class="card" style="text-align:center">
+    <h1>${R.profiles.length ? 'Who\'s learning today?' : 'Welcome to Word Farm!'}</h1>
+    <div class="muted">${R.profiles.length ? 'Tap your picture to start.' : 'Add a child to begin. Each child gets their own words, progress and garden.'}</div>
+    <div class="kids">${R.profiles.map(p => { const T = p.id === R.active && S ? S : loadState(p.id);
+      return `<button class="kid-card ${p.id === R.active ? 'on' : ''}" data-act="pick-kid" data-id="${p.id}"><span class="av">${p.avatar}</span><b>${esc(p.name)}</b>
+        <span class="small muted">⭐ ${plural(mastered(T), 'word')} · 🔥 ${streakNow(T)}</span></button>`; }).join('')}
+      <button class="kid-card add" data-act="add-kid"><span class="av">➕</span><b>Add a child</b></button></div>
+  </div>
+  <div class="row center">${Cloud.enabled() && Cloud.sb && !Cloud.user ? `<button class="btn blue" data-act="cloud-signin">☁️ Sign in to load your children</button>` : ''}
+    ${R.profiles.length ? `<button class="btn sm" data-act="parent">👪 Parents' area</button>` : ''}</div>
+  ${Cloud.user ? `<div class="note">☁️ Signed in as ${esc(Cloud.user.email || '')} — progress is saved in the cloud.</div>` : ''}`;
+};
+function kidForm(id) {
+  const p = id ? profile(id) : null;
+  const goal = p ? loadState(p.id).daily.goal : 5;
+  openModal(`<h3>${p ? `✏️ Edit ${esc(p.name)}` : '👶 Add a child'}</h3>
+    <label class="fl">Name</label><input type="text" id="kid-name" value="${esc(p ? p.name : '')}" placeholder="e.g. Minh Anh" maxlength="24">
+    <label class="fl">Pick an animal</label>
+    <div class="avs">${AVATARS.map((a, i) => `<label class="av-opt"><input type="radio" name="kid-av" value="${a}" ${(p ? p.avatar === a : i === 0) ? 'checked' : ''}><span>${a}</span></label>`).join('')}</div>
+    <label class="fl">Daily goal</label>
+    <div class="chips">${GOALS.map(g => `<label class="chip-r"><input type="radio" name="kid-goal" value="${g}" ${g === goal ? 'checked' : ''}><span class="chip">${g} words</span></label>`).join('')}</div>
+    <div class="row" style="margin-top:16px">${p ? `<button class="btn sm danger" data-act="del-kid" data-id="${p.id}">🗑 Delete this child</button>` : ''}<span class="spacer"></span>
+      <button class="btn primary" data-act="save-kid" ${p ? `data-id="${p.id}"` : ''}>${p ? 'Save' : 'Create'}</button></div>`);
+  setTimeout(() => { const n = $('#kid-name'); n && n.focus(); }, 50);
+}
+
+// ===== Learn tab =====
+SCREENS.learn = () => {
+  rollDay();
+  const d = S.daily, done = d.words.length, pct = Math.min(100, done / d.goal * 100);
+  const reviews = dueReviews().length, total = Object.keys(S.words).length;
+  const ripe = allPlots().filter(({p}) => plotState(p) === 'ripe').length;
+  const name = profile().name;
+  let msg;
+  if (!total) msg = `Hi ${name}! Add some words so we can start!`;
+  else if (ripe) msg = `${plural(ripe, 'plant is', 'plants are')} ready in your garden! Pick them after your lesson 🧺`;
+  else if (d.rewarded) msg = 'You reached today\'s goal! Let\'s water the garden! 🌳';
+  else if (done) msg = `Keep going! ${plural(d.goal - done, 'more word')} to reach today's goal.`;
+  else msg = `Hi ${name}! Learn new words to earn coins for seeds and water for your plants! 💧`;
+  app.innerHTML = topBar('📚 Learn') + `
+  <div class="card mascot-card"><div class="mascot">🐰</div><div class="bubble">${esc(msg)}</div></div>
+  <button class="learn-btn" data-act="learn"><span style="font-size:40px">▶️</span><span>Start learning<span class="sub">${reviews ? `${plural(reviews, 'word')} to review · ` : ''}one word at a time</span></span></button>
+  <div class="card">
+    <div class="row"><h3>🎯 Today's goal</h3><span class="spacer"></span><b>${done}/${d.goal} words</b></div>
+    <div class="goal-bar"><i style="width:${pct}%"></i></div>
+    <div class="row small"><span class="muted">How many words a day?</span>
+      <div class="chips">${GOALS.map(g => `<button class="chip ${g === d.goal ? 'on' : ''}" data-act="goal" data-g="${g}">${g} words</button>`).join('')}</div></div>
+    <div class="small muted" style="margin-top:6px">${d.rewarded ? '✅ Reward collected today' : `Reward: 💰 ${GOAL_REWARD[d.goal][0]} + 💧 ${GOAL_REWARD[d.goal][1]}`}</div>
+  </div>
+  <div class="row" style="margin-top:6px"><h3>📒 My word lists</h3><span class="spacer"></span><button class="btn sm orange" data-act="go" data-to="add">➕ Add words</button></div>
+  ${S.lists.map(l => {
+    const ws = listWords(l.id), m = ws.filter(w => w.mastered).length;
+    return `<div class="card list-card" data-act="open-list" data-id="${l.id}">
+      <div class="row"><b style="font-size:19px">${esc(l.name)}</b><span class="spacer"></span><span class="pill">⭐ ${m}/${ws.length}</span></div>
+      <div class="wchips">${ws.slice(0, 18).map(w => { const s = wordStatus(w); return `<span class="wchip ${s.cls}">${s.cls ? s.ic + ' ' : ''}${esc(w.word)}</span>`; }).join('') || '<span class="small muted">No words yet</span>'}${ws.length > 18 ? `<span class="wchip">+${ws.length - 18}</span>` : ''}</div></div>`;
+  }).join('') || '<div class="card">No word lists yet.</div>'}
+  <div class="note" id="enrich-note">${enrichNote()}</div>
+  <div class="row center" style="margin-top:14px"><button class="btn sm" data-act="go" data-to="profiles">🔄 Switch child</button><button class="btn sm" data-act="parent">👪 Parents' area</button></div>`;
+};
+SCREENS.list = ({id}) => {
+  const l = S.lists.find(x => x.id === id); if (!l) return go('learn');
+  const ws = listWords(id);
+  app.innerHTML = topBar('📒 Word list', 'learn') + `
+  <div class="card">
+    <input type="text" value="${esc(l.name)}" data-field="list-name" data-id="${id}" style="font-weight:800;font-size:20px">
+    <div class="row" style="margin-top:10px"><button class="btn primary" data-act="learn" data-list="${id}" ${ws.length ? '' : 'disabled'}>▶️ Learn this list</button>
+      <button class="btn" data-act="go" data-to="add" data-list="${id}">➕ Add words</button>
+      ${R.profiles.length > 1 ? `<button class="btn" data-act="copy-list" data-id="${id}">📋 Copy to another child</button>` : ''}<span class="spacer"></span>
+      <button class="btn sm danger" data-act="del-list" data-id="${id}">🗑 Delete list</button></div>
+  </div>
+  <div class="wgrid">${ws.map(w => { const s = wordStatus(w), n = roundsFor(w).length;
+    return `<button class="wcell" data-act="word" data-id="${w.id}"><span class="ic">${w.emoji || s.ic}</span><span class="wd">${esc(w.word)}</span>
+      <span class="st">${s.ic} ${s.txt}</span>${w.mastered ? '' : `<span class="mini"><i style="width:${w.step / n * 100}%"></i></span>`}</button>`; }).join('')}</div>
+  <div class="note" id="enrich-note">${enrichNote()}</div>`;
+};
+function wordModal(id) {
+  const w = S.words[id]; if (!w) return closeModal();
+  const s = wordStatus(w);
+  openModal(`
+    <div class="pic">${wordImgHTML(w, 'big')}</div>
+    <div class="row center">
+      <button class="btn sm" data-act="img-next" data-id="${id}">🔄 Change picture</button>
+      <label class="btn sm">📷 My own photo<input type="file" accept="image/*" data-change="img-upload" data-id="${id}" hidden></label>
+      ${w.img === 'idb' ? `<button class="btn sm" data-act="img-clear" data-id="${id}">✖ Remove my photo</button>` : ''}
+    </div>
+    <div class="w-big">${esc(w.word)} <button class="spk" data-act="say" data-text="${esc(w.word)}" data-id="${id}">🔊</button></div>
+    <div class="phon" style="text-align:center">${esc(w.phonetic)}</div>
+    <label class="fl">Meaning (Vietnamese)</label><input type="text" value="${esc(w.vi)}" data-field="vi" data-id="${id}" placeholder="Enter the meaning…">
+    <label class="fl">Example sentences (one per line)</label><textarea data-field="examples" data-id="${id}" style="min-height:90px">${esc(w.examples.join('\n'))}</textarea>
+    ${w.defs.length ? `<div class="small muted" style="margin-top:6px">${w.defs.map(d => `<i>${esc(d.pos)}</i>: ${esc(d.text)}`).join('<br>')}</div>` : ''}
+    <div class="small" style="margin-top:8px">${s.ic} ${s.txt}${w.masteredAt ? ` on ${fmtDate(w.masteredAt)}` : ''} · ✓ ${w.right} correct · ✗ ${w.wrong} wrong</div>
+    <div class="row" style="margin-top:10px"><button class="btn sm" data-act="refetch" data-id="${id}">🌐 Reload data</button>
+      <button class="btn sm" data-act="reset-word" data-id="${id}">↺ Learn again</button><span class="spacer"></span>
+      <button class="btn sm danger" data-act="del-word" data-id="${id}">🗑 Delete word</button></div>`);
+}
+function copyListModal(listId) {
+  const others = R.profiles.filter(p => p.id !== R.active);
+  openModal(`<h3>📋 Copy “${esc(S.lists.find(l => l.id === listId).name)}” to…</h3>
+    <div class="small muted">The words, meanings and pictures are copied. Progress starts fresh for the other child.</div>
+    <div class="kids">${others.map(p => `<button class="kid-card" data-act="do-copy" data-id="${p.id}" data-list="${listId}"><span class="av">${p.avatar}</span><b>${esc(p.name)}</b></button>`).join('')}</div>`);
+}
+async function copyList(listId, toId) {
+  const T = loadState(toId), src = S.lists.find(l => l.id === listId);
+  const newId = addList(src.name, T);
+  let n = 0;
+  for (const w of listWords(listId)) {
+    const id = uid();
+    T.words[id] = Object.assign(blankWord(id, newId, w.word, w.vi), {phonetic:w.phonetic, defs:w.defs, pos:w.pos, examples:[...w.examples], imgs:[...w.imgs], imgIdx:w.imgIdx, emoji:w.emoji, audio:w.audio, enriched:w.enriched, added:Date.now() + n});
+    if (w.img === 'idb' && IMG[w.id]) { IMG[id] = IMG[w.id]; T.words[id].img = 'idb'; await IDB.put(id, IMG[w.id]).catch(() => {}); if (R.cloudOwner) Cloud.photoAdded(id); }
+    n++;
+  }
+  localStorage.setItem(PKEY(toId), JSON.stringify(T));
+  markDirty(toId);
+  return n;
+}
+
+// ===== Add words =====
+let draft = [];
+let addState = {tab:'text', list:'', newName:'', ocr:null};
+const STOP = new Set('the a an and or of to in on at is are am was were be it this that these those i you he she we they my your his her our their me him us them for with as by from not no yes do does did can will has have had so but if then there here what which who how why when where'.split(' '));
+const VI_RE = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i;
+const VI_COMMON = new Set('con cai cay qua la cua va cho ban anh em chi me bo ong ba co chu toi nha xe hoa mau so ngay thang nam mot hai bon sau bay tam chin muoi'.split(' '));
+function parseVocab(text, fromOCR = false) {
+  const out = [], seen = new Set(draft.map(d => normWord(d.word)));
+  const push = (w, vi = '') => {
+    w = normWord(String(w));
+    if (!w || (w.length < 2 && w !== 'a' && w !== 'i')) return;
+    if (w.split(' ').length > 3 || seen.has(w)) return;
+    seen.add(w); out.push({word:w, vi:String(vi).trim().replace(/^[-–—:=\s]+/, '')});
+  };
+  for (let line of String(text).split(/\r?\n/)) {
+    line = line.replace(/^\s*(\d+|[a-zA-Z])[.)]\s+/, '').replace(/^\s*[-•*·●▪►✓]\s*/, '').trim();
+    // part of speech (n), (v)… and phonetics /…/ between the word and its meaning act as a separator
+    line = line.replace(/\s*(\((n|v|adj|adv|prep|pron|conj|int|det)\.?\)|\/[^/]+\/|\[[^\]]+\])\s*/gi, '\t').replace(/\t+/g, '\t').replace(/\t$/, '').trim();
+    if (!line) continue;
+    if (VI_RE.test(line) && !/\t|\s[-–—]\s|[:=]/.test(line)) {
+      const [first, ...rest] = line.split(/\s+/);
+      if (!VI_RE.test(first) && !VI_COMMON.has(first.toLowerCase())) push(first, rest.join(' '));
+      continue;
+    }
+    const m = line.match(/^(.+?)\s*(?:\t+|\s+[-–—]\s+|\s*[:=]\s*)(.+)$/);
+    if (m) {
+      let [, a, b] = m;
+      if (VI_RE.test(a) && !/[^\x00-\x7f]/.test(b)) [a, b] = [b, a];
+      if (/\d/.test(a)) continue; // headings like "Unit 5: At the zoo"
+      push(a, b); continue;
+    }
+    if (/[,;]/.test(line)) { line.split(/[,;]/).forEach(x => push(x)); continue; }
+    const toks = line.split(/\s+/);
+    if (toks.length <= 2 && (!fromOCR || toks.every(t => /^[a-zA-Z'-]+$/.test(t)))) { push(line); continue; }
+    toks.forEach(t => { if (/[^\x00-\x7f]/.test(t)) return; const n = normWord(t); if (n && n.length >= 2 && !STOP.has(n)) push(n); });
+  }
+  return out;
+}
+SCREENS.add = ({list}) => {
+  if (list) addState.list = list;
+  if (!addState.list || (addState.list !== 'new' && !S.lists.find(l => l.id === addState.list))) addState.list = S.lists[0] ? S.lists[0].id : 'new';
+  const opts = S.lists.map(l => `<option value="${l.id}" ${l.id === addState.list ? 'selected' : ''}>${esc(l.name)}</option>`).join('') +
+    `<option value="new" ${addState.list === 'new' ? 'selected' : ''}>➕ Create a new list…</option>`;
+  app.innerHTML = topBar('➕ Add new words', 'learn') + `
+  <div class="card">
+    <label class="fl">Add to list</label>
+    <select data-change="add-list">${opts}</select>
+    ${addState.list === 'new' ? `<label class="fl">New list name</label><input type="text" data-field="new-name" value="${esc(addState.newName)}" placeholder="e.g. Unit 3 - My family">` : ''}
+    <div class="tabs">
+      <button class="tab ${addState.tab === 'text' ? 'on' : ''}" data-act="add-tab" data-t="text">✍️ Type / paste</button>
+      <button class="tab ${addState.tab === 'img' ? 'on' : ''}" data-act="add-tab" data-t="img">📷 From a photo</button>
+    </div>
+    ${addState.tab === 'text' ? `
+      <textarea id="vtext" placeholder="One word per line, or word - meaning. For example:&#10;apple - quả táo&#10;cat: con mèo&#10;dog, bird, fish"></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn blue" data-act="parse-text">👀 Preview list</button></div>` : `
+      <div class="small muted">Take or choose a photo of a book page or word list. The app reads the words for you (the first time needs internet to download the text reader).</div>
+      <label class="btn" style="margin-top:8px">🖼️ Choose photo<input type="file" accept="image/*" data-change="ocr-file" hidden></label>
+      <div id="ocr-area">${ocrAreaHTML()}</div>`}
+  </div>
+  <div class="card" id="draft-card">${draftHTML()}</div>`;
+};
+function ocrAreaHTML() {
+  const o = addState.ocr; if (!o) return '';
+  return `<img class="ocr-prev" src="${o.url}" alt="">
+    ${o.busy ? `<div class="small">${esc(o.status || 'Reading text…')}</div><div class="bar"><i style="width:${Math.round((o.prog || 0) * 100)}%"></i></div>`
+      : `<div class="row center"><button class="btn blue" data-act="ocr-run">🔍 Read words from photo</button></div>`}
+    ${o.err ? `<div class="small" style="color:var(--red-d)">${esc(o.err)}</div>` : ''}
+    ${o.text ? `<details style="margin-top:8px"><summary class="small muted">Text found in the photo</summary><pre class="small" style="white-space:pre-wrap">${esc(o.text)}</pre></details>` : ''}`;
+}
+function draftHTML() {
+  if (!draft.length) return `<h3>📝 Words to save</h3><div class="small muted">No words yet. Type words or add a photo above, then preview. You can edit each line before saving.</div>`;
+  return `<div class="row"><h3>📝 Words to save (${draft.length})</h3><span class="spacer"></span><button class="btn sm" data-act="draft-clear">Clear all</button></div>
+    <div class="small muted" style="margin-bottom:6px">Fix any words the reader got wrong. Meanings can stay empty — the app will look them up.</div>
+    <div class="draft">${draft.map((d, i) => `<div class="drow"><span class="n">${i + 1}</span>
+      <input type="text" value="${esc(d.word)}" data-field="draft-word" data-i="${i}" placeholder="english">
+      <input type="text" value="${esc(d.vi)}" data-field="draft-vi" data-i="${i}" placeholder="meaning (optional)">
+      <button class="icon-btn" data-act="draft-del" data-i="${i}">✕</button></div>`).join('')}</div>
+    <div class="row" style="margin-top:10px"><button class="btn sm" data-act="draft-add">+ Add row</button><span class="spacer"></span>
+      <button class="btn primary" data-act="draft-save">💾 Save ${plural(draft.length, 'word')}</button></div>`;
+}
+const refreshDraft = () => { const c = $('#draft-card'); if (c) c.innerHTML = draftHTML(); };
+let tessLoading = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve();
+  if (!tessLoading) tessLoading = new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    s.onload = res; s.onerror = () => { tessLoading = null; rej(new Error('Could not load the text reader. Check your internet connection.')); };
+    document.head.appendChild(s);
+  });
+  return tessLoading;
+}
+async function runOCR() {
+  const o = addState.ocr; if (!o || o.busy) return;
+  o.busy = true; o.err = ''; o.prog = 0; o.status = 'Loading the text reader…'; refreshOcr();
+  let worker;
+  try {
+    await loadTesseract();
+    worker = await Tesseract.createWorker('eng+vie', 1, {logger:m => {
+      if (m.status === 'recognizing text') { o.status = 'Reading text…'; o.prog = m.progress; }
+      else if (/load/i.test(m.status)) { o.status = 'Downloading language data…'; o.prog = m.progress || 0; }
+      refreshOcr();
+    }});
+    const {data} = await worker.recognize(o.file);
+    o.text = data.text;
+    const items = parseVocab(data.text, true);
+    draft.push(...items);
+    toast(items.length ? `📷 Found ${plural(items.length, 'word')}. Check them below!` : '😅 No words found. Try a clearer photo.');
+  } catch (e) { o.err = e.message || 'Could not read this photo.'; }
+  finally { if (worker) worker.terminate().catch(() => {}); o.busy = false; refreshOcr(); refreshDraft(); }
+}
+const refreshOcr = () => { const a = $('#ocr-area'); if (a) a.innerHTML = ocrAreaHTML(); };
+
+/* =========================================================
+   GAME — one word at a time
+   ========================================================= */
+let G = null;
+function buildSession(listId) {
+  const now = Date.now();
+  const pool = Object.values(S.words).filter(w => !listId || w.listId === listId);
+  if (!pool.length) return null;
+  const reviews = shuffle(pool.filter(w => w.mastered && w.due <= now)).slice(0, 5);
+  const left = S.daily.goal - S.daily.words.length;
+  const n = S.daily.rewarded || left <= 0 ? 3 : Math.min(3, Math.max(1, left));
+  const learn = pool.filter(w => !w.mastered).sort((a, b) => ((b.step > 0) - (a.step > 0)) || (a.added - b.added)).slice(0, n);
+  let items = [...reviews.map(w => ({id:w.id, review:true})), ...learn.map(w => ({id:w.id}))];
+  let free = false;
+  if (!items.length) { items = shuffle(pool).slice(0, 5).map(w => ({id:w.id, review:true})); free = true; }
+  return {items, free};
+}
+async function startSession(listId) {
+  const b = buildSession(listId);
+  if (!b) { toast('No words yet. Add some words first!'); return go('add'); }
+  G = {items:b.items, qi:0, combo:0, earned:{coins:0, water:0}, finished:[], reviewed:0, listId};
+  const need = b.items.map(t => S.words[t.id]).filter(w => !w.enriched);
+  cur = {name:'game', p:{}}; renderTabbar();
+  if (need.length && navigator.onLine) {
+    app.innerHTML = `<div class="card mascot-card" style="margin-top:30vh"><div class="mascot">🐰</div><div class="bubble">Wait a moment — Bunny is getting the pictures ready…</div></div>`;
+    await Promise.race([Promise.all(need.map(w => enrich(w).catch(() => {}))), sleep(5000)]);
+  }
+  if (b.free) toast('🌟 You know all your words! Let\'s review a few for fun.');
+  startItem();
+}
+function startItem() {
+  if (G.qi >= G.items.length) return endSession();
+  const it = G.items[G.qi], w = S.words[it.id];
+  if (!w) { G.qi++; return startItem(); }
+  G.w = w; G.review = !!it.review;
+  G.rounds = G.review ? [{k:'type', review:true}] : roundsFor(w);
+  G.ri = G.review ? 0 : Math.min(w.step, G.rounds.length - 1);
+  startRound();
+}
+function startRound() {
+  const w = G.w, r = G.rounds[G.ri];
+  G.cur = {w, r, mistakes:0, hints:0, done:false, busy:false, spoken:false, msg:roundMsg(r)};
+  if (r.k === 'blank' && r.choices) setupChoice(w, r.b);
+  else if (r.k === 'blank') setupType(w, shuffle(letterIdx(w)).slice(0, r.b).sort((a, b) => a - b));
+  else if (r.k === 'type') setupType(w, letterIdx(w));
+  renderGame();
+}
+function roundMsg(r) {
+  if (r.k === 'card') return 'Look, listen and say it with me!';
+  if (r.k === 'blank' && r.choices) return r.b === 1 ? 'Pick the missing letter!' : `${r.b} letters are missing. Pick the letters!`;
+  if (r.k === 'blank') return `No letter choices now! Type the ${r.b} missing letters yourself!`;
+  return r.review ? 'Review time: look at the picture and type the word!' : 'Final challenge: type the whole word!';
+}
+function roundTitle(r) {
+  if (r.k === 'card') return 'Meet the word';
+  if (r.k === 'blank') return `Fill in ${plural(r.b, 'missing letter')} · ${r.choices ? 'pick letters' : 'type them'}`;
+  return r.review ? '🔁 Review: type the whole word' : 'Type the whole word';
+}
+function mascotSay(m) { G.cur.msg = m; const b = $('#bubble'); if (b) b.textContent = m; }
+function renderGame() {
+  const c = G.cur;
+  app.innerHTML = `
+  <div class="gbar"><button class="icon-btn" data-act="quit" title="Stop">✕</button>
+    <span class="wcount">Word ${G.qi + 1}/${G.items.length}</span>
+    <div class="rdots">${G.rounds.map((_, i) => `<i class="${i < G.ri || (i === G.ri && c.done) ? 'ok' : i === G.ri ? 'now' : ''}"></i>`).join('')}</div>
+    <div class="combo ${G.combo >= 3 ? 'hot' : ''}">${G.combo >= 3 ? '🔥' + G.combo : ''}</div>
+    <span class="pill">💰 ${S.farm.coins}</span></div>
+  <div class="glabel">${roundTitle(c.r)}</div>
+  <div class="card gbody" id="gbody"></div>
+  <div class="mascot-row"><div class="mascot">🐰</div><div class="bubble" id="bubble">${esc(c.msg)}</div></div>`;
+  renderGameBody();
+  if (!c.spoken && !c.done && !c.r.review) { c.spoken = true; setTimeout(() => Speech.say(c.w.word, c.w), 300); }
+}
+const keyboardHTML = () => `<div class="kb">${['qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map((r, ri) => `<div class="kr">${[...r].map(k => `<button class="key" data-act="key" data-c="${k}">${k}</button>`).join('')}${ri === 2 ? `<button class="key wide" data-act="key" data-c="back">⌫</button>` : ''}</div>`).join('')}</div>`;
+function renderGameBody() {
+  const c = G.cur, w = c.w, el = $('#gbody'); if (!el) return;
+  if (c.done && c.r.k !== 'card') { el.innerHTML = resultHTML(); return; }
+  const say = `<button class="spk" data-act="say-word">🔊</button>`;
+  if (c.r.k === 'card') {
+    el.innerHTML = `<div class="pic">${wordImgHTML(w, 'big')}</div>
+      <div class="w-big">${esc(w.word)} ${say}</div>
+      <div class="phon">${esc(w.phonetic)}</div>
+      <div class="vi">${esc(w.vi)}</div>
+      <div class="examples">${w.examples.slice(0, 2).map((s, k) => `<div class="ex"><button class="spk sm" data-act="say-ex" data-k="${k}">🔊</button><span>${hl(s, w.word)}</span></div>`).join('')}</div>
+      <button class="btn primary big" data-act="card-ok">I've got it! ➜</button>`;
+    return;
+  }
+  const head = c.r.k === 'type'
+    ? `<div class="pic">${imgSrc(w) || w.emoji ? wordImgHTML(w, '') : `<div class="clue-vi">${esc(w.vi || '?')}</div>`}</div>
+       <div class="row center"><span class="vi" style="font-size:20px">${esc(w.vi)}</span>${say}<button class="btn sm" data-act="say-slow" title="Say it slowly">🐢</button></div>`
+    : `<div class="pic">${wordImgHTML(w, 'sm')}</div><div class="row center"><span class="vi" style="font-size:20px">${esc(w.vi)}</span>${say}</div>`;
+  if (c.slots) {
+    const s = c.slots;
+    el.innerHTML = head + `
+      <div class="word-slots ${c.shake ? 'shake' : ''}" style="--n:${s.letters.length}">${s.letters.map((ch, i) => {
+        if (!/[a-z]/.test(ch)) return `<span class="gap">${ch === ' ' ? '' : esc(ch)}</span>`;
+        if (!s.blanks.includes(i)) return `<span class="slot given">${esc(ch)}</span>`;
+        const f = s.fill[i], cls = s.bad && s.bad.has(i) ? 'bad' : s.locked[i] ? 'locked' : f != null ? 'filled' : '';
+        return `<button class="slot blank ${cls} ${s.active === i && f == null ? 'active' : ''}" data-act="slot" data-i="${i}">${f != null ? esc(s.tray[f].ch) : ''}</button>`;
+      }).join('')}</div>
+      <div class="tray">${s.tray.map(t => `<button class="ltile ${t.used ? 'used' : ''} ${t.bad ? 'bad' : ''}" data-act="tile" data-k="${t.k}" ${t.used || t.bad ? 'disabled' : ''}>${esc(t.ch)}</button>`).join('')}</div>
+      <div class="row center"><button class="btn sm" data-act="hint">💡 Hint</button></div>`;
+  } else {
+    const t = c.ty, next = t.typed.findIndex(x => x == null);
+    el.innerHTML = head + `
+      <div class="word-slots ${c.shake ? 'shake' : ''}" style="--n:${t.letters.length}">${t.letters.map((ch, i) => {
+        if (!/[a-z]/.test(ch)) return `<span class="gap">${ch === ' ' ? '' : esc(ch)}</span>`;
+        const j = t.targets.indexOf(i);
+        if (j < 0) return `<span class="slot given">${esc(ch)}</span>`;
+        const v = t.typed[j], cls = t.bad && t.bad.has(j) ? 'bad' : t.lock[j] ? 'locked' : v != null ? 'filled' : '';
+        return `<span class="slot ${v == null ? 'blank' : ''} ${cls} ${j === next ? 'active' : ''}">${v ? esc(v) : ''}</span>`;
+      }).join('')}</div>
+      ${keyboardHTML()}
+      <div class="row center" style="margin-top:10px"><button class="btn sm" data-act="hint">💡 Show one letter</button></div>`;
+  }
+  c.shake = false;
+}
+function hl(s, word) {
+  const ew = esc(word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return esc(s).replace(new RegExp(`\\b(${ew}\\w*)`, 'gi'), '<b>$1</b>');
+}
+function resultHTML() {
+  const c = G.cur, w = c.w, r = c.reward;
+  if (c.wordDone) return `<div class="result done-card"><div class="big-ic">🎉</div>
+    <h2>You learned the word</h2>
+    <div class="pic">${wordImgHTML(w, 'sm')}</div>
+    <div class="w-big ok">${esc(w.word)} <button class="spk" data-act="say-word">🔊</button></div>
+    <div class="vi" style="font-size:20px">${esc(w.vi)}</div>
+    <div class="reward">${rewardText(r)}</div>
+    ${r.notes.map(n => `<div class="note2">${esc(n)}</div>`).join('')}
+    <button class="btn primary big" style="margin-top:10px" data-act="next">${G.qi + 1 < G.items.length ? 'Next word ➜' : 'See results ➜'}</button></div>`;
+  return `<div class="result"><div class="w-big ok">${esc(w.word)} <button class="spk" data-act="say-word">🔊</button></div>
+    <div class="reward">${rewardText(r)}</div>
+    ${r.notes.map(n => `<div class="note2">${esc(n)}</div>`).join('')}
+    <button class="btn primary big" style="margin-top:10px" data-act="next">Continue ➜</button></div>`;
+}
+// --- rounds with letters to pick ---
+function distractors(target, n, word) {
+  const V = 'aeiou', C = 'bcdfghjklmnpqrstvwxyz';
+  let pool = target ? (V.includes(target) ? V + 'y' : C) : 'abcdefghijklmnopqrstuvwxyz';
+  pool = [...pool].filter(ch => ch !== target && (target || !word.includes(ch)));
+  return shuffle(pool).slice(0, n);
+}
+function setupChoice(w, b) {
+  const letters = [...w.word], idx = letterIdx(w);
+  const blanks = shuffle(idx).slice(0, b).sort((x, y) => x - y);
+  const missing = blanks.map(i => letters[i]);
+  const tray = b === 1 ? [missing[0], ...distractors(missing[0], idx.length <= 3 ? 2 : 3, w.word)] : [...missing, ...distractors(null, 2, w.word)];
+  G.cur.ty = null;
+  G.cur.slots = {letters, blanks, fill:Object.fromEntries(blanks.map(i => [i, null])), locked:{}, active:null, bad:null, tray:shuffle(tray).map((ch, k) => ({k, ch, used:false, bad:false}))};
+}
+function tileTap(k) {
+  const c = G.cur; if (c.busy || c.done) return;
+  const s = c.slots, tile = s.tray[k]; if (!tile || tile.used || tile.bad) return;
+  const empties = s.blanks.filter(i => s.fill[i] == null); if (!empties.length) return;
+  const target = s.active != null && s.fill[s.active] == null ? s.active : empties[0];
+  if (s.blanks.length === 1) {
+    if (tile.ch === s.letters[target]) { tile.used = true; s.fill[target] = k; s.locked[target] = true; return success(); }
+    tile.bad = true; c.mistakes++; c.shake = true; Sfx.bad(); mascotSay(pick(WRONG)); return renderGameBody();
+  }
+  tile.used = true; s.fill[target] = k; s.active = null; Sfx.pop(); renderGameBody();
+  if (s.blanks.every(i => s.fill[i] != null)) { c.busy = true; setTimeout(() => { c.busy = false; slotsCheck(); }, 260); }
+}
+function slotTap(i) {
+  const c = G.cur; if (c.busy || c.done || !c.slots) return;
+  const s = c.slots; if (s.locked[i]) return;
+  if (s.fill[i] != null) { s.tray[s.fill[i]].used = false; s.fill[i] = null; Sfx.pop(); }
+  s.active = i; renderGameBody();
+}
+function slotsCheck() {
+  const c = G.cur, s = c.slots;
+  const wrong = s.blanks.filter(i => !s.locked[i] && s.tray[s.fill[i]].ch !== s.letters[i]);
+  if (!wrong.length) return success();
+  c.mistakes++; s.bad = new Set(wrong); c.shake = true; c.busy = true;
+  Sfx.bad(); mascotSay(pick(WRONG)); renderGameBody();
+  setTimeout(() => {
+    for (const i of s.blanks) { if (wrong.includes(i)) { s.tray[s.fill[i]].used = false; s.fill[i] = null; } else s.locked[i] = true; }
+    s.bad = null; c.busy = false;
+    if (c.mistakes >= 2) revealSlot(true); else renderGameBody();
+  }, 750);
+}
+function revealSlot(auto) {
+  const c = G.cur, s = c.slots;
+  if (s.blanks.length === 1) {
+    const t = s.tray.find(t => !t.used && !t.bad && t.ch !== s.letters[s.blanks[0]]);
+    if (t) { t.bad = true; c.hints++; mascotSay('Bunny took away a wrong letter for you!'); }
+    return renderGameBody();
+  }
+  const i = s.blanks.find(i => s.fill[i] == null); if (i == null) return;
+  const t = s.tray.find(t => !t.used && t.ch === s.letters[i]); if (!t) return;
+  t.used = true; s.fill[i] = t.k; s.locked[i] = true; c.hints++;
+  mascotSay(auto ? 'Here\'s a hint letter for you! 🥕' : 'Here\'s one letter!');
+  renderGameBody();
+  if (s.blanks.every(i => s.fill[i] != null)) setTimeout(slotsCheck, 300);
+}
+// --- typing rounds (some letters or the whole word) ---
+function setupType(w, targets) {
+  G.cur.slots = null;
+  G.cur.ty = {letters:[...w.word], targets, typed:targets.map(() => null), lock:targets.map(() => false), bad:null};
+}
+function typeKey(ch) {
+  const c = G.cur; if (c.busy || c.done || !c.ty) return;
+  const t = c.ty;
+  if (ch === 'back') {
+    for (let j = t.typed.length - 1; j >= 0; j--) if (t.typed[j] != null && !t.lock[j]) { t.typed[j] = null; break; }
+    Sfx.pop(); return renderGameBody();
+  }
+  const j = t.typed.findIndex(x => x == null); if (j < 0) return;
+  t.typed[j] = ch; Sfx.pop(); renderGameBody();
+  if (t.typed.every(x => x != null)) { c.busy = true; setTimeout(() => { c.busy = false; typeCheck(); }, 260); }
+}
+function typeCheck() {
+  const c = G.cur, t = c.ty;
+  const wrong = t.targets.map((p, j) => j).filter(j => t.typed[j] !== t.letters[t.targets[j]]);
+  if (!wrong.length) return success();
+  c.mistakes++; t.bad = new Set(wrong); c.shake = true; c.busy = true;
+  Sfx.bad(); mascotSay('Almost! The green letters are correct.');
+  renderGameBody();
+  setTimeout(() => Speech.say(c.w.word, c.w, .7), 400);
+  setTimeout(() => {
+    t.targets.forEach((p, j) => { if (wrong.includes(j)) t.typed[j] = null; else t.lock[j] = true; });
+    t.bad = null; c.busy = false;
+    if (c.mistakes >= 2) typeHint(true); else renderGameBody();
+  }, 850);
+}
+function typeHint(auto) {
+  const c = G.cur, t = c.ty;
+  const j = t.lock.findIndex(x => !x); if (j < 0) return;
+  for (let k = j; k < t.typed.length; k++) if (!t.lock[k]) t.typed[k] = null;
+  t.typed[j] = t.letters[t.targets[j]]; t.lock[j] = true; c.hints++;
+  mascotSay(auto ? 'Here\'s a hint letter for you! 🥕' : 'Here\'s one letter!');
+  renderGameBody();
+  if (t.typed.every(x => x != null)) setTimeout(typeCheck, 300);
+}
+// --- a round is finished ---
+function success() {
+  const c = G.cur; if (c.done) return;
+  c.done = true; Sfx.ok(); finishRound();
+  if (c.r.k === 'card') { floatText(rewardText(c.reward)); return nextRound(); }
+  mascotSay(c.wordDone ? 'Hooray! You learned this word! 🎉' : pick(PRAISE));
+  if (c.wordDone) { FX.burst(120); Sfx.win(); }
+  else if (c.mistakes + c.hints === 0) FX.burst(40);
+  setTimeout(() => Speech.say(c.w.word, c.w), 200);
+  renderGame();
+}
+function dayLog() { rollDay(); const d = S.daily.date; return S.stats.days[d] || (S.stats.days[d] = {s:0, w:0, learned:[], reviewed:[]}); }
+function finishRound() {
+  const c = G.cur, w = c.w, now = Date.now();
+  const slips = c.mistakes + c.hints, first = slips === 0;
+  let coins, water = 0; const notes = [];
+  if (c.r.k === 'card') { coins = 1; }
+  else {
+    G.combo = first ? G.combo + 1 : 0;
+    coins = first ? 3 : slips <= 1 ? 2 : 1;
+    if (first) water = 1;
+    if (G.combo >= 3 && first) { coins += 1; if (G.combo % 3 === 0) notes.push(`🔥 ${G.combo} in a row! Bonus coins!`); }
+    if (G.combo >= 5) S.flags.combo5 = true;
+    w.right++; w.wrong += c.mistakes;
+    S.stats.correct++; S.stats.wrong += c.mistakes;
+  }
+  w.last = now;
+  if (!G.review) {
+    w.step = Math.max(w.step, G.ri + 1);
+    if (w.step >= G.rounds.length) {
+      c.wordDone = true; w.mastered = true; w.masteredAt = now; w.box = 1; w.due = now + DAY;
+      coins += 5; water += 2; G.finished.push(w.id);
+      const log = dayLog(); log.learned = log.learned || []; if (!log.learned.includes(w.id)) log.learned.push(w.id);
+      markDaily(w.id);
+      notes.push('⭐ This word is now in your Learned book! Bunny will ask again tomorrow so you remember it.');
+    }
+  } else {
+    c.wordDone = false; G.reviewed++;
+    const log = dayLog(); log.reviewed = log.reviewed || []; if (!log.reviewed.includes(w.id)) log.reviewed.push(w.id);
+    if (slips === 0) { w.box = Math.min(5, (w.box || 1) + 1); w.due = now + INTERVALS[w.box] * DAY; notes.push('🌟 You still remember this word. Great!'); }
+    else if (slips >= 2) {
+      w.mastered = false; w.box = 0; w.due = 0;
+      w.step = roundsFor(w).findIndex(r => r.k !== 'card' && !r.choices); // learn again from the typing rounds
+      notes.push(`“${w.word}” needs a bit more practice. We'll learn it again next time.`);
+    } else { w.box = 1; w.due = now + DAY; notes.push('Almost! We\'ll review it again tomorrow.'); }
+    markDaily(w.id);
+  }
+  give({coins, water});
+  G.earned.coins += coins; G.earned.water += water;
+  c.reward = {coins, water, notes};
+  checkBadges(); save();
+}
+function nextRound() {
+  if (G.ri + 1 < G.rounds.length && !G.cur.wordDone && !G.review) { G.ri++; return startRound(); }
+  G.qi++; startItem();
+}
+function markDaily(id) {
+  const d = S.daily, log = dayLog();
+  if (!d.words.includes(id)) d.words.push(id);
+  log.w = d.words.length;
+  if (S.streak.last !== d.date) { S.streak.count = S.streak.last === yesterday() ? S.streak.count + 1 : 1; S.streak.last = d.date; }
+  if (!d.rewarded && d.words.length >= d.goal) {
+    d.rewarded = true; S.flags.goal = true;
+    const [rc, rw] = GOAL_REWARD[d.goal] || [10, 5];
+    give({coins:rc, water:rw});
+    if (G) { G.earned.coins += rc; G.earned.water += rw; }
+    setTimeout(() => { toast(`🎯 Today's goal complete! +${rc} 💰 +${rw} 💧`, 3500); FX.burst(120); Sfx.win(); }, 600);
+  }
+}
+function endSession() {
+  const e = G.earned;
+  FX.burst(130); Sfx.win();
+  const d = S.daily;
+  const fin = G.finished.map(id => S.words[id]).filter(Boolean);
+  const lid = G.listId;
+  const parts = [fin.length && `Learned ${plural(fin.length, 'new word')}`, G.reviewed && `reviewed ${plural(G.reviewed, 'word')}`].filter(Boolean).join(' · ');
+  cur = {name:'summary', p:{}}; renderTabbar();
+  app.innerHTML = `<div class="card" style="text-align:center;margin-top:20px">
+    <div style="font-size:70px">🏆</div><h1>All done, ${esc(profile().name)}!</h1>
+    <div class="small muted">${parts}</div>
+    ${fin.length ? `<div class="wchips" style="justify-content:center;margin-top:6px">${fin.map(w => `<span class="wchip done">⭐ ${esc(w.word)}</span>`).join('')}</div>` : ''}
+    <div class="reward" style="font-size:28px;font-weight:800;color:#b37400;margin:12px 0">${rewardText(e) || '—'}</div>
+    <div style="margin:12px 0"><b>🎯 Today: ${d.words.length}/${d.goal} words</b><div class="goal-bar"><i style="width:${Math.min(100, d.words.length / d.goal * 100)}%"></i></div></div>
+    <div class="mascot-card" style="justify-content:center"><div class="mascot">🐰</div><div class="bubble">You have ${S.farm.coins} 💰 and ${S.farm.water} 💧. Water your garden or buy some seeds!</div></div>
+    <div style="display:grid;gap:10px;margin-top:14px">
+      <button class="btn big primary" data-act="tab" data-to="garden">🌻 Go water the garden</button>
+      <button class="btn big" data-act="learn" ${lid ? `data-list="${lid}"` : ''}>▶️ Keep learning</button>
+      <button class="btn" data-act="tab" data-to="shop">🛒 Go shopping</button></div></div>`;
+  G = null;
+}
+
+/* =========================================================
+   GARDEN
+   ========================================================= */
+const justWatered = new Set();
+const allPlots = () => S ? S.farm.beds.flatMap((b, bi) => b.plots.map((p, pi) => ({p, bi, pi}))) : [];
+const plotState = p => !p ? 'empty' : p.stage >= RIPE[PLANTS[p.t].cat] ? 'ripe' : p.wAt ? 'grow' : 'water';
+const growLeft = p => Math.max(0, Math.ceil((p.wAt + PLANTS[p.t].grow * 1000 - Date.now()) / 1000));
+const fmtSec = s => s >= 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : `${s}s`;
+function tickPlants() {
+  if (!S) return false;
+  let changed = false; const now = Date.now();
+  for (const {p} of allPlots()) if (p && p.wAt && now - p.wAt >= PLANTS[p.t].grow * 1000) {
+    p.wAt = null; p.stage = Math.min(p.stage + 1, RIPE[PLANTS[p.t].cat]); changed = true;
+  }
+  if (changed) save(false); // growth follows from the watering time, every device works it out the same way
+  return changed;
+}
+function plotHTML(p, bi, pi) {
+  const key = bi + '-' + pi, st = plotState(p);
+  if (!p) return `<button class="plot" data-act="plot" data-b="${bi}" data-p="${pi}" title="Plant a seed"><span class="empty">＋</span></button>`;
+  const tag = st === 'ripe' ? `<span class="ptag ripe">🧺 Pick!</span>` : st === 'water' ? `<span class="ptag water">💧</span>` : `<span class="ptag grow" data-wat="${key}">⏳ ${fmtSec(growLeft(p))}</span>`;
+  const anim = justWatered.has(key) ? CAN_SVG + `<div class="drops">${[10, 35, 60, 80].map((x, i) => `<i style="left:${x}%;animation-delay:${i * .15}s"></i>`).join('')}</div>` : '';
+  return `<button class="plot ${st === 'ripe' ? 'ripe' : ''}" data-act="plot" data-b="${bi}" data-p="${pi}" title="${esc(PLANTS[p.t].name)} – ${esc(stageName(p.t, p.stage))}">${tag}${anim}${plantSVG(p.t, p.stage, st === 'grow')}</button>`;
+}
+SCREENS.garden = () => {
+  tickPlants();
+  const f = S.farm;
+  const barnN = Object.values(f.barn).reduce((a, b) => a + b, 0);
+  const thirsty = allPlots().filter(({p}) => plotState(p) === 'water').length;
+  app.innerHTML = topBar(`🌻 ${esc(profile().name)}'s garden`) + `
+  <div class="scene">
+    <div class="sky"><div class="sun"></div>
+      <div class="cloud" style="top:26px;width:80px;animation-duration:60s"></div>
+      <div class="cloud" style="top:60px;width:60px;animation-duration:85s;animation-delay:-40s"></div>
+      ${HILLS_SVG}
+      <button class="barn" data-act="barn">${BARN_SVG}<span class="lbl">🧺 Barn: ${barnN}</span></button>
+    </div>
+    ${fenceSVG()}
+    <div class="field">
+      ${f.beds.map((b, bi) => {
+        const need = b.plots.filter(p => plotState(p) === 'water').length;
+        const used = b.plots.filter(Boolean).length;
+        return `<div class="bed"><div class="bed-head"><span style="white-space:nowrap">🌱 Bed ${bi + 1} <span class="small" style="opacity:.9">· ${used}/${PLOTS_PER_BED} plants</span></span><span class="spacer"></span>${need ? `<button class="btn sm blue" style="white-space:nowrap" data-act="water-bed" data-b="${bi}">💧 Water whole bed (${need})</button>` : ''}</div>
+        <div class="soil">${b.plots.map((p, pi) => plotHTML(p, bi, pi)).join('')}</div></div>`;
+      }).join('')}
+      ${Array.from({length:MAX_BEDS - f.beds.length}, (_, k) => {
+        const cost = BED_COST[f.beds.length], next = k === 0, can = f.coins >= cost;
+        return `<div class="bed"><div class="bed-head" style="opacity:.85">🌾 Empty land</div>
+          <button class="land ${next ? 'next' : ''}" data-act="buy-land">${next
+            ? `<span class="sign"><span class="sign-t">🚜 Buy land for a bed</span><b>${cost} 💰</b><span class="small">${can ? `Holds ${PLOTS_PER_BED} plants` : 'Learn more to save up!'}</span></span>`
+            : `<span class="tufts"></span>`}</button></div>`;
+      }).join('')}
+      ${f.beds.length >= MAX_BEDS ? '<div class="note" style="color:#fff">🎉 Your garden is as big as it gets!</div>' : ''}
+    </div>
+    ${fenceSVG()}
+  </div>
+  <div class="card small">
+    <b>How to play:</b> tap an empty spot to plant a seed · tap 💧 to water · when a plant finishes drinking (⏳) it grows · when it has fruit or flowers, tap 🧺 to pick.
+    Your harvest goes to the barn — take it to the <b>Market</b> to trade for water. ${thirsty && f.water < 1 ? '<br>💧 Out of water! <a href="#" data-act="learn">Learn some words</a> or sell your harvest to get more.' : ''}
+  </div>`;
+};
+function updateTimers() {
+  document.querySelectorAll('[data-wat]').forEach(el => {
+    const [bi, pi] = el.dataset.wat.split('-').map(Number), p = S.farm.beds[bi] && S.farm.beds[bi].plots[pi];
+    if (p && p.wAt) el.textContent = '⏳ ' + fmtSec(growLeft(p));
+  });
+}
+function waterPlot(bi, pi, quiet) {
+  const p = S.farm.beds[bi].plots[pi];
+  if (plotState(p) !== 'water') return false;
+  if (S.farm.water < 1) { if (!quiet) toast('💧 Out of water! Learn more words or sell your harvest at the Market.'); return false; }
+  S.farm.water--; p.wAt = Date.now();
+  const key = bi + '-' + pi; justWatered.add(key); setTimeout(() => justWatered.delete(key), 1300);
+  return true;
+}
+function seedPicker(bi, pi) {
+  const have = Object.entries(S.farm.seeds).filter(([t, n]) => n > 0 && PLANTS[t]);
+  openModal(`<h3>🌰 Plant a seed in bed ${bi + 1}</h3>` + (have.length
+    ? `<div class="seed-pick">${have.map(([t, n]) => `<button class="sp" data-act="plant" data-t="${t}" data-b="${bi}" data-p="${pi}"><div class="th">${plantSVG(t, RIPE[PLANTS[t].cat])}</div>${esc(PLANTS[t].name)} ×${n}</button>`).join('')}</div>`
+    : `<p>You don't have any seeds yet.</p>`) +
+    `<div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn orange" data-act="tab" data-to="shop">🛒 Buy seeds</button></div>`);
+}
+function plotInfo(bi, pi) {
+  const p = S.farm.beds[bi].plots[pi], sp = PLANTS[p.t], st = plotState(p), ripe = RIPE[sp.cat];
+  const goal = sp.cat === 'veg' ? 'be ready to pick' : sp.cat === 'tree' ? 'grow fruit' : 'bloom';
+  openModal(`<div class="row"><div style="width:120px;height:140px">${plantSVG(p.t, p.stage, st === 'grow')}</div>
+    <div><h3>${sp.icon} ${esc(sp.name)}</h3><div>${esc(stageName(p.t, p.stage))}</div>
+    <div class="small muted">${st === 'grow' ? `Drinking water — grows in ${fmtSec(growLeft(p))}.` : st === 'water' ? `Water it ${plural(ripe - p.stage, 'more time')} to ${goal}.` : 'Ripe — pick it!'}</div>
+    <div class="small muted">${sp.cat === 'veg' ? 'Vegetables are picked once.' : sp.cat === 'tree' ? 'Fruit tree: after picking, keep watering and it will blossom and fruit again next season.' : 'Flowers: after picking, keep watering and they will bloom again.'}</div></div></div>
+    <div class="row" style="margin-top:12px"><button class="btn sm danger" data-act="uproot" data-b="${bi}" data-p="${pi}">🪓 Remove this plant</button><span class="spacer"></span><button class="btn" data-act="close-modal">Close</button></div>`);
+}
+function barnModal() {
+  const items = Object.entries(S.farm.barn).filter(([t, n]) => n > 0 && PLANTS[t]);
+  openModal(`<h3>🧺 Barn</h3>` + (items.length
+    ? items.map(([t, n]) => `<div class="market-row"><span class="ic">${PLANTS[t].icon}</span><b>${esc(PLANTS[t].name)}</b><span class="spacer"></span><span class="pill">×${n}</span></div>`).join('')
+    : '<p class="muted">The barn is empty. Pick vegetables, fruit and flowers in the garden to fill it!</p>') +
+    `<div class="row" style="margin-top:12px"><span class="small muted">Harvest can only be traded for water 💧 at the Market.</span><span class="spacer"></span><button class="btn blue" data-act="tab" data-to="shop" data-sub="market">🏪 Go to the Market</button></div>`);
+}
+
+/* =========================================================
+   SHOP: seeds and land (with 💰) · Market: trade harvest for 💧
+   ========================================================= */
+const shopState = {sub:'seeds', cat:'veg'};
+const plantUnlocked = t => masteredCount() >= PLANTS[t].unlock;
+SCREENS.shop = () => {
+  const f = S.farm, s = shopState;
+  let body = '';
+  if (s.sub === 'seeds') {
+    body = `<div class="chips" style="margin-bottom:10px">${Object.entries(CATS).map(([k, l]) => `<button class="chip ${s.cat === k ? 'on' : ''}" data-act="shop-cat" data-c="${k}">${l}</button>`).join('')}</div>
+    <div class="small muted" style="margin-bottom:8px">Seeds are bought with coins 💰 you earn by learning. Learn more words to unlock new plants!</div>
+    <div class="shop-grid">${Object.entries(PLANTS).filter(([, p]) => p.cat === s.cat).map(([t, p]) => {
+      const ok = plantUnlocked(t), can = ok && f.coins >= p.cost;
+      return `<div class="item ${ok ? '' : 'locked'}"><div class="th">${plantSVG(t, ok ? RIPE[p.cat] : 1)}</div>
+        <b>${p.icon} ${esc(p.name)}</b>
+        <div class="small muted">${ok ? `Water ${RIPE[p.cat]}× · pick ${p.yield} ${p.icon}${p.cat === 'veg' ? '' : ' each season'}` : `🔒 Learn ${plural(p.unlock, 'word')} to unlock (you have ${masteredCount()})`}</div>
+        <span class="own">You have: ${plural(f.seeds[t] || 0, 'seed')}</span>
+        <button class="btn sm ${can ? 'primary' : ''}" data-act="buy-seed" data-t="${t}" ${can ? '' : 'disabled'}>Buy ${p.cost} 💰</button></div>`;
+    }).join('')}</div>`;
+  } else if (s.sub === 'beds') {
+    const cost = BED_COST[f.beds.length];
+    body = `<div class="row"><div style="flex:1;min-width:220px"><h3>🚜 New garden bed</h3>
+      <div class="small muted">Each bed holds ${PLOTS_PER_BED} plants. Your garden has ${f.beds.length}/${MAX_BEDS} beds.</div></div>
+      ${f.beds.length < MAX_BEDS ? `<button class="btn ${f.coins >= cost ? 'orange' : ''}" data-act="buy-bed" ${f.coins >= cost ? '' : 'disabled'}>Buy 1 bed · ${cost} 💰</button>` : '<b>Your garden is full size! 🎉</b>'}</div>
+      <div class="soil" style="margin-top:12px">${Array.from({length:PLOTS_PER_BED}, () => `<div class="plot" style="cursor:default"><span class="empty">＋</span></div>`).join('')}</div>
+      <div class="small muted" style="margin-top:10px">Land can only be bought with coins 💰 earned by learning, not with harvest.</div>`;
+  } else {
+    const items = Object.entries(f.barn).filter(([t, n]) => n > 0 && PLANTS[t]);
+    const total = items.reduce((a, [t, n]) => a + n * PLANTS[t].sell, 0);
+    body = `<div class="small muted">Bring your harvest to the market to trade for water 💧. Harvest can <b>not</b> buy seeds or land.</div>` +
+      (items.length ? items.map(([t, n]) => { const p = PLANTS[t]; return `<div class="market-row"><span class="ic">${p.icon}</span>
+        <div><b>${esc(p.name)}</b> ×${n}<div class="small muted">1 ${p.icon} = ${p.sell} 💧</div></div><span class="spacer"></span>
+        <button class="btn sm" data-act="sell" data-t="${t}" data-n="1">Sell 1</button><button class="btn sm blue" data-act="sell" data-t="${t}" data-n="${n}">Sell all +${n * p.sell} 💧</button></div>`; }).join('') +
+        `<div class="row" style="margin-top:12px"><span class="spacer"></span><button class="btn primary" data-act="sell-all">🧺 Sell everything · +${total} 💧</button></div>`
+      : `<p class="muted" style="margin-top:10px">Your barn is empty. Go pick vegetables, fruit and flowers, then come back!</p>`);
+  }
+  app.innerHTML = topBar('🛒 Shop') + `
+  <div class="subtabs">
+    <button class="subtab ${s.sub === 'seeds' ? 'on' : ''}" data-act="shop-sub" data-s="seeds">🌰 Seeds</button>
+    <button class="subtab ${s.sub === 'beds' ? 'on' : ''}" data-act="shop-sub" data-s="beds">🚜 Land</button>
+    <button class="subtab ${s.sub === 'market' ? 'on' : ''}" data-act="shop-sub" data-s="market">🏪 Market</button>
+  </div>
+  <div class="card">${body}</div>`;
+};
+
+/* =========================================================
+   PARENTS: children overview, per-child report, settings, data
+   ========================================================= */
+let parentOk = false, gateAns = 0;
+function parentGate() {
+  if (parentOk) return go('parent');
+  const a = rand(3, 9), b = rand(3, 9); gateAns = a * b;
+  openModal(`<h3>👪 Parents' area</h3><p>To enter, answer: <b>${a} × ${b} = ?</b></p>
+    <input type="number" id="gate" inputmode="numeric" style="font-size:22px">
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn primary" data-act="gate-ok">Enter</button></div>`);
+  setTimeout(() => { const g = $('#gate'); g && g.focus(); }, 50);
+}
+const fmtTime = s => s >= 3600 ? `${Math.floor(s / 3600)} h ${Math.floor(s % 3600 / 60)} min` : s >= 60 ? `${Math.floor(s / 60)} min` : `${s} sec`;
+const stateOf = id => (id === R.active && S) ? S : loadState(id);
+function kidSummary(T) {
+  const ws = Object.values(T.words), days = T.stats.days || {};
+  const lastDay = Object.keys(days).filter(d => (days[d].s || days[d].w)).sort().pop();
+  const week = [...Array(7)].map((_, i) => dstr(new Date(Date.now() - i * DAY)));
+  return {
+    total:ws.length, mastered:ws.filter(w => w.mastered).length, learning:ws.filter(w => !w.mastered && w.step > 0).length,
+    due:ws.filter(w => w.mastered && w.due <= Date.now()).length,
+    weekLearned:ws.filter(w => w.mastered && w.masteredAt && week.includes(dstr(new Date(w.masteredAt)))).length,
+    weekSecs:week.reduce((a, d) => a + ((days[d] && days[d].s) || 0), 0),
+    todaySecs:(days[today()] || {}).s || 0, todayWords:T.daily.date === today() ? T.daily.words.length : 0, goal:T.daily.goal,
+    accuracy:T.stats.correct ? Math.round(T.stats.correct / (T.stats.correct + T.stats.wrong) * 100) : 0,
+    streak:streakNow(T), lastDay
+  };
+}
+SCREENS.parent = () => {
+  if (!parentOk) return go(S ? 'learn' : 'profiles');
+  app.innerHTML = topBar('👪 Parents\' area', S ? 'learn' : 'profiles') + `
+  <div class="card"><div class="row"><h3>👧 Children</h3><span class="spacer"></span><button class="btn sm orange" data-act="add-kid">➕ Add a child</button></div>
+    ${R.profiles.length ? `<div class="kid-rows">${R.profiles.map(p => { const k = kidSummary(stateOf(p.id));
+      return `<div class="kid-row"><span class="av">${p.avatar}</span>
+        <div style="flex:1;min-width:180px"><b style="font-size:19px">${esc(p.name)}</b>${p.id === R.active ? ' <span class="wchip done">playing now</span>' : ''}
+          <div class="small muted">⭐ ${k.mastered}/${k.total} words learned · 📝 ${k.learning} in progress · 🔁 ${k.due} to review</div>
+          <div class="small muted">This week: ${plural(k.weekLearned, 'new word')} · ${fmtTime(k.weekSecs)} · 🔥 ${k.streak}-day streak · last active ${k.lastDay ? fmtDate(new Date(k.lastDay + 'T12:00').getTime()) : 'never'}</div></div>
+        <div class="row"><button class="btn sm blue" data-act="report" data-id="${p.id}">📊 Report</button><button class="btn sm" data-act="edit-kid" data-id="${p.id}">✏️ Edit</button></div></div>`; }).join('')}</div>`
+      : '<p class="muted">No children yet.</p>'}
+  </div>
+  ${S ? `<div class="card"><h3>⚙️ Settings for ${profile().avatar} ${esc(profile().name)}</h3>
+    <label class="fl">Daily goal</label><div class="chips">${GOALS.map(g => `<button class="chip ${g === S.daily.goal ? 'on' : ''}" data-act="goal" data-g="${g}">${g} words · reward ${GOAL_REWARD[g][0]} 💰</button>`).join('')}</div>
+    <label class="fl">Reading speed: <span id="ratev">${S.settings.rate}</span></label>
+    <div class="row"><input type="range" min="0.5" max="1.2" step="0.05" value="${S.settings.rate}" data-change="rate" style="flex:1"><button class="btn sm" data-act="say" data-text="Hello! Let's learn English.">🔊 Test</button></div>
+    <label class="fl"><input type="checkbox" data-change="sound" ${S.settings.sound ? 'checked' : ''}> Sound effects on</label>
+    <div class="small muted" style="margin-top:8px">Voice: ${esc(Speech.voice ? Speech.voice.name : 'browser default')}</div></div>` : ''}
+  ${cloudCardHTML()}
+  <div class="card"><h3>💾 Data</h3>
+    <div class="small muted">${Cloud.user ? 'Data is saved in this browser and in the cloud. A backup file is still handy to keep a copy yourself.' : 'All data is saved only in this browser. Make a backup to move it to another device.'}</div>
+    <div class="row" style="margin-top:8px"><button class="btn sm" data-act="export">⬇️ Back up all children</button>
+      <label class="btn sm">⬆️ Restore from file<input type="file" accept="application/json,.json" data-change="import" hidden></label>
+      <span class="spacer"></span><button class="btn sm danger" data-act="reset-all">🗑 Delete everything</button></div>
+    <div class="small muted" style="margin-top:8px">Pictures come from Openverse/Wikipedia, meanings from MyMemory, pronunciation and examples from dictionaryapi.dev. If a picture isn't right, open the word in its list to change it or upload your own.</div></div>`;
+};
+SCREENS.report = ({id, list}) => {
+  if (!parentOk) return go(S ? 'learn' : 'profiles');
+  const p = profile(id); if (!p) return go('parent');
+  const T = stateOf(id), k = kidSummary(T);
+  const days = [...Array(14)].map((_, i) => dstr(new Date(Date.now() - (13 - i) * DAY)));
+  const dl = d => T.stats.days[d] || {};
+  const learnedOn = {};
+  for (const w of Object.values(T.words)) if (w.masteredAt) { const d = dstr(new Date(w.masteredAt)); learnedOn[d] = (learnedOn[d] || 0) + 1; }
+  const mins = days.map(d => (dl(d).s || 0) / 60), learnedN = days.map(d => learnedOn[d] || 0);
+  const maxM = Math.max(5, ...mins), maxL = Math.max(3, ...learnedN);
+  const all = Object.values(T.words).filter(w => !list || w.listId === list);
+  const listName = id2 => (T.lists.find(l => l.id === id2) || {}).name || '';
+  const learned = all.filter(w => w.mastered).sort((a, b) => (b.masteredAt || 0) - (a.masteredAt || 0));
+  const inProg = all.filter(w => !w.mastered && w.step > 0).sort((a, b) => b.step - a.step);
+  const notYet = all.filter(w => !w.mastered && !w.step);
+  const hard = all.filter(w => w.wrong > 0).sort((a, b) => b.wrong / (b.right + 1) - a.wrong / (a.right + 1)).slice(0, 10);
+  const stars = b => '★'.repeat(Math.max(1, b || 1)) + '☆'.repeat(5 - Math.max(1, b || 1));
+  app.innerHTML = topBar(`📊 ${p.avatar} ${esc(p.name)}'s report`, 'parent') + `
+  <div class="card"><div class="stats">
+    <div class="stat"><div class="v">${k.mastered}</div><div class="l">Words learned</div></div>
+    <div class="stat"><div class="v">${k.learning}</div><div class="l">In progress</div></div>
+    <div class="stat"><div class="v">${k.total - k.mastered - k.learning}</div><div class="l">Not started</div></div>
+    <div class="stat"><div class="v">${k.due}</div><div class="l">Due for review</div></div>
+    <div class="stat"><div class="v">${k.todayWords}/${k.goal}</div><div class="l">Today's goal</div></div>
+    <div class="stat"><div class="v" style="font-size:22px">${fmtTime(k.todaySecs)}</div><div class="l">Time today</div></div>
+    <div class="stat"><div class="v">${k.accuracy}%</div><div class="l">Correct answers</div></div>
+    <div class="stat"><div class="v">🔥 ${k.streak}</div><div class="l">Day streak</div></div></div></div>
+  <div class="card"><h3>📅 Last 14 days</h3>
+    <div class="small muted">Bars: minutes learning · ⭐ new words learned that day</div>
+    <div class="chart">${days.map((d, i) => `<div class="c"><span>${learnedN[i] ? '⭐' + learnedN[i] : ''}</span><span>${Math.round(mins[i]) || ''}</span><i style="height:${mins[i] / maxM * 100}%"></i><span>${+d.slice(5, 7)}/${+d.slice(8)}</span></div>`).join('')}</div></div>
+  <div class="card"><div class="row"><h3>⭐ Words learned (${learned.length})</h3><span class="spacer"></span>
+      <select data-change="report-list" data-id="${id}" style="width:auto"><option value="">All lists</option>${T.lists.map(l => `<option value="${l.id}" ${l.id === list ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select>
+      <button class="btn sm" data-act="csv" data-id="${id}">⬇️ CSV</button></div>
+    ${learned.length ? `<div class="tbl-wrap"><table class="hard"><tr><th>Word</th><th>Meaning</th><th>List</th><th>Learned on</th><th>Memory</th><th>Next review</th><th>✓/✗</th></tr>
+      ${learned.map(w => `<tr><td><b>${esc(w.word)}</b></td><td>${esc(w.vi)}</td><td class="small">${esc(listName(w.listId))}</td><td>${fmtDate(w.masteredAt)}</td>
+        <td class="stars" title="Review level ${w.box || 1} of 5">${stars(w.box)}</td><td>${w.due <= Date.now() ? '<b style="color:#a66b00">today</b>' : fmtDate(w.due)}</td><td>${w.right}/${w.wrong}</td></tr>`).join('')}</table></div>`
+      : '<p class="muted">No words learned yet.</p>'}</div>
+  <div class="card"><h3>📝 Learning now (${inProg.length})</h3>
+    ${inProg.length ? `<div class="wchips">${inProg.map(w => `<span class="wchip">${esc(w.word)} · ${w.step}/${roundsFor(w).length}</span>`).join('')}</div>` : '<p class="muted">Nothing in progress.</p>'}
+    ${notYet.length ? `<div class="small muted" style="margin-top:10px">Not started yet: ${notYet.map(w => esc(w.word)).join(', ')}</div>` : ''}</div>
+  <div class="card"><h3>🧩 Needs practice</h3>${hard.length ? `<table class="hard"><tr><th>Word</th><th>Meaning</th><th>Wrong</th><th>Correct</th><th>Status</th></tr>
+    ${hard.map(w => `<tr><td><b>${esc(w.word)}</b></td><td>${esc(w.vi)}</td><td>${w.wrong}</td><td>${w.right}</td><td>${wordStatus(w).txt}</td></tr>`).join('')}</table>` : '<div class="small muted">No mistakes yet.</div>'}</div>
+  <div class="card"><h3>📒 Progress by list</h3>${T.lists.map(l => { const ws = listWords(l.id, T), m = ws.filter(w => w.mastered).length;
+    return `<div class="row" style="margin:6px 0"><span style="min-width:160px;flex:1">${esc(l.name)}</span><div class="goal-bar" style="flex:2;margin:0"><i style="width:${ws.length ? m / ws.length * 100 : 0}%"></i></div><b>${m}/${ws.length}</b></div>`; }).join('') || '<p class="muted">No lists.</p>'}</div>
+  <div class="card"><h3>🏅 Badges & garden</h3>
+    <div class="stickers">${BADGES.map(b => `<div class="stk ${T.stickers.includes(b.id) ? '' : 'off'}"><span class="se">${b.icon}</span>${esc(b.name)}</div>`).join('')}</div>
+    <div class="small muted" style="margin-top:10px">Garden: ${plural(T.farm.beds.length, 'bed')} · ${plural(T.farm.beds.flatMap(b => b.plots).filter(Boolean).length, 'plant')} · ${plural(T.farm.totalHarvest, 'harvest')} · 💰 ${T.farm.coins} · 💧 ${T.farm.water}</div></div>`;
+};
+function reportCSV(id) {
+  const T = stateOf(id), p = profile(id);
+  const listName = l => (T.lists.find(x => x.id === l) || {}).name || '';
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const rows = [['word', 'meaning', 'list', 'status', 'learned_on', 'review_level', 'next_review', 'correct', 'wrong']];
+  for (const w of Object.values(T.words).sort((a, b) => a.added - b.added))
+    rows.push([w.word, w.vi, listName(w.listId), wordStatus(w).txt, w.masteredAt ? dstr(new Date(w.masteredAt)) : '', w.mastered ? w.box : '', w.mastered ? dstr(new Date(w.due)) : '', w.right, w.wrong]);
+  const blob = new Blob(['﻿' + rows.map(r => r.map(q).join(',')).join('\r\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `word-farm-${p.name.replace(/\s+/g, '-')}-${today()}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+// ---------- events ----------
+const ACT = {
+  'go': el => go(el.dataset.to, el.dataset.list ? {list:el.dataset.list} : {}),
+  'tab': (el, e) => { e && e.preventDefault(); closeModal(); go(el.dataset.to, el.dataset.sub ? {sub:el.dataset.sub} : {}); },
+  'close-modal': () => { closeModal(); if (pendingAsk) { pendingAsk(false); pendingAsk = null; } },
+  'modal-ok': () => { const r = pendingAsk; pendingAsk = null; closeModal(); r && r(true); },
+  'goal': el => { S.daily.goal = +el.dataset.g; save(); render(); },
+  'learn': (el, e) => { e && e.preventDefault(); closeModal(); startSession(el.dataset.list || null); },
+  'parent': () => parentGate(),
+  'gate-ok': () => { if (+$('#gate').value === gateAns) { parentOk = true; closeModal(); go('parent'); } else { $('#gate').classList.add('shake'); toast('Not quite!'); } },
+  // children
+  'pick-kid': el => { if (el.dataset.id !== R.active || !S) switchProfile(el.dataset.id); Sfx.pop(); go('learn'); },
+  'add-kid': () => kidForm(null),
+  'edit-kid': el => kidForm(el.dataset.id),
+  'save-kid': el => {
+    const name = $('#kid-name').value.trim();
+    if (!name) { $('#kid-name').classList.add('shake'); return toast('Please type a name.'); }
+    const avatar = (document.querySelector('input[name=kid-av]:checked') || {}).value || '🐰';
+    const goal = +((document.querySelector('input[name=kid-goal]:checked') || {}).value || 5);
+    if (el.dataset.id) {
+      const p = profile(el.dataset.id); p.name = name; p.avatar = avatar; saveRoot();
+      if (p.id === R.active && S) { S.daily.goal = goal; save(); }
+      else { const T = loadState(p.id); T.daily.goal = goal; localStorage.setItem(PKEY(p.id), JSON.stringify(T)); markDirty(p.id); }
+      closeModal(); toast(`✏️ Saved ${esc(name)}`); render();
+    } else {
+      createProfile(name, avatar, goal); closeModal(); Sfx.win(); FX.burst(60);
+      toast(`${avatar} Welcome, ${esc(name)}! Here are 8 starter words to learn.`, 3200); go('learn');
+    }
+  },
+  'del-kid': async el => {
+    const p = profile(el.dataset.id);
+    if (!await askModal(`Delete ${esc(p.name)}'s profile with all their words, progress and garden? This can't be undone.`, 'Delete', true)) return;
+    const T = stateOf(p.id);
+    for (const w of Object.values(T.words)) dropImage(w.id);
+    localStorage.removeItem(PKEY(p.id));
+    R.profiles = R.profiles.filter(x => x.id !== p.id);
+    if (R.dirty) delete R.dirty[p.id];
+    if (R.cloudOwner) R.deletedIds = [...new Set([...(R.deletedIds || []), p.id])]; // tell the cloud and the other devices
+    if (R.active === p.id) { S = null; G = null; R.active = null; }
+    saveRoot(); Cloud.schedule(); toast(`🗑 Deleted ${esc(p.name)}'s profile`);
+    go(cur.name === 'parent' || cur.name === 'report' ? 'parent' : 'profiles');
+  },
+  'report': el => go('report', {id:el.dataset.id}),
+  // cloud
+  'cloud-signin': () => signInModal(),
+  'cloud-send': async el => {
+    const email = ($('#cloud-email').value || '').trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $('#cloud-email').classList.add('shake'); return toast('Please type a valid email address.'); }
+    el.disabled = true; el.textContent = 'Sending…';
+    try { await Cloud.sendLink(email); toast('✉️ Sign-in email sent!'); }
+    catch (e) { toast('⚠️ ' + esc(e.message || 'Could not send the email.'), 4000); }
+    refreshSignIn();
+  },
+  'cloud-code': async el => {
+    const code = ($('#cloud-code').value || '').replace(/\s/g, '');
+    if (!/^\d{6,10}$/.test(code)) { $('#cloud-code').classList.add('shake'); return toast('Type the code from the email.'); }
+    el.disabled = true;
+    try { await Cloud.verifyCode(code); Cloud.sentTo = ''; closeModal(); toast('☁️ Signed in! Syncing your children…'); }
+    catch (e) { el.disabled = false; toast('⚠️ ' + esc(e.message || 'That code didn\'t work.'), 4000); }
+  },
+  'cloud-login': async el => {
+    const f = cloudCreds(); if (!f) return;
+    el.disabled = true;
+    try { await Cloud.signInPw(f.email, f.pw); closeModal(); toast('☁️ Signed in! Syncing your children…'); }
+    catch (e) { el.disabled = false; toast('⚠️ ' + esc(/invalid/i.test(e.message) ? 'Wrong email or password.' : e.message), 4000); }
+  },
+  'cloud-signup': async el => {
+    const f = cloudCreds(); if (!f) return;
+    el.disabled = true;
+    try {
+      const inNow = await Cloud.signUpPw(f.email, f.pw);
+      if (inNow) { closeModal(); toast('☁️ Account created! Syncing your children…'); }
+      else { el.disabled = false; toast('✉️ Account created. Supabase sent a confirmation email — tap the link in it, then sign in here. (To skip this, turn off "Confirm email" in Supabase.)', 7000); }
+    } catch (e) { el.disabled = false; toast('⚠️ ' + esc(/registered/i.test(e.message) ? 'This email already has an account — use Sign in.' : e.message), 5000); }
+  },
+  'cloud-pw-change': async () => {
+    const pw = prompt('New password (at least 6 characters):');
+    if (pw == null) return;
+    if (pw.length < 6) return toast('Password needs at least 6 characters.');
+    try { await Cloud.changePw(pw); toast('🔑 Password changed.'); } catch (e) { toast('⚠️ ' + esc(e.message), 4000); }
+  },
+  'cloud-restart': () => { Cloud.sentTo = ''; refreshSignIn(); },
+  'cloud-sync': () => Cloud.sync(),
+  'cloud-signout': async () => {
+    if (!await askModal('Sign out on this device? Your children\'s data stays safe in the cloud and is removed from this device. Sign in again to get it back.', 'Sign out', true)) return;
+    try { await Cloud.signOut(); toast('Signed out.'); go('profiles'); }
+    catch (e) { toast('⚠️ ' + esc(e.message), 5000); }
+  },
+  'csv': el => reportCSV(el.dataset.id),
+  // word lists
+  'open-list': el => go('list', {id:el.dataset.id}),
+  'del-list': async el => {
+    const l = S.lists.find(x => x.id === el.dataset.id);
+    if (!await askModal(`Delete the list “${esc(l.name)}” and all its words?`, 'Delete', true)) return;
+    for (const w of listWords(l.id)) { delete S.words[w.id]; dropImage(w.id); }
+    S.lists = S.lists.filter(x => x.id !== l.id); save(); go('learn');
+  },
+  'copy-list': el => copyListModal(el.dataset.id),
+  'do-copy': async el => {
+    const n = await copyList(el.dataset.list, el.dataset.id);
+    closeModal(); toast(`📋 Copied ${plural(n, 'word')} to ${esc(profile(el.dataset.id).name)}`);
+  },
+  'word': el => wordModal(el.dataset.id),
+  'say': el => Speech.say(el.dataset.text, el.dataset.id && S ? S.words[el.dataset.id] : null),
+  'img-next': async el => {
+    const w = S.words[el.dataset.id];
+    if (w.img === 'idb') w.img = '';
+    else if (w.imgs.length > 1) w.imgIdx = (w.imgIdx + 1) % w.imgs.length;
+    else if (navigator.onLine) { toast('🔎 Looking for pictures…'); w.imgs = await findImages(w.word); w.imgIdx = w.imgs.length > 1 ? 1 : 0; if (!w.imgs.length) toast('No pictures found — upload your own!'); }
+    save(); wordModal(w.id);
+  },
+  'img-clear': el => { const w = S.words[el.dataset.id]; w.img = ''; dropImage(w.id); save(); wordModal(w.id); },
+  'refetch': async el => {
+    const w = S.words[el.dataset.id]; if (!navigator.onLine) return toast('📴 No internet connection.');
+    toast('🌐 Reloading…'); w.enriched = false; w.imgs = []; w.examples = []; w.phonetic = '';
+    await enrich(w); wordModal(w.id);
+  },
+  'reset-word': el => { const w = S.words[el.dataset.id]; Object.assign(w, {step:0, mastered:false, masteredAt:null, box:0, due:0}); save(); wordModal(w.id); if (cur.name === 'list') render(); toast('↺ This word will be learned again from the start.'); },
+  'del-word': async el => {
+    const w = S.words[el.dataset.id];
+    if (!await askModal(`Delete the word “${esc(w.word)}”?`, 'Delete', true)) return;
+    delete S.words[w.id]; dropImage(w.id); save(); render();
+  },
+  'add-tab': el => { addState.tab = el.dataset.t; render(); },
+  'parse-text': () => {
+    const items = parseVocab($('#vtext').value);
+    if (!items.length) return toast('No English words found.');
+    draft.push(...items); $('#vtext').value = ''; refreshDraft(); toast(`👍 Added ${plural(items.length, 'word')} to the preview.`);
+  },
+  'ocr-run': () => runOCR(),
+  'draft-del': el => { draft.splice(+el.dataset.i, 1); refreshDraft(); },
+  'draft-add': () => { draft.push({word:'', vi:''}); refreshDraft(); const ins = document.querySelectorAll('[data-field="draft-word"]'); ins[ins.length - 1].focus(); },
+  'draft-clear': () => { draft = []; refreshDraft(); },
+  'draft-save': () => {
+    let listId = addState.list;
+    if (listId === 'new') { listId = addList(addState.newName.trim() || ('List ' + new Date().toLocaleDateString('en-US'))); addState.list = listId; addState.newName = ''; }
+    const ids = addWords(listId, draft.map(d => [d.word, d.vi]));
+    const skipped = draft.length - ids.length;
+    draft = []; addState.ocr = null;
+    toast(`💾 Added ${plural(ids.length, 'new word')}!${skipped ? ` (skipped ${skipped} duplicate or invalid)` : ''}`, 3200);
+    Sfx.win(); FX.burst(50);
+    queueEnrich(ids); go('list', {id:listId});
+  },
+  // game
+  'quit': async () => {
+    if (!await askModal('Stop learning? The word you\'re on is saved, so you can continue next time.', 'Stop')) return;
+    G = null; go('learn');
+  },
+  'say-word': () => Speech.say(G.cur.w.word, G.cur.w),
+  'say-slow': () => Speech.say(G.cur.w.word, G.cur.w, .55),
+  'say-ex': el => Speech.say(G.cur.w.examples[+el.dataset.k], null),
+  'card-ok': () => success(),
+  'tile': el => tileTap(+el.dataset.k),
+  'slot': el => slotTap(+el.dataset.i),
+  'key': el => typeKey(el.dataset.c),
+  'hint': () => { const c = G.cur; if (c.busy || c.done) return; c.ty ? typeHint(false) : revealSlot(false); },
+  'next': () => nextRound(),
+  // garden
+  'plot': el => {
+    const bi = +el.dataset.b, pi = +el.dataset.p, p = S.farm.beds[bi].plots[pi], st = plotState(p);
+    if (st === 'empty') return seedPicker(bi, pi);
+    if (st === 'water') { if (waterPlot(bi, pi)) { Sfx.water(); save(); render(); setTimeout(() => cur.name === 'garden' && render(), 1300); } return; }
+    if (st === 'ripe') return harvest(bi, pi, el);
+    plotInfo(bi, pi);
+  },
+  'water-bed': el => {
+    const bi = +el.dataset.b; let n = 0;
+    S.farm.beds[bi].plots.forEach((p, pi) => { if (waterPlot(bi, pi, true)) n++; });
+    if (!n) return toast('💧 Out of water! Learn more words or sell your harvest at the Market.');
+    Sfx.water(); save(); render(); setTimeout(() => cur.name === 'garden' && render(), 1300);
+    const left = S.farm.beds[bi].plots.filter(p => plotState(p) === 'water').length;
+    toast(`💧 Watered ${plural(n, 'plant')}${left ? ` · ${left} not watered (out of water)` : ''}`);
+  },
+  'plant': el => {
+    const t = el.dataset.t, bi = +el.dataset.b, pi = +el.dataset.p;
+    if (!(S.farm.seeds[t] > 0) || S.farm.beds[bi].plots[pi]) return;
+    S.farm.seeds[t]--; S.farm.beds[bi].plots[pi] = {t, stage:0, wAt:null};
+    save(); closeModal(); Sfx.pop(); toast(`🌰 Planted ${PLANTS[t].name}! Tap 💧 to water it.`); render();
+  },
+  'uproot': async el => {
+    const bi = +el.dataset.b, pi = +el.dataset.p, p = S.farm.beds[bi].plots[pi];
+    if (!await askModal(`Remove the ${esc(PLANTS[p.t].name.toLowerCase())}? The spot will be free for a new plant.`, 'Remove', true)) return;
+    S.farm.beds[bi].plots[pi] = null; save(); render();
+  },
+  'barn': () => barnModal(),
+  'buy-land': async () => {
+    const cost = BED_COST[S.farm.beds.length];
+    if (S.farm.beds.length >= MAX_BEDS) return;
+    if (S.farm.coins < cost) { Sfx.bad(); return toast(`You need ${cost} 💰 to buy land. You have ${S.farm.coins} 💰 — learn a few more words! 📚`); }
+    if (!await askModal(`Buy this land as bed ${S.farm.beds.length + 1} (holds ${PLOTS_PER_BED} plants) for ${cost} 💰?`, `Buy · ${cost} 💰`)) return;
+    ACT['buy-bed']();
+  },
+  // shop
+  'shop-sub': el => { shopState.sub = el.dataset.s; render(); },
+  'shop-cat': el => { shopState.cat = el.dataset.c; render(); },
+  'buy-seed': el => {
+    const t = el.dataset.t, p = PLANTS[t];
+    if (!plantUnlocked(t) || S.farm.coins < p.cost) return;
+    S.farm.coins -= p.cost; S.farm.seeds[t] = (S.farm.seeds[t] || 0) + 1; save(); Sfx.coin();
+    toast(`🛒 Bought 1 ${p.icon} ${p.name.toLowerCase()} seed. Go plant it!`); render();
+  },
+  'buy-bed': () => {
+    const cost = BED_COST[S.farm.beds.length];
+    if (S.farm.beds.length >= MAX_BEDS || S.farm.coins < cost) return;
+    S.farm.coins -= cost; S.farm.beds.push(newBed()); save(); Sfx.win(); FX.burst(60);
+    toast(`🚜 Your garden got bed ${S.farm.beds.length}!`); checkBadges(); render();
+  },
+  'sell': el => sell(el.dataset.t, +el.dataset.n),
+  'sell-all': () => { let w = 0; for (const [t, n] of Object.entries(S.farm.barn)) if (n > 0 && PLANTS[t]) w += sell(t, n, true); if (w) toast(`🏪 Sold all your harvest for ${w} 💧`); render(); },
+  // data
+  'export': () => {
+    const profiles = {}; for (const p of R.profiles) profiles[p.id] = stateOf(p.id);
+    const blob = new Blob([JSON.stringify({app:'nttv', v:3, root:R, profiles, imgs:IMG})], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `word-farm-backup-${today()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  },
+  'reset-all': async () => {
+    if (!await askModal(`Delete ALL children, words, progress and gardens${Cloud.user ? ' on this device and in the cloud' : ''}? This can't be undone.`, 'Delete everything', true)) return;
+    if (Cloud.user) {
+      // remove the children from the cloud too, then sign out
+      const photos = R.profiles.flatMap(p => Object.values(stateOf(p.id).words).filter(w => w.img === 'idb').map(w => w.id));
+      R.deletedIds = [...new Set([...(R.deletedIds || []), ...R.profiles.map(p => p.id)])];
+      R.photoDel = [...new Set([...(R.photoDel || []), ...photos])]; R.dirty = {}; R.photoUp = [];
+      for (const p of R.profiles) localStorage.removeItem(PKEY(p.id));
+      R.profiles = []; R.active = null; S = null; saveRoot();
+      await Cloud.sync(true);
+      if (Cloud.status === 'error') return toast('⚠️ Could not delete the cloud copy: ' + esc(Cloud.err), 5000);
+      await Cloud.sb.auth.signOut().catch(() => {});
+    }
+    for (const p of R.profiles) localStorage.removeItem(PKEY(p.id));
+    localStorage.removeItem(ROOT_KEY); localStorage.removeItem(OLD_KEY);
+    try { for (const k of Object.keys(IMG)) await IDB.del(k); } catch (e) {}
+    location.reload();
+  }
+};
+function harvest(bi, pi, el) {
+  const p = S.farm.beds[bi].plots[pi], sp = PLANTS[p.t];
+  S.farm.barn[p.t] = (S.farm.barn[p.t] || 0) + sp.yield;
+  S.farm.harvests[p.t] = (S.farm.harvests[p.t] || 0) + 1; S.farm.totalHarvest++;
+  const after = AFTER[sp.cat];
+  if (after == null) S.farm.beds[bi].plots[pi] = null; else { p.stage = after; p.wAt = null; }
+  save(); Sfx.win();
+  const r = el.getBoundingClientRect();
+  FX.burst(14, [sp.icon], r.left + r.width / 2, r.top + r.height / 3, 5);
+  toast(`🧺 Picked ${sp.yield} ${sp.icon} ${sp.name.toLowerCase()}! Stored in the barn.${after != null ? ' Keep watering for the next season.' : ''}`);
+  checkBadges(); render();
+}
+function sell(t, n, quiet) {
+  const have = S.farm.barn[t] || 0; n = Math.min(n, have); if (!n) return 0;
+  const w = n * PLANTS[t].sell;
+  S.farm.barn[t] = have - n; S.farm.water += w; save(); Sfx.water();
+  if (!quiet) { toast(`🏪 Sold ${n} ${PLANTS[t].icon} for ${w} 💧`); render(); }
+  return w;
+}
+document.body.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+  const f = ACT[el.dataset.act]; if (f) f(el, e);
+});
+document.body.addEventListener('input', e => {
+  const el = e.target, f = el.dataset.field; if (!f) return;
+  if (f === 'draft-word') draft[+el.dataset.i].word = el.value;
+  else if (f === 'draft-vi') draft[+el.dataset.i].vi = el.value;
+  else if (f === 'new-name') addState.newName = el.value;
+  else if (f === 'list-name') { const l = S.lists.find(x => x.id === el.dataset.id); if (l) { l.name = el.value.trim() || l.name; save(); } }
+  else if (f === 'vi') { S.words[el.dataset.id].vi = el.value.trim(); save(); }
+  else if (f === 'examples') { S.words[el.dataset.id].examples = el.value.split('\n').map(s => s.trim()).filter(Boolean); save(); }
+});
+document.body.addEventListener('change', async e => {
+  const el = e.target, f = el.dataset.change; if (!f) return;
+  if (f === 'add-list') { addState.list = el.value; render(); }
+  else if (f === 'report-list') go('report', {id:el.dataset.id, list:el.value || null});
+  else if (f === 'rate') { S.settings.rate = +el.value; save(); $('#ratev').textContent = el.value; }
+  else if (f === 'sound') { S.settings.sound = el.checked; save(); }
+  else if (f === 'ocr-file' && el.files[0]) {
+    const file = el.files[0];
+    if (addState.ocr && addState.ocr.url) URL.revokeObjectURL(addState.ocr.url);
+    addState.ocr = {file, url:URL.createObjectURL(file)}; refreshOcr(); runOCR();
+  }
+  else if (f === 'img-upload' && el.files[0]) {
+    const w = S.words[el.dataset.id];
+    try { const data = await resizeImage(el.files[0]); IMG[w.id] = data; await IDB.put(w.id, data); w.img = 'idb'; save(); if (R.cloudOwner) Cloud.photoAdded(w.id); toast('📷 Using your photo!'); }
+    catch (err) { toast('Could not open this image.'); }
+    wordModal(w.id);
+  }
+  else if (f === 'import' && el.files[0]) {
+    try {
+      const d = JSON.parse(await el.files[0].text());
+      if (d.app !== 'nttv' || !(d.root || (d.state && d.state.words))) throw new Error();
+      if (!await askModal('Replace all current data with the data in this backup file?', 'Restore', true)) return;
+      for (const p of R.profiles) localStorage.removeItem(PKEY(p.id));
+      const now = Date.now();
+      let root, states;
+      if (d.root) { root = d.root; states = d.profiles || {}; }
+      else { // backup from before profiles existed: becomes one child
+        const id = uid(); root = {profiles:[{id, name:'My child', avatar:'🐰', created:now}], active:id}; states = {[id]:d.state};
+      }
+      // keep the cloud account of this device; the restored children count as the newest copy
+      root.cloudOwner = R.cloudOwner; root.dirty = {}; root.photoUp = [];
+      root.deletedIds = R.cloudOwner ? R.profiles.map(p => p.id).filter(id => !root.profiles.some(q => q.id === id)) : [];
+      for (const p of root.profiles) { p.updatedAt = now; root.dirty[p.id] = now; }
+      localStorage.setItem(ROOT_KEY, JSON.stringify(root));
+      for (const [id, st] of Object.entries(states)) localStorage.setItem(PKEY(id), JSON.stringify(st));
+      for (const [k, v] of Object.entries(d.imgs || {})) { await IDB.put(k, v); if (R.cloudOwner) root.photoUp.push(k); }
+      localStorage.setItem(ROOT_KEY, JSON.stringify(root));
+      location.reload();
+    } catch (err) { toast('This backup file isn\'t valid.'); }
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.target.matches && e.target.matches('input,textarea,select')) {
+    if (e.key === 'Enter' && e.target.id === 'gate') ACT['gate-ok']();
+    if (e.key === 'Enter' && e.target.id === 'kid-name') $('[data-act=save-kid]').click();
+    if (e.key === 'Enter' && e.target.id === 'cloud-email') $('#cloud-pw').focus();
+    if (e.key === 'Enter' && e.target.id === 'cloud-pw') $('[data-act=cloud-login]').click();
+    if (e.key === 'Enter' && e.target.id === 'cloud-code') $('[data-act=cloud-code]').click();
+    return;
+  }
+  if (e.key === 'Escape' && $('#modal').classList.contains('on')) return ACT['close-modal']();
+  if (cur.name !== 'game' || !G || !G.cur) return;
+  const c = G.cur, k = e.key.toLowerCase();
+  if (e.key === 'Enter') { if (c.done) nextRound(); else if (c.r.k === 'card') success(); return; }
+  if (c.done) return;
+  if (c.slots) {
+    if (/^[a-z]$/.test(k)) { const t = c.slots.tray.find(t => !t.used && !t.bad && t.ch === k); if (t) tileTap(t.k); }
+    else if (e.key === 'Backspace') { const s = c.slots; const i = [...s.blanks].reverse().find(i => s.fill[i] != null && !s.locked[i]); if (i != null) slotTap(i); }
+  } else if (c.ty) {
+    if (/^[a-z]$/.test(k)) typeKey(k);
+    else if (e.key === 'Backspace') typeKey('back');
+  }
+});
+
+// ---------- clock: plants grow, learning time ----------
+let tick = 0;
+setInterval(() => {
+  if (!S) return;
+  const changed = tickPlants();
+  if (cur.name === 'garden') { if (changed) render(); else updateTimers(); }
+  else if (changed) renderTabbar();
+  if (document.visibilityState !== 'visible' || cur.name !== 'game') return;
+  dayLog().s++;
+  if (++tick % 10 === 0) save();
+}, 1000);
+addEventListener('online', () => S && queueEnrich(Object.values(S.words).filter(w => !w.enriched).map(w => w.id)));
+
+// ---------- start ----------
+(async function init() {
+  loadRoot(); FX.init(); Speech.init();
+  try { Object.assign(IMG, await IDB.all()); } catch (e) {}
+  if (Cloud.enabled()) {
+    // signed in on this device: get the newest copy from the cloud before the child starts playing
+    app.innerHTML = `<div class="card mascot-card" style="margin-top:30vh"><div class="mascot">🐰</div><div class="bubble">Loading Word Farm…</div></div>`;
+    await Promise.race([Cloud.init().then(() => Cloud.busy ? new Promise(r => { const t = setInterval(() => { if (!Cloud.busy) { clearInterval(t); r(); } }, 100); }) : null), sleep(7000)]);
+  }
+  if (!S && R.active && profile(R.active)) S = loadState(R.active);
+  if (S) rollDay(); else if (R.active && !profile(R.active)) { R.active = null; saveRoot(); }
+  go(S ? 'learn' : 'profiles');
+  if (!R.profiles.length && !(Cloud.enabled() && !Cloud.user)) kidForm(null);
+  if (S) queueEnrich(Object.values(S.words).filter(w => !w.enriched).map(w => w.id));
+})();
+// coming back to the app: fetch changes made on other devices
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Cloud.user && Date.now() - Cloud.lastPull > 30000) Cloud.sync(); });
+addEventListener('online', () => Cloud.user && Cloud.sync());
+</script>
+</body>
+</html>
