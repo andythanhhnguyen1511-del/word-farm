@@ -202,11 +202,12 @@ pre.fmt{background:#f7f9fc;border-radius:12px;padding:8px 10px;white-space:pre-w
 
 /* animal pens */
 .field.ranch{background:repeating-linear-gradient(115deg,#8bc34a 0 22px,#83bb43 22px 44px)}
-.pen{position:relative;border-radius:20px;padding:10px;display:grid;grid-template-columns:repeat(5,minmax(0,160px));justify-content:space-evenly;gap:8px;background:var(--floor);
-  border:7px solid #b07a45;box-shadow:0 6px 0 #6b4220,inset 0 0 0 3px #e0a868;background-image:radial-gradient(rgba(255,255,255,.18) 1.5px,transparent 2px);background-size:14px 14px}
-.pen .pond{position:absolute;right:12px;bottom:10px;width:30%;height:42%;border-radius:50%;background:radial-gradient(#9fdcff,#4fb3e8);opacity:.85;pointer-events:none}
-.aslot{position:relative;border:none;background:rgba(255,255,255,.22);border-radius:16px;cursor:pointer;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:4px 2px 6px;z-index:1}
-.aslot:hover{background:rgba(255,255,255,.4)}
+.pen{position:relative;border-radius:20px;padding:44px 10px 26px;display:grid;grid-template-columns:repeat(5,minmax(0,160px));justify-content:space-evenly;gap:8px;
+  background:linear-gradient(#e3f4ff 48%,var(--floor) 48%);box-shadow:0 5px 0 #6b4220,0 0 0 3px #b07a45}
+.pen-bg{position:absolute;inset:0;border-radius:20px;overflow:hidden;pointer-events:none;z-index:0}
+.pen-bg svg{display:block;width:100%;height:100%}
+.aslot{position:relative;border:none;background:transparent;border-radius:16px;cursor:pointer;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:4px 2px 6px;z-index:1}
+.aslot:hover{background:rgba(255,255,255,.28)}
 .aslot small{font-size:12px;font-weight:800;color:#4e342e;background:rgba(255,255,255,.75);border-radius:8px;padding:0 6px;white-space:nowrap}
 .aslot.empty{border:3px dashed rgba(255,255,255,.75);justify-content:center;gap:2px}
 .aslot .plus{font-size:28px;color:#fff;font-weight:800;line-height:1}
@@ -294,6 +295,14 @@ pre.fmt{background:#f7f9fc;border-radius:12px;padding:8px 10px;white-space:pre-w
 .sign b{font-size:22px;color:#7a3e00}
 .sign-t{font-size:16px}
 .land:active .sign{transform:translateY(3px);box-shadow:0 2px 0 #6b4220}
+/* wooden fence around each bed: rails + posts top and bottom, posts down both sides */
+.yard{position:relative;padding:0 16px;border-radius:6px;box-shadow:inset 7px 0 0 #c58b4e,inset -7px 0 0 #c58b4e,inset 10px 0 0 #a8713c,inset -10px 0 0 #a8713c}
+.yard .fence{height:24px;margin:0 -16px;width:calc(100% + 32px)}
+.yard .fence.top{margin-bottom:-4px}
+.yard .fence.bot{margin-top:-4px}
+.yard .soil,.yard .land{position:relative;z-index:1}
+.yard .soil{margin:4px 0 2px}
+.yard .fence{position:relative;z-index:2}
 .soil{border-radius:20px;padding:6px;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;
   background:repeating-linear-gradient(180deg,#9a6534 0 9px,#8b5a2b 9px 13px);box-shadow:0 6px 0 #5e3a18,inset 0 4px 0 rgba(255,255,255,.12)}
 .plot{position:relative;border:none;background:radial-gradient(ellipse at 50% 85%,rgba(0,0,0,.18),transparent 60%);border-radius:14px;padding:0;cursor:pointer;aspect-ratio:5/6;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
@@ -584,7 +593,7 @@ function defaultState() {
     daily:{goal:5, date:today(), words:[], rewarded:false},
     streak:{count:0, last:null},
     stickers:[], flags:{coopGift:true},
-    settings:{rate:0.85, sound:true},
+    settings:{rate:0.85, sound:true, limit:{on:false, mins:[60, 60, 60, 60, 60, 60, 60]}},
     stats:{correct:0, wrong:0, days:{}}
   };
 }
@@ -634,6 +643,9 @@ function normalize(raw) {
       w.enrichV = 1;
     }
   }
+  // parents' learning-time limit: minutes allowed per weekday (index = Date.getDay(), 0 = Sunday)
+  { const L = (raw.settings && raw.settings.limit) || {}, m = Array.isArray(L.mins) && L.mins.length === 7 ? L.mins.map(x => Math.max(0, Math.min(480, +x || 0))) : Array(7).fill(60);
+    T.settings.limit = {on:!!L.on, mins:m}; }
   T.stickers = (T.stickers || []).filter(id => BADGES.some(b => b.id === id));
   // older saves never got the free coop. Check the saved flags, not the merged ones (those already carry the default).
   // 'coopGift' replaces an earlier 'demoPen' flag that an older build wrote into saves without adding the coop.
@@ -1553,12 +1565,13 @@ function animalBody(t, adult) {
         `<g class="a-head">${circ(60, 50, 10, '#ffe082')}<path d="M56 41 q2 -6 4 -1 q1 -4 3 0" stroke="#ffca28" stroke-width="2" fill="none" stroke-linecap="round"/>${eyeC(62, 48, 2.2)}${cheek(65, 53, 2)}${bill}</g>`;
     }
     let s = birdLegs([42, 52], 71, 12);
-    s += `<g class="a-tail">${duck ? `<path d="M26 54 q-8 -10 2 -14 q0 6 6 9z" fill="#eeeeee"/>` : `<path d="M28 52 q-10 -16 4 -18 q-2 6 4 9z M26 58 q-10 -6 0 -14 q0 6 6 8z" fill="#e0e0e0"/><path d="M30 44 q-6 -12 6 -12 q-3 6 2 10z" fill="#ef5350"/>`}</g>`;
-    s += `<g class="a-body"><ellipse cx="45" cy="60" rx="21" ry="16" fill="#ffffff"/><ellipse cx="50" cy="66" rx="12" ry="7" fill="#f5f5f5"/></g>`;
-    s += `<g class="a-wing">${leafE(42, 59, 11, 6.5, -18, duck ? '#e8e8e8' : '#eeeeee')}</g>`;
-    s += `<g class="a-head">${circ(63, 40, 12.5, '#ffffff')}` +
+    s += `<g class="a-tail">${duck ? `<path d="M26 54 q-8 -10 2 -14 q0 6 6 9z" fill="#eeeeee"/>` : `<path d="M28 52 q-10 -16 4 -18 q-2 6 4 9z M26 58 q-10 -6 0 -14 q0 6 6 8z" fill="#6d3a0f"/><path d="M30 44 q-6 -12 6 -12 q-3 6 2 10z" fill="#8d4a12"/>`}</g>`;
+    // hen: warm brown feathers, cream breast, speckles, big red comb and wattle
+    s += `<g class="a-body"><ellipse cx="45" cy="60" rx="21" ry="16" fill="${duck ? '#ffffff' : '#b5651d'}"/><ellipse cx="50" cy="66" rx="12" ry="7" fill="${duck ? '#f5f5f5' : '#f3d9a4'}"/>${duck ? '' : [[36, 56], [44, 52], [32, 63], [41, 64]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2" ry="1.2" fill="#8d4a12"/>`).join('')}</g>`;
+    s += `<g class="a-wing">${leafE(42, 59, 11, 6.5, -18, duck ? '#e8e8e8' : '#8d4a12')}</g>`;
+    s += `<g class="a-head">${circ(63, 40, 12.5, duck ? '#ffffff' : '#c97a2b')}` +
       (duck ? `<path d="M71 42 q12 -2 13 3 q-6 4 -13 1z" fill="#ff9800"/><path d="M60 29 q3 -5 6 -1" stroke="#e0e0e0" stroke-width="2.5" fill="none" stroke-linecap="round"/>`
-            : `<path d="M55 30 q2 -9 6 -3 q3 -7 6 1 q4 -5 4 3z" fill="#e53935"/><path d="M73 39 l9 3.2 l-9 3.2z" fill="#ffa000"/><ellipse cx="72" cy="49" rx="2.4" ry="3.6" fill="#e53935"/>`) +
+            : `<path d="M53 31 q0 -12 5 -5 q2 -9 6 -1 q4 -8 6 1 q5 -3 3 6z" fill="#e53935"/><path d="M73 39 l9 3.2 l-9 3.2z" fill="#ffa000"/><ellipse cx="72" cy="50" rx="3" ry="5" fill="#e53935"/>`) +
       `${eyeC(66, 38)}${cheek(70, 44)}</g>`;
     return s;
   }
@@ -1603,13 +1616,15 @@ function animalBody(t, adult) {
   return '';
 }
 /* Pen pictures for the shop: 160 × 100 scene with its own building and one animal inside. */
-function penSVG(t) {
-  const A = ANIMALS[t], floor = A.floor;
-  const animal = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><g transform="translate(-50 -84)">${animalBody(t, true)}</g></g>`;
+function penSVG(t, wide) {
+  // wide = the long backdrop for the Farm tab: same scene, fence and ground stretched to 400 wide, no animal (the live animals stand in front)
+  const A = ANIMALS[t], floor = A.floor, W = wide ? 400 : 160, N = wide ? 29 : 12;
+  const animal = (x, y, s) => wide ? '' : `<g transform="translate(${x} ${y}) scale(${s})"><g transform="translate(-50 -84)">${animalBody(t, true)}</g></g>`;
   const post = (x, y1, y2) => `<rect x="${x - 2}" y="${y1}" width="4" height="${y2 - y1}" rx="1.5" fill="#e0a868" stroke="#a8713c" stroke-width=".6"/>`;
-  const fenceBack = `<rect x="0" y="38" width="160" height="3" fill="#c58b4e"/><rect x="0" y="45" width="160" height="3" fill="#c58b4e"/>` + Array.from({length:12}, (_, i) => post(6 + i * 14, 33, 52)).join('');
-  const fenceFront = `<rect x="0" y="91" width="160" height="3" fill="#c58b4e"/>` + Array.from({length:12}, (_, i) => post(6 + i * 14, 87, 100)).join('');
-  const ground = `<rect x="0" y="48" width="160" height="52" fill="${floor}"/>` + [[20, 92], [70, 60], [140, 96], [150, 62]].map(([x, y]) => `<path d="M${x} ${y} l2 -5 l1 5 l2 -4 l1 4" stroke="rgba(60,110,30,.45)" stroke-width="1.2" fill="none"/>`).join('');
+  const fenceBack = `<rect x="0" y="38" width="${W}" height="3" fill="#c58b4e"/><rect x="0" y="45" width="${W}" height="3" fill="#c58b4e"/>` + Array.from({length:N}, (_, i) => post(6 + i * 14, 33, 52)).join('');
+  const fenceFront = `<rect x="0" y="91" width="${W}" height="3" fill="#c58b4e"/>` + Array.from({length:N}, (_, i) => post(6 + i * 14, 87, 100)).join('');
+  const tufts = wide ? [[20, 92], [70, 60], [140, 96], [150, 62], [190, 70], [230, 90], [270, 58], [310, 84], [350, 66], [385, 94]] : [[20, 92], [70, 60], [140, 96], [150, 62]];
+  const ground = `<rect x="0" y="48" width="${W}" height="52" fill="${floor}"/>` + tufts.map(([x, y]) => `<path d="M${x} ${y} l2 -5 l1 5 l2 -4 l1 4" stroke="rgba(60,110,30,.45)" stroke-width="1.2" fill="none"/>`).join('');
   let scene = '';
   if (t === 'chicken') scene =
     `<path d="M6 34 L33 14 L60 34 Z" fill="#6d4c41"/><rect x="11" y="33" width="44" height="36" rx="2" fill="#c62828"/><path d="M11 40 h44 M11 48 h44 M11 56 h44 M11 64 h44" stroke="#b71c1c" stroke-width="1"/>` +
@@ -1639,7 +1654,7 @@ function penSVG(t) {
     `<rect x="20" y="56" width="28" height="32" fill="#fff"/><rect x="23" y="59" width="22" height="29" fill="#b71c1c"/><path d="M23 59 L45 88 M45 59 L23 88" stroke="#fff" stroke-width="2.4"/><rect x="28" y="28" width="12" height="9" fill="#fff"/><rect x="30" y="30" width="8" height="5" fill="#5d4037"/>` +
     `<path d="M68 88 q4 -16 14 -16 q10 0 14 16z" fill="#f2d16b"/><path d="M74 84 l4 -8 M82 86 l1 -10 M90 84 l-3 -8" stroke="#d9b648" stroke-width="1.2"/>` +
     animal(124, 88, .46);
-  return `<svg viewBox="0 0 160 100" aria-hidden="true">${ground}${fenceBack}${scene}${fenceFront}</svg>`;
+  return `<svg viewBox="0 0 ${W} 100" ${wide ? 'preserveAspectRatio="xMinYMax slice"' : ''} aria-hidden="true">${ground}${fenceBack}${scene}${fenceFront}</svg>`;
 }
 function penCardHTML(t, asButton) {
   const A = ANIMALS[t], f = S.farm, cost = PEN_COST[f.pens.length], full = f.pens.length >= MAX_PENS, can = !full && f.coins >= cost;
@@ -1673,7 +1688,7 @@ const BARN_SVG = `<svg viewBox="0 0 150 130" width="100%" height="100%">
 </svg>`;
 const HILLS_SVG = `<svg class="hills" viewBox="0 0 1000 90" preserveAspectRatio="none"><path d="M0 60 Q120 10 260 48 T540 40 T820 30 T1000 46 V90 H0Z" fill="#a5d66f"/><path d="M0 76 Q180 40 360 70 T720 62 T1000 70 V90 H0Z" fill="#8cc751"/>
   <g fill="#5e9e36"><circle cx="160" cy="44" r="12"/><circle cx="176" cy="48" r="9"/><circle cx="610" cy="40" r="11"/><circle cx="626" cy="44" r="8"/></g></svg>`;
-const fenceSVG = () => `<svg class="fence" viewBox="0 0 1000 34" preserveAspectRatio="none"><rect x="0" y="12" width="1000" height="5" fill="#c58b4e"/><rect x="0" y="23" width="1000" height="5" fill="#c58b4e"/>${Array.from({length:40}, (_, i) => `<path d="M${i * 25 + 6} 34 V6 l5 -5 l5 5 V34z" fill="#e0a868" stroke="#a8713c" stroke-width="1"/>`).join('')}</svg>`;
+const fenceSVG = (cls = '') => `<svg class="fence ${cls}" viewBox="0 0 1000 34" preserveAspectRatio="none"><rect x="0" y="12" width="1000" height="5" fill="#c58b4e"/><rect x="0" y="23" width="1000" height="5" fill="#c58b4e"/>${Array.from({length:40}, (_, i) => `<path d="M${i * 25 + 6} 34 V6 l5 -5 l5 5 V34z" fill="#e0a868" stroke="#a8713c" stroke-width="1"/>`).join('')}</svg>`;
 const CAN_SVG = `<svg class="can" viewBox="0 0 60 60"><path d="M12 22 h26 v22 a4 4 0 0 1 -4 4 h-18 a4 4 0 0 1 -4 -4z" fill="#26a69a"/><path d="M38 28 L54 16 l3 3 L40 34z" fill="#26a69a"/><ellipse cx="55" cy="17" rx="4" ry="2.5" fill="#00897b" transform="rotate(-38 55 17)"/><path d="M16 22 q9 -14 18 0" stroke="#00897b" stroke-width="4" fill="none"/><rect x="12" y="30" width="26" height="4" fill="#80cbc4"/></svg>`;
 
 // ---------- modal ----------
@@ -1717,7 +1732,21 @@ function renderTabbar() {
 }
 const streakNow = (T = S) => (T.streak.last === today() || T.streak.last === yesterday()) ? T.streak.count : 0;
 const kidChip = () => { const p = profile(); return p ? `<button class="pill kid" data-act="go" data-to="profiles" title="Switch child">${p.avatar} ${esc(p.name)}</button>` : ''; };
-const hudHTML = () => S ? `<div class="hud">${cloudPillHTML()}${kidChip()}<span class="pill" title="Day streak">🔥 ${streakNow()}</span><span class="pill" title="Coins – earned by learning">💰 ${S.farm.coins}</span><span class="pill" title="Water for your plants">💧 ${S.farm.water}</span><span class="pill" title="Feed for your animals">🌾 ${S.farm.feed}</span></div>` : '';
+/* ---- parents' daily learning-time limit (counts the time spent in lessons and reviews) ---- */
+const limitOn = (T = S) => !!(T && T.settings.limit && T.settings.limit.on);
+const limitSecs = (T = S) => limitOn(T) ? (T.settings.limit.mins[new Date().getDay()] + ((T.daily.date === today() && T.daily.bonus) || 0)) * 60 : Infinity;
+const usedSecs = (T = S) => ((T.stats.days[today()] || {}).s) || 0;
+const leftSecs = (T = S) => limitSecs(T) - usedSecs(T);
+const fmtMin = m => m <= 0 ? 'Off' : m < 60 ? m + ' min' : m % 60 ? Math.floor(m / 60) + ' h ' + (m % 60) + ' min' : (m / 60) + ' h';
+const limitPillText = () => '⏱ ' + (leftSecs() <= 0 ? 'time is up' : Math.ceil(leftSecs() / 60) + ' min left');
+function timeUpModal() {
+  const m = S.settings.limit.mins[new Date().getDay()];
+  openModal(`<h3>⏰ ${m ? "That's enough learning for today!" : 'No learning time today'}</h3>
+    <p>${m ? `${esc(profile().name)} has used today's ${fmtMin(m)} of learning time. Come back tomorrow — the farm is waiting! 🌻` : `Learning time is switched off for today. The farm is still open! 🌻`}</p>
+    <div class="row" style="margin-top:12px"><button class="btn primary" data-act="tab" data-to="garden">🌻 Go to the farm</button><span class="spacer"></span><button class="btn sm" data-act="bonus-gate">👪 Parent: more time</button></div>`);
+}
+const timeLocked = () => S && leftSecs() <= 0;
+const hudHTML = () => S ? `<div class="hud">${cloudPillHTML()}${kidChip()}${limitOn() ? `<span class="pill" id="limpill" title="Learning time left today">${limitPillText()}</span>` : ''}<span class="pill" title="Day streak">🔥 ${streakNow()}</span><span class="pill" title="Coins – earned by learning">💰 ${S.farm.coins}</span><span class="pill" title="Water for your plants">💧 ${S.farm.water}</span><span class="pill" title="Feed for your animals">🌾 ${S.farm.feed}</span></div>` : '';
 const topBar = (title, back) => `<div class="top">${back ? `<button class="back" data-act="go" data-to="${back}">⬅</button>` : ''}<div class="title">${title}</div>${hudHTML()}</div>`;
 const SCREENS = {};
 
@@ -2197,6 +2226,7 @@ function noReviewModal(listId) {
 }
 function startReviewIds(ids, listId = null) {
   if (!ids.length) return toast('Tick at least one word to review.');
+  if (timeLocked()) { closeModal(); return timeUpModal(); }
   closeModal();
   G = {items:shuffle(ids).map(id => ({id, review:true})), qi:0, combo:0, earned:{coins:0, water:0, feed:0}, finished:[], reviewed:0, listId, mode:'review'};
   cur = {name:'game', p:{}}; renderTabbar();
@@ -2314,6 +2344,7 @@ SCREENS.review = () => {
   <div class="card" id="rb-results">${rbResultsHTML()}</div>`;
 };
 async function startSession(listId) {
+  if (timeLocked()) { closeModal(); return timeUpModal(); }
   const b = buildSession(listId);
   if (!b) { toast('No words yet. Add some words first!'); return go('add'); }
   G = {items:b.items, qi:0, combo:0, earned:{coins:0, water:0, feed:0}, finished:[], reviewed:0, listId};
@@ -2673,7 +2704,7 @@ function penHTML(pen, ni) {
   const A = ANIMALS[pen.t], n = pen.animals.filter(Boolean).length, hungry = pen.animals.filter(a => animalState(a) === 'hungry').length;
   return `<div class="bed"><div class="bed-head"><span style="white-space:nowrap">${A.icon} ${esc(A.pen)} <span class="small" style="opacity:.9">· ${n}/${A.cap}</span></span><span class="spacer"></span>
       ${hungry ? `<button class="btn sm orange" style="white-space:nowrap" data-act="feed-pen" data-n="${ni}">🌾 Feed all (${hungry})</button>` : ''}</div>
-    <div class="pen" style="--floor:${A.floor}">${A.pond ? '<span class="pond"></span>' : ''}${pen.animals.map((a, ai) => animalSlotHTML(pen.t, a, ni, ai)).join('')}</div></div>`;
+    <div class="pen" style="--floor:${A.floor}"><div class="pen-bg">${penSVG(pen.t, true)}</div>${pen.animals.map((a, ai) => animalSlotHTML(pen.t, a, ni, ai)).join('')}</div></div>`;
 }
 function penPicker() {
   const cost = PEN_COST[S.farm.pens.length];
@@ -2720,14 +2751,14 @@ SCREENS.garden = () => {
         const need = b.plots.filter(p => plotState(p) === 'water').length;
         const used = b.plots.filter(Boolean).length;
         return `<div class="bed"><div class="bed-head"><span style="white-space:nowrap">🌱 Bed ${bi + 1} <span class="small" style="opacity:.9">· ${used}/${PLOTS_PER_BED} plants</span></span><span class="spacer"></span>${need ? `<button class="btn sm blue" style="white-space:nowrap" data-act="water-bed" data-b="${bi}">💧 Water whole bed (${need})</button>` : ''}</div>
-        <div class="soil">${b.plots.map((p, pi) => plotHTML(p, bi, pi)).join('')}</div></div>`;
+        <div class="yard">${fenceSVG('top')}<div class="soil">${b.plots.map((p, pi) => plotHTML(p, bi, pi)).join('')}</div>${fenceSVG('bot')}</div></div>`;
       }).join('')}
       ${Array.from({length:MAX_BEDS - f.beds.length}, (_, k) => {
         const cost = BED_COST[f.beds.length], next = k === 0, can = f.coins >= cost;
         return `<div class="bed"><div class="bed-head" style="opacity:.85">🌾 Empty land</div>
-          <button class="land ${next ? 'next' : ''}" data-act="buy-land">${next
+          <div class="yard">${fenceSVG('top')}<button class="land ${next ? 'next' : ''}" data-act="buy-land">${next
             ? `<span class="sign"><span class="sign-t">🚜 Buy land for a bed</span><b>${cost} 💰</b><span class="small">${can ? `Holds ${PLOTS_PER_BED} plants` : 'Learn more to save up!'}</span></span>`
-            : `<span class="tufts"></span>`}</button></div>`;
+            : `<span class="tufts"></span>`}</button>${fenceSVG('bot')}</div></div>`;
       }).join('')}
       ${f.beds.length >= MAX_BEDS ? '<div class="note" style="color:#fff">🎉 Your garden is as big as it gets!</div>' : ''}
     </div>
@@ -2904,6 +2935,19 @@ function kidSummary(T) {
     streak:streakNow(T), lastDay
   };
 }
+const LIM_DAYS = [[1, 'Monday'], [2, 'Tuesday'], [3, 'Wednesday'], [4, 'Thursday'], [5, 'Friday'], [6, 'Saturday'], [0, 'Sunday']];
+function limitCardHTML() {
+  const L = S.settings.limit, m = L.mins;
+  const grp = ds => ds.every(d => m[d] === m[ds[0]]) ? fmtMin(m[ds[0]]) : 'mixed';
+  const step = (k, label, val) => `<div class="row" style="gap:6px"><span style="min-width:96px">${label}</span><button class="btn sm" data-act="lim-step" data-d="${k}" data-s="-15">−</button><b style="min-width:84px;text-align:center">${val}</b><button class="btn sm" data-act="lim-step" data-d="${k}" data-s="15">＋</button></div>`;
+  const left = limitOn() ? `<div class="small muted">Today (${LIM_DAYS.find(x => x[0] === new Date().getDay())[1]}): ${fmtMin(Math.floor(usedSecs() / 60))} used of ${fmtMin(Math.round(limitSecs() / 60))}${S.daily.bonus ? ` (includes +${S.daily.bonus} min you added)` : ''}.</div>` : '';
+  return `<label class="fl">⏱ Daily learning time limit</label>
+    <label class="small"><input type="checkbox" data-change="lim-on" ${L.on ? 'checked' : ''}> Limit how long ${esc(profile().name)} can learn each day</label>
+    ${L.on ? `<div class="chips" style="margin-top:6px"><button class="chip" data-act="lim-preset" data-p="all60">1 h every day</button><button class="chip" data-act="lim-preset" data-p="wk">1 h weekdays · 2 h weekends</button><button class="chip" data-act="lim-preset" data-p="all30">30 min every day</button></div>
+      <div style="display:grid;gap:6px;margin-top:8px">${step('wd', '<b>Mon–Fri</b>', grp([1, 2, 3, 4, 5]))}${step('we', '<b>Sat–Sun</b>', grp([6, 0]))}</div>
+      <details style="margin-top:8px"><summary class="small">Set each day separately</summary><div style="display:grid;gap:6px;margin-top:6px">${LIM_DAYS.map(([d, n]) => step(d, n, fmtMin(m[d]))).join('')}</div></details>
+      <div class="small muted" style="margin-top:6px">Counts the time spent in lessons and reviews. When it runs out, lessons pause until tomorrow (the farm stays open). "Off" means no learning that day. A parent can add 15 more minutes from the time-is-up message.</div>${left}` : ''}`;
+}
 SCREENS.parent = () => {
   if (!parentOk) return go(S ? 'learn' : 'profiles');
   app.innerHTML = topBar('👪 Parents\' area', S ? 'learn' : 'profiles') + `
@@ -2918,6 +2962,7 @@ SCREENS.parent = () => {
   </div>
   ${S ? `<div class="card"><h3>⚙️ Settings for ${profile().avatar} ${esc(profile().name)}</h3>
     <label class="fl">Daily goal</label><div class="chips">${GOALS.map(g => `<button class="chip ${g === S.daily.goal ? 'on' : ''}" data-act="goal" data-g="${g}">${g} words · reward ${GOAL_REWARD[g][0]} 💰</button>`).join('')}</div>
+    ${limitCardHTML()}
     <label class="fl">Reading speed: <span id="ratev">${S.settings.rate}</span></label>
     <div class="row"><input type="range" min="0.5" max="1.2" step="0.05" value="${S.settings.rate}" data-change="rate" style="flex:1"><button class="btn sm" data-act="say" data-text="Hello! Let's learn English.">🔊 Test</button></div>
     <label class="fl"><input type="checkbox" data-change="sound" ${S.settings.sound ? 'checked' : ''}> Sound effects on</label>
@@ -3005,6 +3050,24 @@ const ACT = {
     await enrichOnce(w); wordModal(w.id); if (cur.name === 'list') render();
   },
   'modal-ok': () => { const r = pendingAsk; pendingAsk = null; closeModal(); r && r(true); },
+  'lim-preset': el => {
+    const p = el.dataset.p; S.settings.limit.mins = p === 'wk' ? [120, 60, 60, 60, 60, 60, 120] : Array(7).fill(p === 'all30' ? 30 : 60);
+    save(); render();
+  },
+  'lim-step': el => {
+    const k = el.dataset.d, s = +el.dataset.s, m = S.settings.limit.mins, ds = k === 'wd' ? [1, 2, 3, 4, 5] : k === 'we' ? [6, 0] : [+k];
+    const nv = Math.max(0, Math.min(480, m[ds[0]] + s)); ds.forEach(d => { m[d] = nv; }); save(); render();
+  },
+  'bonus-gate': () => {
+    const a = rand(3, 9), b = rand(3, 9); gateAns = a * b;
+    openModal(`<h3>👪 Parents only</h3><p>To add 15 minutes for today, answer: <b>${a} × ${b} = ?</b></p><input type="number" id="gate2" inputmode="numeric" style="font-size:22px">
+      <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn primary" data-act="bonus-ok">Add 15 min</button></div>`);
+    setTimeout(() => { const g = $('#gate2'); g && g.focus(); }, 50);
+  },
+  'bonus-ok': () => {
+    if (+$('#gate2').value !== gateAns) { $('#gate2').classList.add('shake'); return toast('Not quite!'); }
+    rollDay(); S.daily.bonus = (S.daily.bonus || 0) + 15; save(); closeModal(); toast('⏱ 15 more minutes added for today.'); render();
+  },
   'goal': el => { S.daily.goal = +el.dataset.g; save(); render(); },
   'learn': (el, e) => { e && e.preventDefault(); closeModal(); startSession(el.dataset.list || null); },
   'review': el => startReview(el.dataset.n, el.dataset.list || null),
@@ -3431,6 +3494,7 @@ document.body.addEventListener('change', async e => {
   else if (f === 'rb-tick') { if (el.checked) RB.checked.add(el.dataset.id); else RB.checked.delete(el.dataset.id); $('#rb-results').innerHTML = rbResultsHTML(); }
   else if (f === 'vocab-file' && el.files[0]) { await readVocabFile(el.files[0]); el.value = ''; }
   else if (f === 'rate') { S.settings.rate = +el.value; save(); $('#ratev').textContent = el.value; }
+  else if (f === 'lim-on') { S.settings.limit.on = el.checked; save(); render(); }
   else if (f === 'sound') { S.settings.sound = el.checked; save(); }
   else if (f === 'ocr-file' && el.files[0]) {
     const file = el.files[0];
@@ -3472,6 +3536,7 @@ document.body.addEventListener('change', async e => {
 document.addEventListener('keydown', e => {
   if (e.target.matches && e.target.matches('input,textarea,select')) {
     if (e.key === 'Enter' && e.target.id === 'gate') ACT['gate-ok']();
+    if (e.key === 'Enter' && e.target.id === 'gate2') ACT['bonus-ok']();
     if (e.key === 'Enter' && e.target.id === 'kid-name') $('[data-act=save-kid]').click();
     if (e.key === 'Enter' && e.target.id === 'cloud-email') $('#cloud-pw').focus();
     if (e.key === 'Enter' && e.target.id === 'cloud-pw') $('[data-act=cloud-login]').click();
@@ -3504,6 +3569,11 @@ setInterval(() => {
   if (document.visibilityState !== 'visible' || cur.name !== 'game') return;
   dayLog().s++;
   if (++tick % 10 === 0) save();
+  if (limitOn()) {
+    const left = leftSecs(), pill = $('#limpill'); if (pill) pill.textContent = limitPillText();
+    if (left === 60) toast('⏰ One minute of learning time left today.', 3500);
+    if (left <= 0) { save(); G = null; go('learn'); timeUpModal(); }
+  }
 }, 1000);
 addEventListener('online', () => S && queueEnrich(Object.values(S.words).filter(w => !w.enriched).map(w => w.id)));
 
