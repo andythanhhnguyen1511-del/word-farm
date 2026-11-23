@@ -1707,7 +1707,7 @@ $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') ACT['c
 // ---------- navigation ----------
 const app = $('#app');
 let cur = {name:'learn', p:{}};
-const TAB_OF = {learn:'learn', list:'learn', 'edit-list':'learn', review:'learn', add:'learn', parent:'learn', report:'learn', summary:'learn', garden:'garden', shop:'shop', game:null, profiles:null};
+const TAB_OF = {learn:'learn', lists:'learn', list:'learn', 'edit-list':'learn', review:'learn', add:'learn', parent:'learn', report:'learn', summary:'learn', garden:'garden', shop:'shop', game:null, profiles:null};
 function go(name, p = {}) {
   if (name === 'shop' && p.sub) { shopState.sub = p.sub; p = {}; }
   if (!S && !['profiles', 'parent', 'report'].includes(name)) name = 'profiles';
@@ -1795,12 +1795,16 @@ SCREENS.learn = () => {
   app.innerHTML = topBar('📚 Learn') + `
   <div class="card mascot-card"><div class="mascot">🐰</div><div class="bubble">${esc(msg)}</div></div>
   <button class="learn-btn" data-act="learn"><span style="font-size:40px">▶️</span><span>Start learning<span class="sub">${reviews ? `${plural(reviews, 'word')} to review · ` : ''}one word at a time</span></span></button>
+  <div class="card review-card"><div class="row"><span style="font-size:34px">🎯</span><div style="flex:1;min-width:180px"><b style="font-size:19px">Choose words to learn</b>
+    <div class="small muted">Pick exactly which words to practise, with your own rules.</div></div>
+    <button class="btn" data-act="learn-pick" ${total ? '' : 'disabled'}>🛠 My rules…</button></div>
+    ${(S.reviewPlans || []).some(p => p.mode === 'learn') ? `<div class="chips" style="margin-top:8px">${S.reviewPlans.filter(p => p.mode === 'learn').map(p => `<button class="chip" data-act="rb-plan" data-id="${p.id}">📌 ${esc(p.name)}</button>`).join('')}</div>` : ''}</div>
   <div class="card review-card"><div class="row"><span style="font-size:34px">🔁</span><div style="flex:1;min-width:180px"><b style="font-size:19px">Review words</b>
     <div class="small muted">${learnedWords(null).length ? `${plural(learnedWords(null).length, 'learned word')}${reviews ? ` · <b>${reviews} due today</b>` : ' · none due today'}`
       : Object.values(S.words).some(w => w.step > 0) ? 'No word fully learned yet — Auto practises the words you are still learning.' : 'No word learned yet. A word counts as learned once you finish all its rounds in ▶️ Start learning.'}</div></div>
     <button class="btn blue" data-act="review" data-n="auto">⚡ Auto</button>
     <button class="btn" data-act="review-pick">🛠 My rules…</button></div>
-    ${(S.reviewPlans || []).length ? `<div class="chips" style="margin-top:8px">${S.reviewPlans.map(p => `<button class="chip" data-act="rb-plan" data-id="${p.id}">📌 ${esc(p.name)}</button>`).join('')}</div>` : ''}</div>
+    ${(S.reviewPlans || []).some(p => (p.mode || 'review') === 'review') ? `<div class="chips" style="margin-top:8px">${S.reviewPlans.filter(p => (p.mode || 'review') === 'review').map(p => `<button class="chip" data-act="rb-plan" data-id="${p.id}">📌 ${esc(p.name)}</button>`).join('')}</div>` : ''}</div>
   <div class="card">
     <div class="row"><h3>🎯 Today's goal</h3><span class="spacer"></span><b>${done}/${d.goal} words</b></div>
     <div class="goal-bar"><i style="width:${pct}%"></i></div>
@@ -1808,21 +1812,76 @@ SCREENS.learn = () => {
       <div class="chips">${GOALS.map(g => `<button class="chip ${g === d.goal ? 'on' : ''}" data-act="goal" data-g="${g}">${g} words</button>`).join('')}</div></div>
     <div class="small muted" style="margin-top:6px">${d.rewarded ? '✅ Reward collected today' : `Reward: 💰 ${GOAL_REWARD[d.goal][0]} + 💧 ${GOAL_REWARD[d.goal][1]}`}</div>
   </div>
-  <div class="row" style="margin-top:6px"><h3>📒 My word lists</h3><span class="spacer"></span><button class="btn sm orange" data-act="go" data-to="add">➕ Add words</button></div>
-  ${S.lists.map(l => {
-    const ws = listWords(l.id), m = ws.filter(w => w.mastered).length;
-    return `<div class="card list-card" data-act="open-list" data-id="${l.id}">
-      <div class="row"><b style="font-size:19px">${esc(l.name)}</b><span class="spacer"></span><span class="pill">⭐ ${m}/${ws.length}</span></div>
-      <div class="wchips">${ws.slice(0, 18).map(w => { const s = wordStatus(w); return `<span class="wchip ${s.cls}">${s.cls ? s.ic + ' ' : ''}${esc(w.word)}</span>`; }).join('') || '<span class="small muted">No words yet</span>'}${ws.length > 18 ? `<span class="wchip">+${ws.length - 18}</span>` : ''}</div></div>`;
-  }).join('') || '<div class="card">No word lists yet.</div>'}
+  <button class="card list-card manage-card" data-act="go" data-to="lists" style="width:100%;text-align:left;font:inherit;color:inherit"><div class="row"><span style="font-size:34px">📒</span>
+    <div style="flex:1;min-width:180px"><b style="font-size:19px">Manage word lists</b>
+      <div class="small muted">${S.lists.length ? `${plural(S.lists.length, 'list')} · ${plural(total, 'word')} — add, edit, search or export lists` : 'No lists yet — tap to add your first list'}</div></div><span style="font-size:24px">›</span></div></button>
   <div class="note" id="enrich-note">${enrichNote()}</div>
   <div class="row center" style="margin-top:14px"><button class="btn sm" data-act="go" data-to="profiles">🔄 Switch child</button><button class="btn sm" data-act="parent">👪 Parents' area</button></div>`;
 };
+/* ===== Manage word lists: the hub. From here: add a list, edit a list, search / jump to a list, export lists by the time they were added ===== */
+let LM = {q:'', sort:'new', from:'', to:''};
+const listAdded = l => l.created || 0;
+function lmFiltered() {
+  const q = LM.q.trim().toLowerCase();
+  const ls = S.lists.filter(l => !q || l.name.toLowerCase().includes(q) || listWords(l.id).some(w => w.word.includes(q)));
+  return ls.sort(LM.sort === 'old' ? (a, b) => listAdded(a) - listAdded(b) : LM.sort === 'abc' ? (a, b) => a.name.localeCompare(b.name) : (a, b) => listAdded(b) - listAdded(a));
+}
+function lmExportSet() {
+  const from = LM.from ? new Date(LM.from + 'T00:00:00').getTime() : -Infinity, to = LM.to ? new Date(LM.to + 'T23:59:59').getTime() : Infinity;
+  return lmFiltered().filter(l => listAdded(l) >= from && listAdded(l) <= to).sort((a, b) => listAdded(a) - listAdded(b));
+}
+function lmResultsHTML() {
+  const q = LM.q.trim().toLowerCase(), ls = lmFiltered();
+  if (!ls.length) return `<div class="card">${S.lists.length ? `No list matches “${esc(LM.q)}”.` : 'No word lists yet. Tap ➕ Add a list to start.'}</div>`;
+  return ls.map(l => {
+    const ws = listWords(l.id), m = ws.filter(w => w.mastered).length, hit = q && !l.name.toLowerCase().includes(q) ? ws.find(w => w.word.includes(q)) : null;
+    return `<div class="card list-card" data-act="open-list" data-id="${l.id}">
+      <div class="row"><b style="font-size:19px">${esc(l.name)}</b><span class="spacer"></span><span class="pill">⭐ ${m}/${ws.length}</span></div>
+      <div class="small muted">Added ${fmtDate(listAdded(l))}${hit ? ` · has the word “${esc(hit.word)}”` : ''}</div>
+      <div class="wchips">${ws.slice(0, 12).map(w => { const s = wordStatus(w); return `<span class="wchip ${s.cls}">${s.cls ? s.ic + ' ' : ''}${esc(w.word)}</span>`; }).join('') || '<span class="small muted">No words yet</span>'}${ws.length > 12 ? `<span class="wchip">+${ws.length - 12}</span>` : ''}</div>
+      <div class="row" style="margin-top:8px"><button class="btn sm" data-act="edit-list" data-id="${l.id}">✏️ Edit list</button></div></div>`;
+  }).join('');
+}
+function lmExportInfo() {
+  const ls = lmExportSet(), n = ls.reduce((a, l) => a + listWords(l.id).length, 0);
+  return ls.length ? `${plural(ls.length, 'list')} · ${plural(n, 'word')} will be exported, oldest list first.` : 'No list falls in this time range.';
+}
+SCREENS.lists = () => {
+  const opts = (ls, ph) => `<option value="">${ph}</option>` + ls.map(l => `<option value="${l.id}">${esc(l.name)}</option>`).join('');
+  const byTime = [...S.lists].sort((a, b) => listAdded(b) - listAdded(a));
+  app.innerHTML = topBar('📒 Manage word lists', 'learn') + `
+  <div class="card"><h3>What do you want to do?</h3>
+    <div class="row" style="margin-top:6px"><button class="btn orange big" data-act="go" data-to="add" data-list="new">➕ Add a list</button>
+      <select data-change="lm-edit" style="width:auto;flex:1;min-width:190px" ${S.lists.length ? '' : 'disabled'}>${opts(byTime, '✏️ Edit a list… (choose)')}</select></div></div>
+  <div class="card"><h3>🔎 Find a list</h3>
+    <div class="row"><input type="search" id="lm-q" data-field="lm-q" value="${esc(LM.q)}" placeholder="Search by list name or a word in it…" style="flex:2;min-width:200px">
+      <select data-change="lm-open" style="width:auto;flex:1;min-width:170px">${opts(byTime, '📂 Open a list…')}</select>
+      <select data-change="lm-sort" style="width:auto">${[['new', '🆕 Newest added first'], ['old', '📅 Oldest added first'], ['abc', '🔠 A → Z']].map(([v, t]) => `<option value="${v}" ${LM.sort === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
+  <div class="card"><h3>⬇️ Export lists by time added</h3>
+    <div class="small muted">Saves a spreadsheet (.csv) with the lists, their words, definitions and examples, ordered by when each list was added. Leave the dates empty to export everything. If you typed something in the search box, only matching lists are exported.</div>
+    <div class="row" style="margin-top:8px"><span class="small"><b>Added from</b></span><input type="date" data-field="lm-from" value="${esc(LM.from)}" style="width:auto"><span class="small"><b>to</b></span><input type="date" data-field="lm-to" value="${esc(LM.to)}" style="width:auto">
+      <button class="btn sm" data-act="lm-clear-dates">Clear dates</button></div>
+    <div class="small" id="lm-info" style="margin-top:8px">${lmExportInfo()}</div>
+    <div class="row" style="margin-top:8px"><button class="btn primary" data-act="lm-export" ${S.lists.length ? '' : 'disabled'}>⬇️ Export CSV</button></div></div>
+  <div id="lm-results">${lmResultsHTML()}</div>`;
+};
+function exportLists() {
+  const ls = lmExportSet(); if (!ls.length) return toast('No list to export in this time range.');
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', dt = t => { if (!t) return ''; const d = new Date(t); return dstr(d) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  const rows = [['list', 'date added', 'word', 'definition', 'example', 'example 2', 'word date added']];
+  for (const l of ls) {
+    const ws = listWords(l.id);
+    if (!ws.length) rows.push([l.name, dt(listAdded(l)), '', '', '', '', '']);
+    for (const w of ws) rows.push([l.name, dt(listAdded(l)), w.word, w.def || '', (w.examples || [])[0] || '', (w.examples || [])[1] || '', dt(w.added)]);
+  }
+  downloadText(`word-farm-lists-${LM.from || 'start'}_${LM.to || today()}.csv`, '﻿' + rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv');
+  toast(`⬇️ Exported ${plural(ls.length, 'list')}.`);
+}
 SCREENS.list = ({id}) => {
   const l = S.lists.find(x => x.id === id); if (!l) return go('learn');
   const ws = listWords(id);
   const noPic = ws.filter(w => w.enriched && needsPic(w)).length, waiting = ws.filter(w => !w.enriched).length;
-  app.innerHTML = topBar('📒 Word list', 'learn') + `
+  app.innerHTML = topBar('📒 Word list', 'lists') + `
   <div class="card">
     <input type="text" value="${esc(l.name)}" data-field="list-name" data-id="${id}" style="font-weight:800;font-size:20px">
     <div class="row" style="margin-top:10px"><button class="btn primary" data-act="learn" data-list="${id}" ${ws.length ? '' : 'disabled'}>▶️ Learn this list</button>
@@ -2005,7 +2064,7 @@ SCREENS.add = ({list}) => {
   if (!addState.list || (addState.list !== 'new' && !S.lists.find(l => l.id === addState.list))) addState.list = S.lists[0] ? S.lists[0].id : 'new';
   const opts = S.lists.map(l => `<option value="${l.id}" ${l.id === addState.list ? 'selected' : ''}>${esc(l.name)}</option>`).join('') +
     `<option value="new" ${addState.list === 'new' ? 'selected' : ''}>➕ Create a new list…</option>`;
-  app.innerHTML = topBar('➕ Add new words', 'learn') + `
+  app.innerHTML = topBar('➕ Add new words', 'lists') + `
   <div class="card">
     <label class="fl">Add to list</label>
     <select data-change="add-list">${opts}</select>
@@ -2247,7 +2306,21 @@ const RULES = {
   learnedBefore:{label:'📅 Learned more than', days:true, ago:true, opts:[3, 5, 7, 14, 30]},
   status:       {label:'📝 Words to include'}
 };
-const RULE_DEFAULT = {list:'', due:3, forget:50, memory:2, mistakes:2, notSeen:7, learnedIn:7, learnedBefore:7, status:'learned'};
+/* Rules for choosing words to LEARN (same builder, mode 'learn'): they work on new and in-progress words too. */
+const LRULES = {
+  list:        {label:'📒 From list'},
+  status:      {label:'📝 Words to include'},
+  addedIn:     {label:'🆕 Added in the last', days:true, opts:[1, 3, 7, 14, 30]},
+  addedBefore: {label:'📅 Added more than', days:true, ago:true, opts:[3, 7, 14, 30]},
+  length:      {label:'🔤 Word has at most', unit:'letters', opts:[3, 4, 5, 6, 8]},
+  starts:      {label:'🔠 Starts with', text:true},
+  mistakes:    {label:'❌ Mistakes at least', num:true, opts:[1, 2, 3, 5, 10]},
+  notSeen:     {label:'💤 Not practised for', days:true, opts:[3, 5, 7, 14, 30]}
+};
+const rulesOf = () => RB && RB.mode === 'learn' ? LRULES : RULES;
+const RULE_DEFAULT = {list:'', due:3, forget:50, memory:2, mistakes:2, notSeen:7, learnedIn:7, learnedBefore:7, status:'learned', addedIn:7, addedBefore:7, length:4, starts:''};
+const LSORTS = {added:'📅 Added first first', addedNew:'🆕 Added most recently first', short:'🔤 Shortest first', abc:'🔠 A → Z', mistakes:'❌ Most mistakes first', random:'🎲 Random'};
+const sortsOf = () => RB && RB.mode === 'learn' ? LSORTS : SORTS;
 const SORTS = {forget:'🧠 Most forgotten first', due:'⏰ Due soonest first', mistakes:'❌ Most mistakes first', oldest:'📅 Learned longest ago first', newest:'🆕 Learned most recently first', random:'🎲 Random'};
 // how likely the word is forgotten now: time since last practice against its memory level, plus its mistakes
 function forgetScore(w) {
@@ -2259,11 +2332,15 @@ function forgetScore(w) {
   return Math.round(Math.min(1, f) * 100);
 }
 let RB = null;
-const newRB = listId => ({rules:listId ? [{type:'list', val:listId}] : [{type:'due', val:3}], sort:'forget', limit:10, results:null, checked:new Set(), name:''});
-function ruleMatch(w, rules) {
+const newRB = (listId, mode = 'review') => mode === 'learn'
+  ? {mode, rules:[...(listId ? [{type:'list', val:listId}] : []), {type:'status', val:'unlearned'}], sort:'added', limit:5, results:null, checked:new Set(), name:''}
+  : {mode, rules:listId ? [{type:'list', val:listId}] : [{type:'due', val:3}], sort:'forget', limit:10, results:null, checked:new Set(), name:''};
+function ruleMatch(w, rules, mode = 'review') {
   const now = Date.now(), lists = rules.filter(r => r.type === 'list' && r.val).map(r => r.val);
   if (lists.length && !lists.includes(w.listId)) return false;
-  const st = (rules.find(r => r.type === 'status') || {val:'learned'}).val;
+  const st = (rules.find(r => r.type === 'status') || {val:mode === 'learn' ? 'unlearned' : 'learned'}).val;
+  if (st === 'unlearned' && w.mastered) return false;
+  if (st === 'new' && (w.mastered || w.step)) return false;
   if (st === 'learned' && !w.mastered) return false;
   if (st === 'learning' && (w.mastered || !w.step)) return false;
   if (st === 'started' && !w.mastered && !w.step) return false;
@@ -2276,24 +2353,33 @@ function ruleMatch(w, rules) {
     if (r.type === 'notSeen' && now - (w.last || 0) < v * DAY) return false;
     if (r.type === 'learnedIn' && !(w.masteredAt && now - w.masteredAt <= v * DAY)) return false;
     if (r.type === 'learnedBefore' && !(w.masteredAt && now - w.masteredAt >= v * DAY)) return false;
+    if (r.type === 'addedIn' && !(w.added && now - w.added <= v * DAY)) return false;
+    if (r.type === 'addedBefore' && !(w.added && now - w.added >= v * DAY)) return false;
+    if (r.type === 'length' && w.word.replace(/[^a-z]/gi, '').length > v) return false;
+    if (r.type === 'starts' && r.val && !w.word.toLowerCase().startsWith(String(r.val).trim().toLowerCase())) return false;
   }
   return true;
 }
 function runRules() {
-  const ws = Object.values(S.words).filter(w => ruleMatch(w, RB.rules));
-  const by = {forget:(a, b) => forgetScore(b) - forgetScore(a), due:(a, b) => (a.mastered ? a.due : Infinity) - (b.mastered ? b.due : Infinity),
-    mistakes:(a, b) => b.wrong - a.wrong, oldest:(a, b) => (a.masteredAt || 0) - (b.masteredAt || 0), newest:(a, b) => (b.masteredAt || 0) - (a.masteredAt || 0)}[RB.sort];
+  const ws = Object.values(S.words).filter(w => ruleMatch(w, RB.rules, RB.mode));
+  const by = (RB.mode === 'learn'
+    ? {added:(a, b) => (a.added || 0) - (b.added || 0), addedNew:(a, b) => (b.added || 0) - (a.added || 0), short:(a, b) => a.word.length - b.word.length || a.word.localeCompare(b.word),
+       abc:(a, b) => a.word.localeCompare(b.word), mistakes:(a, b) => (b.wrong || 0) - (a.wrong || 0)}
+    : {forget:(a, b) => forgetScore(b) - forgetScore(a), due:(a, b) => (a.mastered ? a.due : Infinity) - (b.mastered ? b.due : Infinity),
+    mistakes:(a, b) => b.wrong - a.wrong, oldest:(a, b) => (a.masteredAt || 0) - (b.masteredAt || 0), newest:(a, b) => (b.masteredAt || 0) - (a.masteredAt || 0)})[RB.sort];
   const sorted = by ? ws.sort(by) : shuffle(ws);
   RB.results = sorted.map(w => w.id);
   RB.checked = new Set(RB.results.slice(0, RB.limit === 'all' ? sorted.length : +RB.limit));
 }
 function ruleRowHTML(r, i) {
-  const R0 = RULES[r.type];
+  const R0 = rulesOf()[r.type];
   let ctl;
   if (r.type === 'list') ctl = `<select data-change="rb-val" data-i="${i}"><option value="">— choose a list —</option>${S.lists.map(l => `<option value="${l.id}" ${l.id === r.val ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select>`;
+  else if (r.type === 'starts') ctl = `<input type="text" maxlength="3" value="${esc(r.val)}" data-field="rb-val" data-i="${i}" placeholder="b" style="width:76px"> <span class="small muted">letter(s)</span>`;
+  else if (r.type === 'status' && RB.mode === 'learn') ctl = `<select data-change="rb-val" data-i="${i}">${[['unlearned', 'New + still being learned'], ['new', 'New words only (never started)'], ['learning', 'Words still being learned'], ['all', 'All words, learned ones too']].map(([v, l]) => `<option value="${v}" ${v === r.val ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
   else if (r.type === 'status') ctl = `<select data-change="rb-val" data-i="${i}">${[['learned', 'Learned words only'], ['learning', 'Words still being learned'], ['started', 'Learned + still being learned'], ['all', 'All words, new ones too']].map(([v, l]) => `<option value="${v}" ${v === r.val ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
   else if (r.type === 'memory') ctl = `<select data-change="rb-val" data-i="${i}">${R0.opts.map(v => `<option value="${v}" ${+r.val === v ? 'selected' : ''}>${'★'.repeat(v)}${'☆'.repeat(5 - v)} (${v})</option>`).join('')}</select>`;
-  else ctl = `<input type="number" min="0" value="${esc(r.val)}" data-field="rb-val" data-i="${i}" style="width:76px"> ${R0.days ? (R0.ago ? 'days ago' : 'days') : R0.pct ? '%' : 'times'}
+  else ctl = `<input type="number" min="0" value="${esc(r.val)}" data-field="rb-val" data-i="${i}" style="width:76px"> ${R0.unit || (R0.days ? (R0.ago ? 'days ago' : 'days') : R0.pct ? '%' : 'times')}
     <span class="chips">${R0.opts.map(v => `<button class="chip ${+r.val === v ? 'on' : ''}" data-act="rb-set" data-i="${i}" data-v="${v}">${v}${R0.pct ? '%' : ''}</button>`).join('')}</span>${R0.hint ? `<span class="small muted">${R0.hint}</span>` : ''}`;
   return `<div class="rule"><span class="lbl">${R0.label}</span>${ctl}<span class="spacer"></span><button class="icon-btn" data-act="rb-del" data-i="${i}" title="Remove rule">✕</button></div>`;
 }
@@ -2301,6 +2387,19 @@ function rbResultsHTML() {
   if (!RB.results) return `<h3>2. Choose words</h3><div class="small muted">Set your rules, then tap 🔍 Find words.</div>`;
   const ws = RB.results.map(id => S.words[id]).filter(Boolean), n = RB.checked.size;
   const listName = id => (S.lists.find(l => l.id === id) || {}).name || '';
+  if (RB.mode === 'learn') {
+    if (!ws.length) return `<h3>2. Choose words</h3><div class="small" style="margin-bottom:10px">🔍 No words match these rules. ${Object.keys(S.words).length ? 'Try removing a rule or using bigger numbers.' : 'There are no words yet — add some first.'}</div>
+      <div class="row"><button class="btn" data-act="rb-loosen">Keep only the list and words-to-include rules</button>${Object.keys(S.words).length ? '' : '<button class="btn orange" data-act="go" data-to="add">➕ Add words</button>'}</div>`;
+    return `<div class="row"><h3>2. Choose words · ${plural(ws.length, 'match', 'matches')}</h3><span class="spacer"></span>
+      <button class="btn sm" data-act="rb-pick" data-v="all">Tick all</button><button class="btn sm" data-act="rb-pick" data-v="none">Untick all</button>
+      ${[5, 10, 20].filter(k => k < ws.length).map(k => `<button class="btn sm" data-act="rb-pick" data-v="${k}">First ${k}</button>`).join('')}</div>
+      <div class="rres"><div class="rrow head"><span></span><span>Word</span><span>List</span><span class="hide-sm">Mistakes</span><span>Status</span><span class="hide-sm">Added</span></div>
+      ${ws.map(w => { const on = RB.checked.has(w.id);
+        return `<label class="rrow ${on ? 'on' : ''}"><input type="checkbox" data-change="rb-tick" data-id="${w.id}" ${on ? 'checked' : ''}><b>${esc(w.word)}</b><span class="small muted">${esc(clip(listName(w.listId), 24))}</span>
+          <span class="hide-sm small">${w.wrong || 0}</span><span class="small">${w.mastered ? '⭐ learned' : w.step ? '📝 learning' : '🆕 new'}</span>
+          <span class="hide-sm small">${w.added ? fmtDate(w.added).replace(/, \d{4}$/, '') : ''}</span></label>`; }).join('')}</div>
+      <button class="btn primary big" style="margin-top:12px" data-act="rb-start" ${n ? '' : 'disabled'}>▶️ Learn ${plural(n, 'word')}</button>`;
+  }
   if (!ws.length) {
     // explain why nothing matched: count the words in the chosen lists by status
     const lists = RB.rules.filter(r => r.type === 'list' && r.val).map(r => r.val);
@@ -2329,20 +2428,34 @@ function rbResultsHTML() {
 }
 SCREENS.review = () => {
   if (!RB) RB = newRB(null);
-  const plans = S.reviewPlans || [];
-  app.innerHTML = topBar('🔁 Review words', 'learn') + `
-  ${plans.length ? `<div class="card"><h3>📌 My review plans</h3><div class="chips">${plans.map(p => `<span class="pill" style="gap:6px"><button class="chip" data-act="rb-plan" data-id="${p.id}">▶️ ${esc(p.name)}</button><button class="icon-btn" style="font-size:16px;padding:0 4px" data-act="rb-plan-del" data-id="${p.id}" title="Delete plan">✕</button></span>`).join('')}</div></div>` : ''}
+  const learnM = RB.mode === 'learn', plans = (S.reviewPlans || []).filter(p => (p.mode || 'review') === RB.mode);
+  app.innerHTML = topBar(learnM ? '🎯 Choose words to learn' : '🔁 Review words', 'learn') + `
+  ${plans.length ? `<div class="card"><h3>📌 My ${learnM ? 'learning' : 'review'} plans</h3><div class="chips">${plans.map(p => `<span class="pill" style="gap:6px"><button class="chip" data-act="rb-plan" data-id="${p.id}">▶️ ${esc(p.name)}</button><button class="icon-btn" style="font-size:16px;padding:0 4px" data-act="rb-plan-del" data-id="${p.id}" title="Delete plan">✕</button></span>`).join('')}</div></div>` : ''}
   <div class="card"><h3>1. Rules</h3>
     <div class="small muted" style="margin-bottom:8px">Words must match <b>every</b> rule. Several 📒 list rules mean <i>any</i> of those lists.</div>
-    <div class="rules">${RB.rules.map(ruleRowHTML).join('') || '<div class="small muted">No rules — every learned word matches.</div>'}</div>
-    <div class="row" style="margin-top:10px"><select data-change="rb-add" style="width:auto"><option value="">＋ Add a rule…</option>${Object.entries(RULES).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('')}</select></div>
-    <div class="row" style="margin-top:10px"><span class="small"><b>Order:</b></span><select data-change="rb-sort" style="width:auto">${Object.entries(SORTS).map(([k, v]) => `<option value="${k}" ${k === RB.sort ? 'selected' : ''}>${v}</option>`).join('')}</select>
+    <div class="rules">${RB.rules.map(ruleRowHTML).join('') || `<div class="small muted">No rules — every ${learnM ? 'new or unfinished' : 'learned'} word matches.</div>`}</div>
+    <div class="row" style="margin-top:10px"><select data-change="rb-add" style="width:auto"><option value="">＋ Add a rule…</option>${Object.entries(rulesOf()).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('')}</select></div>
+    <div class="row" style="margin-top:10px"><span class="small"><b>Order:</b></span><select data-change="rb-sort" style="width:auto">${Object.entries(sortsOf()).map(([k, v]) => `<option value="${k}" ${k === RB.sort ? 'selected' : ''}>${v}</option>`).join('')}</select>
       <span class="small"><b>Tick the first:</b></span><select data-change="rb-limit" style="width:auto">${[5, 10, 15, 20, 30, 'all'].map(v => `<option value="${v}" ${String(v) === String(RB.limit) ? 'selected' : ''}>${v === 'all' ? 'all' : v + ' words'}</option>`).join('')}</select></div>
     <div class="row" style="margin-top:12px"><button class="btn blue" data-act="rb-run">🔍 Find words</button><span class="spacer"></span>
-      <input type="text" data-field="rb-name" value="${esc(RB.name)}" placeholder="Plan name, e.g. Weekend review" style="width:auto;min-width:200px"><button class="btn" data-act="rb-save">💾 Save as plan</button></div>
+      <input type="text" data-field="rb-name" value="${esc(RB.name)}" placeholder="${learnM ? 'Plan name, e.g. Short words' : 'Plan name, e.g. Weekend review'}" style="width:auto;min-width:200px"><button class="btn" data-act="rb-save">💾 Save as plan</button></div>
   </div>
   <div class="card" id="rb-results">${rbResultsHTML()}</div>`;
 };
+/* Learn exactly the words picked with "Choose words": same lesson rounds as Start learning, in the order chosen. */
+async function startLearnIds(ids) {
+  if (!ids.length) return toast('Tick at least one word to learn.');
+  if (timeLocked()) { closeModal(); return timeUpModal(); }
+  closeModal();
+  G = {items:ids.filter(id => S.words[id]).map(id => S.words[id].mastered ? {id, review:true} : {id}), qi:0, combo:0, earned:{coins:0, water:0, feed:0}, finished:[], reviewed:0, listId:null};
+  const need = G.items.map(t => S.words[t.id]).filter(w => !w.enriched);
+  cur = {name:'game', p:{}}; renderTabbar();
+  if (need.length && navigator.onLine) {
+    app.innerHTML = `<div class="card mascot-card" style="margin-top:30vh"><div class="mascot">🐰</div><div class="bubble">Wait a moment — Bunny is getting the pictures ready…</div></div>`;
+    await Promise.race([Promise.all(need.map(w => enrichOnce(w))), sleep(6000)]);
+  }
+  startItem();
+}
 async function startSession(listId) {
   if (timeLocked()) { closeModal(); return timeUpModal(); }
   const b = buildSession(listId);
@@ -3082,17 +3195,18 @@ const ACT = {
     RB.checked = new Set(v === 'all' ? RB.results : v === 'none' ? [] : RB.results.slice(0, +v));
     $('#rb-results').innerHTML = rbResultsHTML();
   },
-  'rb-start': () => startReviewIds(RB.results.filter(id => RB.checked.has(id))),
+  'learn-pick': () => { RB = newRB(null, 'learn'); runRules(); go('review'); },
+  'rb-start': () => { const ids = RB.results.filter(id => RB.checked.has(id)); RB.mode === 'learn' ? startLearnIds(ids) : startReviewIds(ids); },
   'rb-save': () => {
-    const name = (RB.name || '').trim() || `Plan ${(S.reviewPlans || []).length + 1}`;
-    const plan = {id:uid(), name, rules:RB.rules.map(r => ({...r})), sort:RB.sort, limit:RB.limit};
-    const old = (S.reviewPlans || []).findIndex(p => p.name.toLowerCase() === name.toLowerCase());
+    const name = (RB.name || '').trim() || `Plan ${(S.reviewPlans || []).filter(p => (p.mode || 'review') === RB.mode).length + 1}`;
+    const plan = {id:uid(), name, mode:RB.mode, rules:RB.rules.map(r => ({...r})), sort:RB.sort, limit:RB.limit};
+    const old = (S.reviewPlans || []).findIndex(p => p.name.toLowerCase() === name.toLowerCase() && (p.mode || 'review') === RB.mode);
     if (old >= 0) S.reviewPlans[old] = plan; else S.reviewPlans.push(plan);
     RB.name = name; save(); toast(`📌 Saved plan “${esc(name)}”. Run it any time from the Learn page.`); render();
   },
   'rb-plan': el => {
     const p = (S.reviewPlans || []).find(x => x.id === el.dataset.id); if (!p) return;
-    RB = {rules:p.rules.map(r => ({...r})), sort:p.sort, limit:p.limit, results:null, checked:new Set(), name:p.name};
+    RB = {mode:p.mode || 'review', rules:p.rules.map(r => ({...r})), sort:p.sort, limit:p.limit, results:null, checked:new Set(), name:p.name};
     runRules(); go('review');
   },
   'rb-plan-del': async el => {
@@ -3194,6 +3308,8 @@ const ACT = {
   'csv': el => reportCSV(el.dataset.id),
   // word lists
   'open-list': el => go('list', {id:el.dataset.id}),
+  'lm-export': () => exportLists(),
+  'lm-clear-dates': () => { LM.from = LM.to = ''; render(); },
   'del-list': async el => {
     const l = S.lists.find(x => x.id === el.dataset.id);
     if (!await askModal(`Delete the list “${esc(l.name)}” and all its words?`, 'Delete', true)) return;
@@ -3479,6 +3595,8 @@ document.body.addEventListener('input', e => {
   else if (f === 'edit-word') editRows.rows[+el.dataset.i].word = el.value;
   else if (f === 'edit-def') editRows.rows[+el.dataset.i].def = el.value;
   else if (f === 'new-name') addState.newName = el.value;
+  else if (f === 'lm-q') { LM.q = el.value; const c = $('#lm-results'); if (c) c.innerHTML = lmResultsHTML(); const i = $('#lm-info'); if (i) i.textContent = lmExportInfo(); }
+  else if (f === 'lm-from' || f === 'lm-to') { LM[f === 'lm-from' ? 'from' : 'to'] = el.value; const i = $('#lm-info'); if (i) i.textContent = lmExportInfo(); }
   else if (f === 'list-name') { const l = S.lists.find(x => x.id === el.dataset.id); if (l) { l.name = el.value.trim() || l.name; save(); } }
   else if (f === 'def') { const w = S.words[el.dataset.id]; w.def = el.value.trim(); w.defUser = true; save(); }
   else if (f === 'examples') { const w = S.words[el.dataset.id]; w.examples = el.value.split('\n').map(s => s.trim()).filter(Boolean); w.exUser = true; save(); }
@@ -3486,6 +3604,9 @@ document.body.addEventListener('input', e => {
 document.body.addEventListener('change', async e => {
   const el = e.target, f = el.dataset.change; if (!f) return;
   if (f === 'add-list') { addState.list = el.value; render(); }
+  else if (f === 'lm-edit') { if (el.value) { editRows = null; go('edit-list', {id:el.value}); } }
+  else if (f === 'lm-open') { if (el.value) go('list', {id:el.value}); }
+  else if (f === 'lm-sort') { LM.sort = el.value; const c = $('#lm-results'); if (c) c.innerHTML = lmResultsHTML(); }
   else if (f === 'report-list') go('report', {id:el.dataset.id, list:el.value || null});
   else if (f === 'rb-add' && el.value) { RB.rules.push({type:el.value, val:RULE_DEFAULT[el.value]}); runRules(); render(); }
   else if (f === 'rb-val') { RB.rules[+el.dataset.i].val = el.value; runRules(); render(); }
