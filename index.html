@@ -583,7 +583,7 @@ function defaultState() {
     reviewPlans:[],
     daily:{goal:5, date:today(), words:[], rewarded:false},
     streak:{count:0, last:null},
-    stickers:[], flags:{demoPen:true},
+    stickers:[], flags:{coopGift:true},
     settings:{rate:0.85, sound:true},
     stats:{correct:0, wrong:0, days:{}}
   };
@@ -635,8 +635,9 @@ function normalize(raw) {
     }
   }
   T.stickers = (T.stickers || []).filter(id => BADGES.some(b => b.id === id));
-  // older saves never got the free coop: look at the saved flags (the merged ones already carry the new default)
-  if (!(raw.flags && raw.flags.demoPen)) { if (!(T.farm.pens || []).length) T.farm.pens = [demoPen()]; T.flags.demoPen = true; }
+  // older saves never got the free coop. Check the saved flags, not the merged ones (those already carry the default).
+  // 'coopGift' replaces an earlier 'demoPen' flag that an older build wrote into saves without adding the coop.
+  if (!(raw.flags && raw.flags.coopGift)) { if (!(T.farm.pens || []).length) T.farm.pens = [demoPen()]; T.flags.coopGift = true; }
   if (!Array.isArray(T.reviewPlans)) T.reviewPlans = [];
   // every pen now holds 5 animals: give older, smaller pens the extra places
   for (const pen of T.farm.pens || []) { const cap = (ANIMALS[pen.t] || {}).cap || 5; while (pen.animals.length < cap) pen.animals.push(null); }
