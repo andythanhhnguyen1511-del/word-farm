@@ -60,6 +60,7 @@ h1{font-size:30px;font-weight:800} h2{font-size:24px;font-weight:800} h3{font-si
 .tb{flex:1;max-width:220px;border:none;background:none;border-radius:16px;padding:6px 4px;font-weight:800;font-size:15px;cursor:pointer;display:flex;flex-direction:column;align-items:center;color:#8a8a8a}
 .tb .i{font-size:28px;line-height:1.1}
 .tb.on{background:#eaf8d8;color:#3f7d00}
+.tb.sm{padding:6px 2px}.tb.sm.first{margin-left:8px;border-left:2px solid #e3e3e3;border-radius:0 16px 16px 0}
 .tb .dot{position:absolute;margin-left:28px;background:var(--red);color:#fff;border-radius:999px;font-size:12px;padding:0 6px}
 
 /* trang học */
@@ -136,6 +137,28 @@ h1{font-size:30px;font-weight:800} h2{font-size:24px;font-weight:800} h3{font-si
 .ltile:active{transform:translateY(3px);border-bottom-width:3px}
 .ltile.used{visibility:hidden}
 .ltile.bad{opacity:.25;text-decoration:line-through;cursor:not-allowed}
+/* practice: grammar choice, sentence order, vocabulary choice, test */
+.pcard{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.pcard .pi{font-size:40px}
+.pcard:hover{border-color:var(--orange)}
+.qprompt{font-size:clamp(22px,5vw,30px);font-weight:800;text-align:center;line-height:1.5;margin:10px 0 16px}
+.blankbox{display:inline-block;min-width:70px;border-bottom:4px solid var(--orange);color:var(--orange);margin:0 4px}
+.blankbox.ok{color:var(--green-d);border-color:var(--green)}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.qchoice{padding:14px 10px;font-size:22px;font-weight:800;border-radius:16px;border:2px solid #d6d6d6;border-bottom-width:6px;background:#fff;cursor:pointer;font-family:inherit;color:inherit}
+.qchoice:active{transform:translateY(3px);border-bottom-width:3px}
+.qchoice.ok{background:#eaffd6;border-color:var(--green);color:var(--green-d)}
+.qchoice.bad{background:#ffecec;border-color:var(--red);color:var(--red-d);opacity:.7}
+.qchoice.long{font-size:17px;font-weight:700;text-align:left}
+.oanswer{min-height:74px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;padding:10px;border-radius:16px;background:#fffdf3;border:3px dashed #d9c58a;margin:8px 0}
+.oanswer.ok{border-style:solid;border-color:var(--green);background:#eaffd6}
+.oanswer.bad{border-color:var(--red);background:#ffecec}
+.otile{padding:10px 16px;font-size:24px;font-weight:800;border-radius:14px;border:2px solid #d6d6d6;border-bottom-width:6px;background:#fff;cursor:pointer;font-family:inherit;color:inherit}
+.otile:active{transform:translateY(3px);border-bottom-width:3px}
+.otile.used{visibility:hidden}
+.trow{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:#fff;border:2px solid var(--line);cursor:pointer;margin-bottom:6px}
+.trow.on{border-color:var(--green);background:#f3ffe9}
+.trow input{width:20px;height:20px}
 .shake{animation:shake .45s}
 @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 .kb{display:flex;flex-direction:column;gap:6px;align-items:center;margin-top:8px;user-select:none}
@@ -331,6 +354,52 @@ pre.fmt{background:#f7f9fc;border-radius:12px;padding:8px 10px;white-space:pre-w
 .subtabs{display:flex;gap:8px;margin:8px 0}
 .subtab{flex:1;border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;padding:8px;background:#fff;font-weight:800;cursor:pointer}
 .subtab.on{background:#fff7d6;border-color:var(--yellow);color:#a66b00}
+/* balanced tool cards + a coloured pane around the open tab */
+.tabpane{--pc:#58cc02;border:5px solid var(--pc);border-radius:28px;padding:14px;background:rgba(255,255,255,.4);margin-top:-2px}
+.tabpane[data-k=words]{--pc:#58cc02}.tabpane[data-k=mc]{--pc:#1cb0f6}.tabpane[data-k=order]{--pc:#a560e8}.tabpane[data-k=vmc]{--pc:#ff9600}.tabpane[data-k=test]{--pc:#ff4b6e}
+.tabpane>.card:first-child,.tabpane>.learn-btn:first-child{margin-top:0}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:12px 0}
+.pgrid>.card{margin:0}
+.tool{display:flex;flex-direction:column;gap:10px}
+.tool-head{display:flex;gap:12px;align-items:center}
+.tool-head .ti2{font-size:36px;line-height:1}
+.tool-head b{font-size:19px}
+.tool-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.tool-actions:empty{display:none}
+.tool-actions .btn{flex:1}
+.tool .chips{margin:0}
+/* address-bar style trail */
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:2px 0 12px;padding:6px 12px;background:#fff;border:2px solid var(--line);border-radius:14px;font-size:15px;box-shadow:0 3px 0 rgba(0,0,0,.06)}
+.crumb{border:none;background:none;font:inherit;font-weight:700;color:var(--blue-d);cursor:pointer;padding:2px 6px;border-radius:8px}
+.crumb:hover{background:#eaf6ff;text-decoration:underline}
+.crumbs .sep{color:#aaa;font-weight:800}
+.crumbs .here{padding:2px 6px;color:#4e4e4e;background:#f1f4f8;border-radius:8px}
+/* big, colourful tabs of the Learn page */
+.learn-tabs{gap:10px;margin:30px 0 30px;padding:6px 2px 10px}
+.learn-tabs .subtab{flex:1 1 0;min-width:0;white-space:nowrap;min-height:84px;border:none;border-radius:22px;color:#fff;font-family:inherit;font-weight:800;font-size:20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-shadow:0 2px 0 rgba(0,0,0,.22);opacity:.82;
+  background:var(--tc);box-shadow:0 6px 0 var(--td);transition:transform .12s,opacity .12s}
+.learn-tabs .subtab:hover{opacity:1}
+.learn-tabs .subtab .ti{font-size:36px;line-height:1;filter:drop-shadow(0 2px 0 rgba(0,0,0,.2))}
+.learn-tabs .subtab.on{opacity:1;transform:translateY(-4px) scale(1.04);box-shadow:0 0 0 4px #fff,0 0 0 8px var(--td),0 10px 0 6px var(--td);position:relative;z-index:1}
+.learn-tabs .subtab.on::after{content:"";position:absolute;left:50%;bottom:-24px;margin-left:-13px;border:13px solid transparent;border-top-color:var(--td);border-bottom:0}
+.learn-tabs .subtab:active{transform:translateY(2px);box-shadow:0 2px 0 var(--td)}
+.learn-tabs [data-k=words]{--tc:#58cc02;--td:#3f9d00}
+.learn-tabs [data-k=mc]{--tc:#1cb0f6;--td:#1288c4}
+.learn-tabs [data-k=order]{--tc:#a560e8;--td:#7d3fc0}
+.learn-tabs [data-k=vmc]{--tc:#ff9600;--td:#cc7000}
+.learn-tabs [data-k=test]{--tc:#ff4b6e;--td:#c9304f}
+@media (max-width:560px){.learn-tabs{gap:6px;margin-top:24px}.learn-tabs .subtab{min-height:74px;font-size:12px;border-radius:16px}.learn-tabs .subtab .ti{font-size:28px}}
+.learn-btn.k-mc{background:#1cb0f6;box-shadow:0 7px 0 #1288c4}.learn-btn.k-order{background:#a560e8;box-shadow:0 7px 0 #7d3fc0}
+.learn-btn.k-vmc{background:#ff9600;box-shadow:0 7px 0 #cc7000}.learn-btn.k-test{background:#ff4b6e;box-shadow:0 7px 0 #c9304f}
+.learn-btn[class*=k-]:active{transform:translateY(5px);box-shadow:none}
+.learn-btn:disabled{opacity:.55;cursor:not-allowed}
+.tgroup{border:2px solid var(--line);border-radius:16px;margin-bottom:10px;overflow:hidden;background:#fff}
+.tghead{display:flex;width:100%;align-items:center;gap:10px;padding:12px 14px;border:none;background:#eaf6ff;font:inherit;font-weight:800;font-size:17px;cursor:pointer;text-align:left;color:inherit}
+.tgroup[data-g=vocab] .tghead{background:#fff1da}
+.tghead .chev{font-size:20px}
+.tscroll{max-height:280px;overflow-y:auto;padding:8px 10px}
+.qrow{display:grid;gap:6px;padding:8px;border-radius:12px;background:#f7f9fc;margin-bottom:8px}
 .shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
 .item{border:2px solid var(--line);border-radius:18px;padding:8px 10px 10px;text-align:center;background:#fff;display:flex;flex-direction:column;gap:4px}
 .item .th{height:110px;background:linear-gradient(#e8f7ff,#e8f7ff 70%,#a8d66b 70%);border-radius:12px}
@@ -589,7 +658,7 @@ function defaultState() {
   return {
     v:3, lists:[], words:{},
     farm:{coins:10, water:6, feed:6, seeds:{lettuce:2, sunflower:1}, beds:[newBed()], pens:[demoPen()], barn:{}, harvests:{}, totalHarvest:0, collected:0},
-    reviewPlans:[],
+    reviewPlans:[], topics:[], qstats:{}, qPlans:[], testLog:[],
     daily:{goal:5, date:today(), words:[], rewarded:false},
     streak:{count:0, last:null},
     stickers:[], flags:{coopGift:true},
@@ -651,6 +720,10 @@ function normalize(raw) {
   // 'coopGift' replaces an earlier 'demoPen' flag that an older build wrote into saves without adding the coop.
   if (!(raw.flags && raw.flags.coopGift)) { if (!(T.farm.pens || []).length) T.farm.pens = [demoPen()]; T.flags.coopGift = true; }
   if (!Array.isArray(T.reviewPlans)) T.reviewPlans = [];
+  if (!Array.isArray(T.topics)) T.topics = [];
+  if (!T.qstats || typeof T.qstats !== 'object') T.qstats = {};
+  if (!Array.isArray(T.qPlans)) T.qPlans = [];
+  if (!Array.isArray(T.testLog)) T.testLog = [];
   // every pen now holds 5 animals: give older, smaller pens the extra places
   for (const pen of T.farm.pens || []) { const cap = (ANIMALS[pen.t] || {}).cap || 5; while (pen.animals.length < cap) pen.animals.push(null); }
   T.v = 3;
@@ -937,7 +1010,7 @@ const Cloud = {
         if (error || !data) continue;
         IMG[id] = await blobToDataUrl(data); await IDB.put(id, IMG[id]).catch(() => {}); got++;
       }
-      if (got && cur.name !== 'game') render();
+      if (got && !['game', 'quiz'].includes(cur.name)) render();
     }
   },
   photoAdded(id) { R.photoUp = [...new Set([...(R.photoUp || []), id])]; saveRoot(); this.schedule(); },
@@ -992,7 +1065,7 @@ function afterRemoteChange() {
   if (R.active && !profile(R.active)) { R.active = null; S = null; }
   saveRoot();
   const typing = document.activeElement && document.activeElement.matches && document.activeElement.matches('input,textarea');
-  if (cur.name !== 'game' && !typing && !$('#modal').classList.contains('on')) render();
+  if (!['game', 'quiz'].includes(cur.name) && !typing && !$('#modal').classList.contains('on')) render();
 }
 const CLOUD_ICON = {syncing:['🔄', 'Saving to the cloud…'], synced:['☁️', 'Saved in the cloud'], error:['⚠️', 'Cloud sync problem'], offline:['📴', 'Offline — will sync later']};
 function cloudPillHTML() {
@@ -1707,7 +1780,7 @@ $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') ACT['c
 // ---------- navigation ----------
 const app = $('#app');
 let cur = {name:'learn', p:{}};
-const TAB_OF = {learn:'learn', lists:'learn', list:'learn', 'edit-list':'learn', review:'learn', add:'learn', parent:'learn', report:'learn', summary:'learn', garden:'garden', shop:'shop', game:null, profiles:null};
+const TAB_OF = {learn:'learn', practice:'learn', qrules:'learn', topics:'learn', 'edit-topic':'learn', qsummary:'learn', quiz:null, lists:'learn', list:'learn', 'edit-list':'learn', review:'learn', add:'learn', parent:'learn', report:'learn', summary:'learn', garden:'garden', shop:'shop', game:null, profiles:null};
 function go(name, p = {}) {
   if (name === 'shop' && p.sub) { shopState.sub = p.sub; p = {}; }
   if (!S && !['profiles', 'parent', 'report'].includes(name)) name = 'profiles';
@@ -1718,8 +1791,28 @@ function go(name, p = {}) {
 function render() {
   if (!S && !['profiles', 'parent', 'report'].includes(cur.name)) cur = {name:'profiles', p:{}};
   (SCREENS[cur.name] || SCREENS.learn)(cur.p);
+  addCrumbs();
   app.classList.toggle('wide', cur.name === 'garden');
   renderTabbar();
+}
+/* Address-bar style trail ("Learn › Grammar › Choose questions") under the title of every screen inside the Learn tab. Each part but the last is a link. */
+const TAB_LABEL = k => { const t = LEARN_TABS.find(x => x[0] === k) || LEARN_TABS[0]; return `${t[1]} ${t[2]}`; };
+const CRUMBS = {
+  lists:        () => [['📚 Learn', 'learn', 'words'], [TAB_LABEL('words'), 'learn', 'words'], ['Manage lists']],
+  list:         p => [['📚 Learn', 'learn', 'words'], [TAB_LABEL('words'), 'learn', 'words'], ['Manage lists', 'lists'], [(S.lists.find(l => l.id === p.id) || {}).name || 'List']],
+  'edit-list':  p => [['📚 Learn', 'learn', 'words'], [TAB_LABEL('words'), 'learn', 'words'], ['Manage lists', 'lists'], [(S.lists.find(l => l.id === p.id) || {}).name || 'List', 'list', null, {id:p.id}], ['Edit']],
+  add:          () => [['📚 Learn', 'learn', 'words'], [TAB_LABEL('words'), 'learn', 'words'], ['Manage lists', 'lists'], ['Add words']],
+  review:       () => [['📚 Learn', 'learn', 'words'], [TAB_LABEL('words'), 'learn', 'words'], [RB && RB.mode === 'learn' ? 'Choose words to learn' : 'Review words']],
+  qrules:       p => [['📚 Learn', 'learn', p.kind], [TAB_LABEL(p.kind), 'learn', p.kind], ['Choose questions']],
+  topics:       p => [['📚 Learn', 'learn', p.kind], [TAB_LABEL(p.kind), 'learn', p.kind], ['Manage topics']],
+  'edit-topic': p => { const t = (S.topics || []).find(x => x.id === p.id) || {kind:'mc', name:'Topic'}; return [['📚 Learn', 'learn', t.kind], [TAB_LABEL(t.kind), 'learn', t.kind], ['Manage topics', 'topics', null, {kind:t.kind}], [t.name]]; }
+};
+function addCrumbs() {
+  const f = CRUMBS[cur.name], top = app.querySelector('.top'); if (!f || !top || !S) return;
+  const items = f(cur.p || {});
+  top.insertAdjacentHTML('afterend', `<nav class="crumbs" aria-label="You are here">${items.map(([label, to, view, p], i) => i === items.length - 1
+    ? `<b class="here">${esc(label)}</b>`
+    : `<button class="crumb" data-act="crumb" data-to="${to}" ${view ? `data-view="${view}"` : ''} data-p='${esc(JSON.stringify(p || (to === 'topics' ? {kind:(cur.p || {}).kind || 'mc'} : to === 'qrules' ? {kind:(cur.p || {}).kind} : {})))}'>${esc(label)}</button><span class="sep">›</span>`).join('')}</nav>`);
 }
 function renderTabbar() {
   const t = S && TAB_OF[cur.name], tb = $('#tabbar');
@@ -1727,8 +1820,9 @@ function renderTabbar() {
   if (!t) return;
   const ripe = allPlots().filter(({p}) => plotState(p) === 'ripe').length + allAnimals().filter(({a}) => animalState(a) === 'ready').length;
   const thirsty = allPlots().filter(({p}) => plotState(p) === 'water').length + allAnimals().filter(({a}) => animalState(a) === 'hungry').length;
+  const extra = `<button class="tb sm first" data-act="go" data-to="profiles" title="Switch child"><span class="i">🔄</span>Switch</button><button class="tb sm" data-act="parent" title="Parents' area"><span class="i">👪</span>Parents</button>`;
   tb.innerHTML = [['learn', '📚', 'Learn'], ['garden', '🌻', 'Farm'], ['shop', '🛒', 'Shop']].map(([k, i, l]) =>
-    `<button class="tb ${t === k ? 'on' : ''}" data-act="tab" data-to="${k}"><span class="i">${i}</span>${l}${k === 'garden' && (ripe || thirsty) ? `<span class="dot">${ripe ? ripe + ' ready' : thirsty + ' to tend'}</span>` : ''}</button>`).join('');
+    `<button class="tb ${t === k ? 'on' : ''}" data-act="tab" data-to="${k}"><span class="i">${i}</span>${l}${k === 'garden' && (ripe || thirsty) ? `<span class="dot">${ripe ? ripe + ' ready' : thirsty + ' to tend'}</span>` : ''}</button>`).join('') + extra;
 }
 const streakNow = (T = S) => (T.streak.last === today() || T.streak.last === yesterday()) ? T.streak.count : 0;
 const kidChip = () => { const p = profile(); return p ? `<button class="pill kid" data-act="go" data-to="profiles" title="Switch child">${p.avatar} ${esc(p.name)}</button>` : ''; };
@@ -1780,6 +1874,11 @@ function kidForm(id) {
 }
 
 // ===== Learn tab =====
+/* building blocks of the Learn page: a coloured pane around the open tab, and equal "tool" cards in a balanced grid */
+const tabPane = (k, inner) => `<div class="tabpane" data-k="${k}">${inner}</div>`;
+const toolCard = (ic, title, desc, actions, extra = '') => `<div class="card tool"><div class="tool-head"><span class="ti2">${ic}</span><div style="flex:1;min-width:0"><b>${title}</b><div class="small muted">${desc}</div></div></div>${extra}<div class="tool-actions">${actions}</div></div>`;
+let learnView = 'words'; // which tab of Learn is open: words | mc | order | vmc | test
+const LEARN_TABS = [['words', '📚', 'Words'], ['mc', '✅', 'Grammar'], ['order', '🔀', 'Sentences'], ['vmc', '🔤', 'Vocab'], ['test', '📝', 'Test']];
 SCREENS.learn = () => {
   rollDay();
   const d = S.daily, done = d.words.length, pct = Math.min(100, done / d.goal * 100);
@@ -1792,31 +1891,26 @@ SCREENS.learn = () => {
   else if (d.rewarded) msg = 'You reached today\'s goal! Let\'s water the garden! 🌳';
   else if (done) msg = `Keep going! ${plural(d.goal - done, 'more word')} to reach today's goal.`;
   else msg = `Hi ${name}! Learn new words to earn coins for seeds and water for your plants! 💧`;
-  app.innerHTML = topBar('📚 Learn') + `
+  const head = topBar('📚 Learn') + `<div class="subtabs learn-tabs">${LEARN_TABS.map(([k, ic, l]) => `<button class="subtab ${learnView === k ? 'on' : ''}" data-act="learn-tab" data-k="${k}"><span class="ti">${ic}</span><span>${l}</span></button>`).join('')}</div>`;
+  const foot = `<div class="note" id="enrich-note">${enrichNote()}</div>
+`;
+  if (learnView !== 'words') { app.innerHTML = head + tabPane(learnView, practiceBodyHTML(learnView)) + foot; return; }
+  const planChips = mode => { const ps = (S.reviewPlans || []).filter(p => (p.mode || 'review') === mode); return ps.length ? `<div class="chips">${ps.map(p => `<button class="chip" data-act="rb-plan" data-id="${p.id}">📌 ${esc(p.name)}</button>`).join('')}</div>` : ''; };
+  const goalCard = `<div class="card tool"><div class="tool-head"><span class="ti2">🎯</span><div style="flex:1"><b>Today's goal</b><div class="small muted">${d.rewarded ? '✅ Reward collected today' : `Reward: 💰 ${GOAL_REWARD[d.goal][0]} + 💧 ${GOAL_REWARD[d.goal][1]}`}</div></div><b>${done}/${d.goal} words</b></div>
+    <div class="goal-bar" style="margin:0"><i style="width:${pct}%"></i></div>
+    <div class="tool-actions">${GOALS.map(g => `<button class="chip ${g === d.goal ? 'on' : ''}" data-act="goal" data-g="${g}">${g} words</button>`).join('')}</div></div>`;
+  app.innerHTML = head + tabPane('words', `
   <div class="card mascot-card"><div class="mascot">🐰</div><div class="bubble">${esc(msg)}</div></div>
   <button class="learn-btn" data-act="learn"><span style="font-size:40px">▶️</span><span>Start learning<span class="sub">${reviews ? `${plural(reviews, 'word')} to review · ` : ''}one word at a time</span></span></button>
-  <div class="card review-card"><div class="row"><span style="font-size:34px">🎯</span><div style="flex:1;min-width:180px"><b style="font-size:19px">Choose words to learn</b>
-    <div class="small muted">Pick exactly which words to practise, with your own rules.</div></div>
-    <button class="btn" data-act="learn-pick" ${total ? '' : 'disabled'}>🛠 My rules…</button></div>
-    ${(S.reviewPlans || []).some(p => p.mode === 'learn') ? `<div class="chips" style="margin-top:8px">${S.reviewPlans.filter(p => p.mode === 'learn').map(p => `<button class="chip" data-act="rb-plan" data-id="${p.id}">📌 ${esc(p.name)}</button>`).join('')}</div>` : ''}</div>
-  <div class="card review-card"><div class="row"><span style="font-size:34px">🔁</span><div style="flex:1;min-width:180px"><b style="font-size:19px">Review words</b>
-    <div class="small muted">${learnedWords(null).length ? `${plural(learnedWords(null).length, 'learned word')}${reviews ? ` · <b>${reviews} due today</b>` : ' · none due today'}`
-      : Object.values(S.words).some(w => w.step > 0) ? 'No word fully learned yet — Auto practises the words you are still learning.' : 'No word learned yet. A word counts as learned once you finish all its rounds in ▶️ Start learning.'}</div></div>
-    <button class="btn blue" data-act="review" data-n="auto">⚡ Auto</button>
-    <button class="btn" data-act="review-pick">🛠 My rules…</button></div>
-    ${(S.reviewPlans || []).some(p => (p.mode || 'review') === 'review') ? `<div class="chips" style="margin-top:8px">${S.reviewPlans.filter(p => (p.mode || 'review') === 'review').map(p => `<button class="chip" data-act="rb-plan" data-id="${p.id}">📌 ${esc(p.name)}</button>`).join('')}</div>` : ''}</div>
-  <div class="card">
-    <div class="row"><h3>🎯 Today's goal</h3><span class="spacer"></span><b>${done}/${d.goal} words</b></div>
-    <div class="goal-bar"><i style="width:${pct}%"></i></div>
-    <div class="row small"><span class="muted">How many words a day?</span>
-      <div class="chips">${GOALS.map(g => `<button class="chip ${g === d.goal ? 'on' : ''}" data-act="goal" data-g="${g}">${g} words</button>`).join('')}</div></div>
-    <div class="small muted" style="margin-top:6px">${d.rewarded ? '✅ Reward collected today' : `Reward: 💰 ${GOAL_REWARD[d.goal][0]} + 💧 ${GOAL_REWARD[d.goal][1]}`}</div>
-  </div>
-  <button class="card list-card manage-card" data-act="go" data-to="lists" style="width:100%;text-align:left;font:inherit;color:inherit"><div class="row"><span style="font-size:34px">📒</span>
-    <div style="flex:1;min-width:180px"><b style="font-size:19px">Manage word lists</b>
-      <div class="small muted">${S.lists.length ? `${plural(S.lists.length, 'list')} · ${plural(total, 'word')} — add, edit, search or export lists` : 'No lists yet — tap to add your first list'}</div></div><span style="font-size:24px">›</span></div></button>
-  <div class="note" id="enrich-note">${enrichNote()}</div>
-  <div class="row center" style="margin-top:14px"><button class="btn sm" data-act="go" data-to="profiles">🔄 Switch child</button><button class="btn sm" data-act="parent">👪 Parents' area</button></div>`;
+  <div class="pgrid">
+    ${toolCard('🎯', 'Choose words to learn', 'Pick exactly which words to practise, with your own rules.', `<button class="btn" data-act="learn-pick" ${total ? '' : 'disabled'}>🛠 My rules…</button>`, planChips('learn'))}
+    ${toolCard('🔁', 'Review words', learnedWords(null).length ? `${plural(learnedWords(null).length, 'learned word')}${reviews ? ` · <b>${reviews} due today</b>` : ' · none due today'}`
+      : Object.values(S.words).some(w => w.step > 0) ? 'No word fully learned yet — Auto practises the words you are still learning.' : 'No word learned yet. A word counts as learned once you finish all its rounds.',
+      `<button class="btn blue" data-act="review" data-n="auto">⚡ Auto</button><button class="btn" data-act="review-pick">🛠 My rules…</button>`, planChips('review'))}
+    ${goalCard}
+    ${toolCard('📒', 'Manage word lists', S.lists.length ? `${plural(S.lists.length, 'list')} · ${plural(total, 'word')} — add, edit, search or export lists` : 'No lists yet — add your first list', `<button class="btn orange" data-act="go" data-to="lists">Open ›</button>`)}
+  </div>`) + foot;
+
 };
 /* ===== Manage word lists: the hub. From here: add a list, edit a list, search / jump to a list, export lists by the time they were added ===== */
 let LM = {q:'', sort:'new', from:'', to:''};
@@ -2767,6 +2861,601 @@ function endSession() {
 }
 
 /* =========================================================
+   PRACTICE — grammar choice, sentence order, vocabulary choice, test
+   Questions come from a built-in grammar bank, from the child's own word lists (example sentences, definitions),
+   or from files the parents add (csv / excel / notes). Added content lives in S.topics = [{id, kind:'mc'|'order'|'vmc', name, tip, created, items}].
+   ========================================================= */
+const BUILTIN_MC = [
+  {id:'b-isare', name:'is / are / am', tip:'Use “is” for one (he, she, it, the cat), “are” for many (we, you, they, the dogs) and “am” with I.', items:[
+    ['I ___ a student.', 'am', 'is|are'], ['She ___ my friend.', 'is', 'are|am'], ['They ___ at school.', 'are', 'is|am'], ['The cat ___ sleeping.', 'is', 'are|am'],
+    ['The dogs ___ big.', 'are', 'is|am'], ['We ___ happy.', 'are', 'is|am'], ['He ___ a doctor.', 'is', 'are|am'], ['My books ___ on the desk.', 'are', 'is|am'],
+    ['It ___ a red ball.', 'is', 'are|am'], ['You ___ my best friend.', 'are', 'is|am']]},
+  {id:'b-this', name:'this / that / these / those', tip:'“This” and “these” are near you. “That” and “those” are far away. “This / that” = one thing; “these / those” = many.', items:[
+    ['___ is my pen. (one, near me)', 'This', 'That|These|Those'], ['___ are my shoes. (many, near me)', 'These', 'Those|This|That'], ['___ is a bird in the sky. (one, far away)', 'That', 'This|These|Those'],
+    ['___ are stars. (many, far away)', 'Those', 'These|That|This'], ['___ is my mother next to me. (one, near)', 'This', 'That|These|Those'], ['___ are cows in the field. (many, far away)', 'Those', 'These|This|That'],
+    ['___ apples in my hand are red. (many, near)', 'These', 'Those|This|That'], ['___ house over there is big. (one, far away)', 'That', 'This|These|Those'],
+    ['___ is my school bag. (one, near me)', 'This', 'That|These|Those'], ['___ are my friends over there. (many, far away)', 'Those', 'These|That|This']]},
+  {id:'b-aan', name:'a / an', tip:'Use “an” before the sounds a, e, i, o, u (an apple, an egg). Use “a” before other sounds (a dog, a book).', items:[
+    ['She has ___ apple.', 'an', 'a'], ['I see ___ dog.', 'a', 'an'], ['It is ___ umbrella.', 'an', 'a'], ['He is ___ teacher.', 'a', 'an'], ['She eats ___ orange.', 'an', 'a'],
+    ['This is ___ book.', 'a', 'an'], ['I have ___ egg.', 'an', 'a'], ['It is ___ elephant.', 'an', 'a'], ['I want ___ ice cream.', 'an', 'a'], ['There is ___ cat on the bed.', 'a', 'an']]},
+  {id:'b-hashave', name:'has / have', tip:'Use “has” with he, she, it and one person or thing. Use “have” with I, you, we, they and many.', items:[
+    ['She ___ a pet dog.', 'has', 'have'], ['I ___ two sisters.', 'have', 'has'], ['They ___ a big house.', 'have', 'has'], ['He ___ a red bike.', 'has', 'have'],
+    ['We ___ English class today.', 'have', 'has'], ['The cat ___ four legs.', 'has', 'have'], ['My friends ___ new bags.', 'have', 'has'], ['It ___ a long tail.', 'has', 'have'],
+    ['You ___ a nice hat.', 'have', 'has'], ['Tom ___ a pencil.', 'has', 'have']]},
+  {id:'b-there', name:'there is / there are', tip:'Use “there is” for one thing (or something you cannot count, like milk). Use “there are” for many things.', items:[
+    ['There ___ a book on the table.', 'is', 'are'], ['There ___ three cats in the garden.', 'are', 'is'], ['There ___ some milk in the cup.', 'is', 'are'], ['There ___ two birds in the tree.', 'are', 'is'],
+    ['There ___ an apple in the bag.', 'is', 'are'], ['There ___ many children in the park.', 'are', 'is'], ['There ___ some water in the bottle.', 'is', 'are'], ['There ___ four chairs in the room.', 'are', 'is']]}
+,
+  {id:'b-comp', name:'Comparatives (taller, more beautiful)', tip:'Short adjectives: add -er (taller). Long adjectives: use “more” (more beautiful). Then use “than”. Adverbs: faster, more slowly.', items:[
+    ['An elephant is ___ than a dog.', 'bigger', 'biggest|more big'], ['This book is ___ than that one.', 'more interesting', 'most interesting|interestinger'], ['My sister is ___ than me.', 'taller', 'tallest|more tall'],
+    ['Today is ___ than yesterday.', 'hotter', 'hottest|more hot'], ['A car is ___ than a bike.', 'faster', 'fastest|more fast'], ['Maths is ___ than English for me.', 'more difficult', 'difficulter|most difficult'],
+    ['He swims ___ than I do.', 'more slowly', 'slowlier|most slowly'], ['This bag is ___ than that bag.', 'heavier', 'heaviest|more heavy'], ['Her house is ___ than mine.', 'more beautiful', 'beautifuler|most beautiful'],
+    ['This box is ___ than that box.', 'smaller', 'smallest|more small']]},
+  {id:'b-super', name:'Superlatives (the tallest, the most…)', tip:'Use “the” + -est (the tallest) or “the most” + a long adjective (the most beautiful). Use it for three or more things.', items:[
+    ['Tom is ___ boy in the class.', 'the tallest', 'taller|the most tall'], ['This is ___ film I have ever seen.', 'the most exciting', 'the excitingest|more exciting'], ['Mount Everest is ___ mountain in the world.', 'the highest', 'higher|the most high'],
+    ['She is ___ student in our school.', 'the best', 'the goodest|better'], ['Summer is ___ season of the year.', 'the hottest', 'hotter|the most hot'], ['He runs ___ of all the boys.', 'the fastest', 'faster|the most fast'],
+    ['That is ___ story of all.', 'the funniest', 'funnier|the most funny'], ['This is ___ bag in the shop.', 'the most expensive', 'more expensive|the expensivest'], ['Who is ___ player in your team?', 'the youngest', 'younger|the most young'],
+    ['She sings ___ in the class.', 'the most beautifully', 'more beautifully|the beautifullest']]},
+  {id:'b-possadj', name:'my / your / his / her / our / their', tip:'These words go BEFORE a noun: my book, her bag, their house. “Its” is for things and animals.', items:[
+    ['This is Tom. ___ bag is blue.', 'His', 'Her|Their'], ['Mary has a cat. ___ cat is white.', 'Her', 'His|My'], ['I have a dog. ___ name is Max.', 'My', 'I|Me'], ['You must wash ___ hands.', 'your', 'you|yours'],
+    ['The children are playing with ___ toys.', 'their', 'they|them'], ['The dog wags ___ tail.', 'its', 'it|it\'s'], ['Tom and I love ___ school.', 'our', 'us|ours'], ['Anna lost ___ keys.', 'her', 'she|hers'],
+    ['Tom lost ___ ball.', 'his', 'he|him'], ['Are these ___ shoes? (they belong to you)', 'your', 'you|yours']]},
+  {id:'b-posspron', name:'mine / yours / his / hers / ours / theirs', tip:'These words replace “my book” with just “mine”. They are NOT followed by a noun: This bag is mine.', items:[
+    ['This is my book. It is ___.', 'mine', 'my|me'], ['Whose bike is this? It is ___. (it belongs to you)', 'yours', 'your|you'], ['Tom has a red bag. The red bag is ___.', 'his', 'he|him'], ['Anna has a blue bag. The blue bag is ___.', 'hers', 'her|she'],
+    ['We have a house. The house is ___.', 'ours', 'our|us'], ['They have a car. The car is ___.', 'theirs', 'their|them'], ['These toys are ___. (they belong to Tom and Anna)', 'theirs', 'their|them'],
+    ['My room is big, but ___ is small. (your room)', 'yours', 'your|you'], ['Her bag is red and ___ is green. (my bag)', 'mine', 'my|me'], ['Is this pen ___? (it belongs to you)', 'yours', 'your|you']]},
+  {id:'b-subjobj', name:'he / him, she / her, they / them', tip:'Use I, he, she, we, they BEFORE a verb. Use me, him, her, us, them AFTER a verb or after words like “to”, “with”, “for”.', items:[
+    ['___ is my brother.', 'He', 'Him|His'], ['I like ___. (Anna)', 'her', 'she|hers'], ['Look at Tom! Give the ball to ___.', 'him', 'he|his'], ['___ are my friends.', 'They', 'Them|Their'],
+    ['My mum loves ___. (me)', 'me', 'I|my'], ['Can you help ___? (me and my sister)', 'us', 'we|our'], ['Mary is nice. I often play with ___.', 'her', 'she|hers'], ['The dogs are hungry. Feed ___.', 'them', 'they|their'],
+    ['___ is a doctor. (Anna)', 'She', 'Her|Hers'], ['Tom and Ben are late. I am waiting for ___.', 'them', 'they|their']]},
+  {id:'b-poss-s', name:'Possessive ’s (Tom’s book)', tip:'Add ’s to one owner (the girl’s bag). Add just ’ to a plural ending in s (the girls’ bags). Irregular plurals add ’s (children’s toys).', items:[
+    ['The tail of the dog is long. = The ___ tail is long.', 'dog\'s', 'dogs\'|dogs'], ['The toys of the children = the ___ toys.', 'children\'s', 'childrens|childrens\''], ['The room of my parents = my ___ room.', 'parents\'', 'parent\'s|parents'],
+    ['The bike of Tom = ___ bike.', 'Tom\'s', 'Toms|Toms\''], ['The books of the girls = the ___ books.', 'girls\'', 'girl\'s|girls'], ['The hat of my sister = my ___ hat.', 'sister\'s', 'sisters\'|sisters'],
+    ['The names of the boys = the ___ names.', 'boys\'', 'boy\'s|boys'], ['The car of Mr Brown = ___ car.', 'Mr Brown\'s', 'Mr Browns|Mr Browns\''], ['The cat of my friend = my ___ cat.', 'friend\'s', 'friends\'|friends'],
+    ['This is the bag of Anna. = This is ___ bag.', 'Anna\'s', 'Annas|Annas\'']]},
+  {id:'b-irreg1', name:'Irregular verbs: past simple', tip:'Some verbs change completely in the past: go → went, see → saw, eat → ate, buy → bought. Do not add -ed!', items:[
+    ['Yesterday I ___ to school.', 'went', 'goed|gone'], ['She ___ a bird in the tree.', 'saw', 'seen|seed'], ['We ___ pizza last night.', 'ate', 'eaten|eated'], ['He ___ a new bike last week.', 'bought', 'buyed|brought'],
+    ['I ___ my homework yesterday.', 'did', 'done|doed'], ['She ___ a nice song.', 'sang', 'sung|singed'], ['Tom ___ the window by accident.', 'broke', 'broken|breaked'], ['I ___ a letter to my friend.', 'wrote', 'written|writed'],
+    ['We ___ the answer.', 'knew', 'known|knowed'], ['The teacher ___ us a story.', 'told', 'telled|tolled'], ['Mum ___ a cake yesterday.', 'made', 'maked|make']]},
+  {id:'b-irreg2', name:'Irregular verbs: past participle (have / has)', tip:'After have / has / had, use the past participle: have seen, has eaten, have broken. Some are the same as the past (bought, made), some are different (went → gone).', items:[
+    ['He has ___ his homework.', 'done', 'did|do'], ['She has ___ her lunch.', 'eaten', 'ate|eat'], ['We have ___ that film before.', 'seen', 'saw|see'], ['They have ___ the door.', 'broken', 'broke|break'],
+    ['I have ___ a letter.', 'written', 'wrote|write'], ['He has ___ a new phone.', 'bought', 'buyed|buy'], ['Has she ___ the song?', 'sung', 'sang|sing'], ['I have ___ him for years.', 'known', 'knew|know'],
+    ['The bird has ___ away.', 'flown', 'flew|fly'], ['Have you ___ your keys?', 'lost', 'losed|lose'], ['She has ___ to London. (she is still there)', 'gone', 'went|go']]},
+  {id:'b-plural', name:'Singular & plural nouns', tip:'Add -s (cats). Add -es after s, x, ch, sh (boxes, watches). Change y → ies (babies). Some are irregular: child → children, man → men, foot → feet, tooth → teeth, mouse → mice.', items:[
+    ['One cat, two ___.', 'cats', 'cat|cates'], ['One box, two ___.', 'boxes', 'boxs|boxies'], ['One baby, two ___.', 'babies', 'babys|babyes'], ['One child, two ___.', 'children', 'childs|childrens'],
+    ['One man, two ___.', 'men', 'mans|mens'], ['One foot, two ___.', 'feet', 'foots|feets'], ['One watch, three ___.', 'watches', 'watchs|watchies'], ['One tooth, many ___.', 'teeth', 'tooths|teeths'],
+    ['One knife, two ___.', 'knives', 'knifes|knifs'], ['One mouse, two ___.', 'mice', 'mouses|mices']]}
+,
+  {id:'b-presimple', name:'Present simple (play / plays, do / does)', tip:'With he / she / it add -s or -es (she plays, he watches). Use do / does in questions and don\'t / doesn\'t with a short verb.', items:[
+    ['She ___ English every day.', 'studies', 'study|studying'], ['My dad ___ to work by bus.', 'goes', 'go|going'], ['They ___ football on Sundays.', 'play', 'plays|playing'], ['The sun ___ in the east.', 'rises', 'rise|rising'],
+    ['___ you like pizza?', 'Do', 'Does|Is'], ['___ she live near here?', 'Does', 'Do|Is'], ['He ___ like spicy food.', 'doesn\'t', 'don\'t|isn\'t'], ['We ___ TV in the morning.', 'don\'t watch', 'doesn\'t watch|don\'t watches'],
+    ['The cat ___ fish.', 'eats', 'eat|eating'], ['Tom ___ his teeth twice a day.', 'brushes', 'brush|brushs'], ['___ your brother play the guitar?', 'Does', 'Do|Is']]},
+  {id:'b-prescont', name:'Present continuous (is playing)', tip:'Use am / is / are + verb-ing for things happening now: She is reading.', items:[
+    ['Look! The baby ___ now.', 'is sleeping', 'sleeps|are sleeping'], ['I ___ my homework at the moment.', 'am doing', 'do|is doing'], ['They ___ in the garden.', 'are playing', 'plays|is playing'], ['What ___ you doing?', 'are', 'is|do'],
+    ['He ___ a song now.', 'is singing', 'sings|are singing'], ['We ___ for the bus.', 'are waiting', 'waits|is waiting'], ['The children ___ TV right now.', 'are watching', 'watches|is watching'], ['It ___ now. Take an umbrella.', 'is raining', 'rains|are raining'],
+    ['She ___ her bike at the moment.', 'is riding', 'rides|are riding'], ['Listen! Somebody ___ at the door.', 'is knocking', 'knocks|are knocking'], ['I ___ not sleeping.', 'am', 'is|are']]},
+  {id:'b-pastbe', name:'Past simple: was / were, did, -ed', tip:'Use was with I / he / she / it and were with you / we / they. Other verbs add -ed (played). In questions and negatives use did + a short verb.', items:[
+    ['I ___ at home yesterday.', 'was', 'were|am'], ['They ___ happy last week.', 'were', 'was|are'], ['She ___ in Paris last year.', 'was', 'were|is'], ['___ you tired last night?', 'Were', 'Was|Did'],
+    ['We ___ football yesterday.', 'played', 'play|plays'], ['He ___ to the park last Sunday.', 'walked', 'walk|walks'], ['___ you watch TV last night?', 'Did', 'Do|Were'], ['I ___ not see him yesterday.', 'did', 'do|was'],
+    ['The weather ___ cold yesterday.', 'was', 'were|is'], ['She ___ her room on Saturday.', 'cleaned', 'cleans|clean'], ['They ___ not at school yesterday.', 'were', 'was|did']]},
+  {id:'b-future', name:'Future: will / going to', tip:'Use “will” for sudden decisions and predictions. Use “am / is / are going to” for plans. After will use a short verb.', items:[
+    ['It is cloudy. It ___ rain soon.', 'will', 'did|is'], ['I ___ help you with that bag.', 'will', 'am|do'], ['We ___ visit Grandma next week. (it is our plan)', 'are going to', 'is going to|will going to'], ['Tomorrow she ___ be ten years old.', 'will', 'is|does'],
+    ['Look at those clouds! It ___ rain.', 'is going to', 'are going to|going to'], ['I think he ___ win the game.', 'will', 'wills|is'], ['They ___ play football this afternoon. (a plan)', 'are going to', 'is going to|goes to'],
+    ['The phone is ringing. I ___ answer it.', 'will', 'am|do'], ['I am sure it ___ be fun.', 'will', 'is|does'], ['My sister ___ study abroad next year. (her plan)', 'is going to', 'are going to|will going to']]},
+  {id:'b-articles', name:'a / an / the', tip:'Use a / an for one thing (first time). Use “the” when we know which one. Use “an” before the sounds a, e, i, o, u.', items:[
+    ['I saw a dog. ___ dog was big.', 'The', 'A|An'], ['Please close ___ door. (we both know which)', 'the', 'a|an'], ['She is ___ honest girl.', 'an', 'a|the'], ['He plays ___ guitar very well.', 'the', 'a|an'],
+    ['The sun is ___ star.', 'a', 'an|the'], ['I have ___ umbrella in my bag.', 'an', 'a|the'], ['___ moon is bright tonight.', 'The', 'A|An'], ['My mum is ___ English teacher.', 'an', 'a|the'],
+    ['Can I have ___ apple, please?', 'an', 'a|the'], ['We go to ___ same school.', 'the', 'a|an']]},
+  {id:'b-place', name:'in / on / under / next to / between', tip:'in = inside; on = on top; under = below; next to = beside; between = in the middle of two things; at = a point (at the bus stop).', items:[
+    ['The book is ___ the table. (on top)', 'on', 'in|under'], ['The cat is ___ the box. (inside)', 'in', 'on|between'], ['The ball is ___ the chair. (below)', 'under', 'on|at'], ['The bank is ___ the school and the shop.', 'between', 'next|under'],
+    ['My house is ___ the park. (beside)', 'next to', 'between|under'], ['The picture is ___ the wall.', 'on', 'in|at'], ['The fish swims ___ the water.', 'in', 'on|at'], ['She sits ___ me. (beside)', 'next to', 'between|on'],
+    ['He is waiting ___ the bus stop.', 'at', 'in|between'], ['The shoes are ___ the bed. (below)', 'under', 'on|in'], ['Tom is standing ___ Anna and Ben.', 'between', 'next|in']]},
+  {id:'b-time', name:'at / on / in (time)', tip:'at + clock time or night (at 7 o\'clock). on + days and dates (on Monday). in + months, seasons, years and parts of the day (in May, in summer, in the morning).', items:[
+    ['I get up ___ 6 o\'clock.', 'at', 'on|in'], ['We have English ___ Monday.', 'on', 'at|in'], ['My birthday is ___ May.', 'in', 'on|at'], ['It is cold ___ winter.', 'in', 'on|at'],
+    ['She goes to school ___ the morning.', 'in', 'at|on'], ['They go to bed ___ night.', 'at', 'in|on'], ['The party is ___ Saturday.', 'on', 'in|at'], ['He was born ___ 2015.', 'in', 'on|at'],
+    ['We eat dinner ___ 7 pm.', 'at', 'on|in'], ['I play football ___ Sunday afternoon.', 'on', 'in|at'], ['Christmas is ___ December.', 'in', 'on|at']]},
+  {id:'b-someany', name:'some / any', tip:'Use “some” in positive sentences and offers. Use “any” in questions and negative sentences.', items:[
+    ['I have ___ apples.', 'some', 'any|an'], ['Do you have ___ brothers?', 'any', 'some|an'], ['There aren\'t ___ eggs in the fridge.', 'any', 'some|an'], ['Would you like ___ tea?', 'some', 'any|a'],
+    ['She has ___ friends in this town.', 'some', 'any|an'], ['Is there ___ milk in the glass?', 'any', 'some|an'], ['I don\'t have ___ money.', 'any', 'some|an'], ['We need ___ bread.', 'some', 'any|an'],
+    ['Are there ___ chairs in the room?', 'any', 'some|an'], ['He has ___ good ideas.', 'some', 'any|an']]},
+  {id:'b-muchmany', name:'much / many / a lot of', tip:'“Many” + things you can count (many books). “Much” + things you cannot count (much water). “A lot of” works with both.', items:[
+    ['How ___ books do you have?', 'many', 'much|a lot'], ['How ___ water is in the bottle?', 'much', 'many|a few'], ['There are ___ students in my class.', 'a lot of', 'much|a little'], ['I don\'t have ___ time.', 'much', 'many|few'],
+    ['She doesn\'t have ___ friends.', 'many', 'much|a little'], ['We have ___ milk. (not much)', 'a little', 'a few|many'], ['He has ___ pens. (not many)', 'a few', 'a little|much'], ['How ___ sugar do you want?', 'much', 'many|few'],
+    ['There isn\'t ___ rice left.', 'much', 'many|few'], ['How ___ brothers has she got?', 'many', 'much|a little']]},
+  {id:'b-modals', name:'can / must / should', tip:'After can, must and should use a short verb. Can = ability, must = have to, should = a good idea (advice). Mustn\'t = not allowed.', items:[
+    ['Birds ___ fly.', 'can', 'must|are'], ['You ___ stop at a red light. (it is the law)', 'must', 'can|might'], ['You ___ eat more vegetables. (advice)', 'should', 'can|are'], ['I ___ swim, but I can\'t dive.', 'can', 'must|am'],
+    ['She ___ speak three languages.', 'can', 'must|is'], ['You ___ be quiet in the library.', 'must', 'can|are'], ['He has a cold. He ___ see a doctor. (advice)', 'should', 'can|is'], ['___ I open the window? (asking)', 'Can', 'Must|Does'],
+    ['Dogs ___ talk.', 'can\'t', 'mustn\'t|isn\'t'], ['We ___ run in the corridor. (not allowed)', 'mustn\'t', 'can|aren\'t']]},
+  {id:'b-qwords', name:'Question words (what, where, who…)', tip:'What = a thing, Where = a place, Who = a person, When = a time, Why = a reason, How = a way, How many / How much = a number.', items:[
+    ['___ is your name?', 'What', 'Where|Who'], ['___ do you live? In Hanoi.', 'Where', 'When|Who'], ['___ is that boy? He is my brother.', 'Who', 'What|Where'], ['___ is your birthday? In May.', 'When', 'Where|Who'],
+    ['___ are you crying? Because I am sad.', 'Why', 'When|Who'], ['___ old are you?', 'How', 'What|Who'], ['___ is your favourite colour?', 'What', 'Who|Where'], ['___ do you go to school? By bike.', 'How', 'Who|Where'],
+    ['___ many apples are there?', 'How', 'What|Who'], ['___ is she going? To the market.', 'Where', 'Who|Why']]},
+  {id:'b-conj', name:'and / but / or / because / so', tip:'and = adds more; but = shows a difference; or = a choice; because = the reason; so = the result.', items:[
+    ['I like tea ___ coffee.', 'and', 'but|so'], ['He is tired, ___ he goes to bed.', 'so', 'but|or'], ['I was late ___ the bus was slow.', 'because', 'so|but'], ['Do you want tea ___ juice?', 'or', 'and|but'],
+    ['It was raining, ___ we stayed at home.', 'so', 'because|but'], ['I like cats, ___ I don\'t like dogs.', 'but', 'so|because'], ['She went to bed early ___ she was tired.', 'because', 'so|or'], ['He studied hard, ___ he passed the exam.', 'so', 'because|but'],
+    ['We can go by bus ___ by train.', 'or', 'because|but'], ['I was hungry, ___ I ate a sandwich.', 'so', 'because|but']]},
+  {id:'b-ifcond', name:'If… (first conditional)', tip:'If + present simple, will + a short verb: If it rains, we will stay at home.', items:[
+    ['If it rains, we ___ at home.', 'will stay', 'stay|stayed'], ['If you study, you ___ the test.', 'will pass', 'pass|passed'], ['If I ___ hungry, I will eat.', 'am', 'will be|was'], ['She will be happy if you ___ her.', 'help', 'will help|helped'],
+    ['If he ___ early, he will catch the bus.', 'leaves', 'will leave|left'], ['If we hurry, we ___ late.', 'won\'t be', 'aren\'t|weren\'t'], ['If you heat ice, it ___.', 'melts', 'melted|will melting'], ['I will call you if I ___ time.', 'have', 'will have|had'],
+    ['If they ___ here, we will play.', 'come', 'will come|came'], ['What will you do if you ___ the game?', 'lose', 'will lose|lost']]}
+];
+const BUILTIN_TOPICS = BUILTIN_MC.map(b => ({id:b.id, kind:'mc', name:b.name, tip:b.tip, builtin:true, items:b.items.map(([q, a, w]) => ({q, a, w:w.split('|')}))}));
+const KIND_META = {
+  mc:    {icon:'✅', num:2, title:'Grammar choice', sub:'Pick the right word to finish the sentence — is / are, this / that…'},
+  order: {icon:'🔀', num:3, title:'Sentence order', sub:'Put the words in the right order to make a sentence'},
+  vmc:   {icon:'🔤', num:4, title:'Vocabulary choice', sub:'Pick the right word or meaning, from your word lists'},
+  test:  {icon:'📝', num:5, title:'Test', sub:'Mixed questions from every topic — earn bonus coins by your score'}
+};
+const TEST_BONUS = [[100, 50, 5], [90, 35, 4], [80, 25, 3], [60, 10, 1]]; // [min %, coins, water and feed]
+const TEST_BONUS_PER_DAY = 3, TEST_MIN_Q = 5;
+const findTopic = id => BUILTIN_TOPICS.find(t => t.id === id) || (S.topics || []).find(t => t.id === id);
+const mcSentence = it => { const s = it.q.split(' = ').pop().replace(/\s*\([^)]*\)\s*$/, '').replace('___', it.a).trim(); return s.charAt(0).toUpperCase() + s.slice(1); };
+const wordsIn = lid => Object.values(S.words).filter(w => !lid || w.listId === lid);
+function wordSentences(lid) {
+  const seen = new Set(), out = [];
+  for (const w of wordsIn(lid)) for (const s of w.examples || []) { const t = String(s).trim(), n = t.split(/\s+/).length; if (n >= 3 && n <= 10 && !seen.has(t)) { seen.add(t); out.push(t); } }
+  return out;
+}
+function vocabQuestions(lid) {
+  const all = Object.values(S.words), out = [];
+  for (const w of wordsIn(lid)) {
+    const re = new RegExp('\\b' + w.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+    const ex = (w.examples || []).find(s => re.test(s));
+    const wrongWords = shuffle(all.filter(x => x.id !== w.id && x.word !== w.word).map(x => x.word)).slice(0, 3);
+    const wrongDefs = shuffle(all.filter(x => x.id !== w.id && x.def && x.def !== w.def).map(x => x.def)).slice(0, 3);
+    const types = [];
+    if (ex && wrongWords.length) types.push(['cloze', () => ({q:ex.replace(re, '___'), a:w.word, w:wrongWords})]);
+    if (w.def && wrongWords.length) types.push(['def', () => ({q:'Which word means: “' + w.def.replace(re, '___') + '”', a:w.word, w:wrongWords})]);
+    if (w.def && wrongDefs.length) types.push(['mean', () => ({q:`What does “${w.word}” mean?`, a:w.def, w:wrongDefs})]);
+    for (const [tn, fn] of types) out.push({...fn(), tip:'', key:'v:' + w.id + ':' + tn});
+  }
+  return out;
+}
+function questionsFor(kind, tid) {
+  if (tid.startsWith('w:')) { const lid = tid.slice(2) === 'all' ? null : tid.slice(2); return kind === 'order' ? wordSentences(lid).map(s => ({k:'order', s, key:'o:' + s})) : vocabQuestions(lid).map(x => ({k:'mc', ...x})); }
+  if (tid.startsWith('o-')) { const t = findTopic(tid.slice(2)); return t ? t.items.map(it => { const s = mcSentence(it); return {k:'order', s, key:'o:' + s, tip:t.tip}; }) : []; }
+  const t = findTopic(tid); if (!t) return [];
+  return t.kind === 'order' ? t.items.map(it => ({k:'order', s:it.s, key:'o:' + it.s, tip:it.tip || t.tip})) : t.items.map(it => ({k:'mc', q:it.q, a:it.a, w:it.w, key:'m:' + it.q + '|' + it.a, tip:it.tip || t.tip || ''}));
+}
+function practiceTopics(kind) {
+  const out = [], mine = (S.topics || []).filter(t => t.kind === kind);
+  if (kind === 'mc') BUILTIN_TOPICS.forEach(t => out.push({id:t.id, name:t.name, n:t.items.length, src:'built-in'}));
+  if (kind === 'order') {
+    [...BUILTIN_TOPICS, ...(S.topics || []).filter(t => t.kind === 'mc')].forEach(t => out.push({id:'o-' + t.id, name:t.name + ' (full sentences)', n:t.items.length, src:t.builtin ? 'built-in' : 'yours'}));
+  }
+  if (kind === 'order' || kind === 'vmc') {
+    const count = lid => kind === 'order' ? wordSentences(lid).length : vocabQuestions(lid).length;
+    out.push({id:'w:all', name:'All my word lists', n:count(null), src:'from your words'});
+    S.lists.forEach(l => out.push({id:'w:' + l.id, name:'📒 ' + l.name, n:count(l.id), src:'from your words'}));
+  }
+  mine.forEach(t => out.push({id:t.id, name:t.name, n:t.items.length, src:'yours', mine:true}));
+  return out.filter(t => t.n > 0);
+}
+function prepQ(x) {
+  if (x.k === 'order') return {k:'order', s:x.s, key:x.key, tokens:x.s.split(/\s+/).filter(Boolean), tip:x.tip || ''};
+  const wrongs = shuffle([...new Set(x.w)].filter(v => v !== x.a)).slice(0, 3);
+  return {k:'mc', q:x.q, a:x.a, key:x.key, choices:shuffle([x.a, ...wrongs]), tip:x.tip || ''};
+}
+let PQ = null, lastPractice = null; const PS = {};
+function startPractice(kind, tids, n) {
+  if (timeLocked()) return timeUpModal();
+  const test = kind === 'test';
+  const pools = tids.map(t => { const bar = t.indexOf('|'), k = test ? t.slice(0, bar) : kind, id = test ? t.slice(bar + 1) : t; return shuffle(questionsFor(k, id)); });
+  let qs = [];
+  if (test) { const m = Math.max(0, ...pools.map(p => p.length)); for (let i = 0; i < m; i++) for (const p of pools) if (p[i]) qs.push(p[i]); } else qs = shuffle(pools.flat());
+  const seen = new Set(); qs = qs.filter(x => { const key = x.k + (x.q || x.s); if (seen.has(key)) return false; seen.add(key); return true; });
+  qs = qs.slice(0, n === 'all' ? 999 : n); if (test) qs = shuffle(qs);
+  runQs(kind, qs, () => startPractice(kind, tids, n));
+}
+// run a ready list of raw questions as a practice round (or as a test when kind is 'test')
+function runQs(kind, qs, again) {
+  if (timeLocked()) return timeUpModal();
+  if (!qs.length) return toast('No questions here yet.');
+  lastPractice = {again};
+  PQ = {kind, test:kind === 'test', qs:qs.map(prepQ), i:0, right:0, earned:{coins:0, water:0, feed:0}, combo:0, results:[], cur:null};
+  cur = {name:'quiz', p:{}}; renderTabbar(); startQ();
+}
+function startQ() {
+  const q = PQ.qs[PQ.i];
+  PQ.cur = {q, bad:new Set(), mistakes:0, hints:0, done:false, ok:false, shake:false, msg:q.k === 'order' ? 'Tap the words in the right order!' : 'Pick the right answer!',
+    ord:q.k === 'order' ? {tray:shuffle(q.tokens.map((t, k) => ({k, t}))), ans:[]} : null};
+  renderQuiz();
+}
+function renderQuiz() {
+  const c = PQ.cur, q = c.q, label = PQ.test ? 'Test' : q.k === 'order' ? 'Put the words in order' : PQ.kind === 'vmc' ? 'Pick the right answer' : 'Choose the right word';
+  app.innerHTML = `
+  <div class="gbar"><button class="icon-btn" data-act="q-quit" title="Stop">✕</button>
+    <span class="wcount">${PQ.test ? 'Test · ' : ''}Question ${PQ.i + 1}/${PQ.qs.length}</span><span class="spacer"></span>
+    <div class="combo ${PQ.combo >= 3 ? 'hot' : ''}">${PQ.combo >= 3 ? '🔥' + PQ.combo : ''}</div><span class="pill">💰 ${S.farm.coins}</span></div>
+  <div class="glabel">${label}</div>
+  <div class="card gbody" id="qbody"></div>
+  <div class="mascot-row"><div class="mascot">🐰</div><div class="bubble" id="bubble">${esc(c.msg)}</div></div>`;
+  renderQuizBody();
+}
+function quizResultHTML() {
+  const c = PQ.cur, q = c.q, last = PQ.i + 1 >= PQ.qs.length, r = c.reward;
+  const verdict = PQ.test ? (c.ok ? '<div class="reward">✅ Correct!</div>' : `<div class="reward" style="color:var(--red-d)">❌ The answer is <b>${esc(q.k === 'order' ? q.s : q.a)}</b></div>`) : (r ? `<div class="reward">${rewardText(r)}</div>${(r.notes || []).map(n => `<div class="small">${esc(n)}</div>`).join('')}` : '');
+  return `<div style="text-align:center;margin-top:10px">${verdict}${q.tip ? `<div class="def sm" style="margin-top:6px">💡 ${esc(q.tip)}</div>` : ''}
+    <button class="btn primary big" style="margin-top:12px" data-act="q-next">${last ? 'Finish' : 'Next'} ➜</button></div>`;
+}
+function renderQuizBody() {
+  const c = PQ.cur, q = c.q, el = $('#qbody'); if (!el) return;
+  if (q.k === 'mc') {
+    const prompt = q.q.includes('___') ? esc(q.q).replace('___', `<span class="blankbox ${c.done ? 'ok' : ''}">${c.done ? esc(q.a) : '&nbsp;&nbsp;&nbsp;'}</span>`) : esc(q.q);
+    const long = q.choices.some(x => x.length > 22);
+    el.innerHTML = `<div class="qprompt">${prompt}</div>
+      <div class="qgrid">${q.choices.map((ch, i) => `<button class="qchoice ${long ? 'long' : ''} ${c.done && ch === q.a ? 'ok' : c.bad.has(i) ? 'bad' : ''}" data-act="q-pick" data-i="${i}" ${c.done || c.bad.has(i) ? 'disabled' : ''}>${esc(ch)}</button>`).join('')}</div>
+      ${c.done ? quizResultHTML() : ''}`;
+    return;
+  }
+  const o = c.ord, all = o.ans.length === q.tokens.length;
+  el.innerHTML = `<div class="small muted" style="text-align:center">Make a sentence with these words:</div>
+    <div class="oanswer ${c.done && c.ok ? 'ok' : c.shake ? 'bad' : ''}">${o.ans.map(k => `<button class="otile" data-act="q-ans" data-k="${k}" ${c.done ? 'disabled' : ''}>${esc(q.tokens[k])}</button>`).join('') || '<span class="small muted">Tap the words below</span>'}</div>
+    <div class="tray">${o.tray.map(t => `<button class="otile ${o.ans.includes(t.k) ? 'used' : ''}" data-act="q-tile" data-k="${t.k}" ${c.done ? 'disabled' : ''}>${esc(t.t)}</button>`).join('')}</div>
+    ${c.done ? quizResultHTML() : `<div class="row center"><button class="btn primary" data-act="q-check" ${all ? '' : 'disabled'}>✔️ Check</button>${PQ.test ? '' : '<button class="btn sm" data-act="q-hint">💡 Hint</button>'}<button class="btn sm" data-act="q-clear">↩ Clear</button></div>`}`;
+  c.shake = false;
+}
+function qSay(m) { PQ.cur.msg = m; const b = $('#bubble'); if (b) b.textContent = m; }
+function touchStreak() { rollDay(); const d = S.daily; if (S.streak.last !== d.date) { S.streak.count = S.streak.last === yesterday() ? S.streak.count + 1 : 1; S.streak.last = d.date; } }
+function quizFinish() {
+  const c = PQ.cur, q = c.q, slips = c.mistakes + c.hints, first = slips === 0;
+  c.ok = PQ.test ? c.mistakes === 0 : true; c.done = true;
+  if (c.ok) S.stats.correct++;
+  S.stats.wrong += c.mistakes;
+  if (!PQ.test) {
+    PQ.combo = first ? PQ.combo + 1 : 0;
+    let coins = first ? 3 : slips <= 1 ? 2 : 1; const water = first ? 1 : 0, feed = first ? 1 : 0, notes = [];
+    if (PQ.combo >= 3 && first) { coins += 1; if (PQ.combo % 3 === 0) notes.push(`🔥 ${PQ.combo} in a row! Bonus coins!`); }
+    if (PQ.combo >= 5) S.flags.combo5 = true;
+    give({coins, water, feed});
+    PQ.earned.coins += coins; PQ.earned.water += water; PQ.earned.feed += feed;
+    c.reward = {coins, water, feed, notes};
+  }
+  PQ.results.push({q, ok:c.ok, slips}); if (c.ok) PQ.right++;
+  if (q.key) { const st = S.qstats[q.key] = S.qstats[q.key] || {r:0, w:0, last:0}; if (c.ok) st.r++; st.w += c.mistakes; st.last = Date.now(); }
+  touchStreak(); c.ok ? Sfx.ok() : Sfx.bad();
+  if (c.ok) { if (!PQ.test && first) FX.burst(40); const text = q.k === 'order' ? q.s : q.q.includes('___') ? q.q.replace('___', q.a).replace(/\s*\([^)]*\)\s*$/, '') : ''; if (text) setTimeout(() => { try { Speech.say(text, null); } catch (e) {} }, 250); }
+  qSay(PQ.test ? (c.ok ? pick(PRAISE) : 'Good try! Look at the answer.') : pick(PRAISE));
+  checkBadges(); save(); renderQuizBody();
+}
+function quizPick(i) {
+  const c = PQ.cur, q = c.q; if (c.done || c.bad.has(i)) return;
+  if (q.choices[i] === q.a) return quizFinish();
+  c.mistakes++; c.bad.add(i);
+  if (PQ.test) return quizFinish();
+  Sfx.bad(); qSay(pick(WRONG)); renderQuizBody();
+}
+function quizTile(k) { const c = PQ.cur; if (c.done || c.ord.ans.includes(k)) return; c.ord.ans.push(k); Sfx.pop(); renderQuizBody(); }
+function quizAns(k) { const c = PQ.cur; if (c.done) return; c.ord.ans = c.ord.ans.filter(x => x !== k); Sfx.pop(); renderQuizBody(); }
+function quizCheck() {
+  const c = PQ.cur, q = c.q; if (c.done || c.ord.ans.length !== q.tokens.length) return;
+  const got = c.ord.ans.map(k => q.tokens[k]).join(' ').toLowerCase();
+  if (got === q.tokens.join(' ').toLowerCase()) return quizFinish();
+  c.mistakes++; c.shake = true; Sfx.bad();
+  if (PQ.test) { c.ord.ans = q.tokens.map((_, k) => k); return quizFinish(); }
+  qSay('Not quite! Look at the order again.'); renderQuizBody();
+}
+function quizHint() {
+  const c = PQ.cur, q = c.q, o = c.ord; if (c.done) return;
+  let good = 0; while (good < o.ans.length && q.tokens[o.ans[good]].toLowerCase() === q.tokens[good].toLowerCase()) good++;
+  o.ans = o.ans.slice(0, good);
+  const t = o.tray.find(t => !o.ans.includes(t.k) && t.t.toLowerCase() === q.tokens[good].toLowerCase());
+  if (t) { o.ans.push(t.k); c.hints++; qSay('Here is the next word!'); }
+  renderQuizBody();
+}
+function quizNext() { PQ.i++; if (PQ.i >= PQ.qs.length) endPractice(); else startQ(); }
+function endPractice() {
+  const T = PQ, n = T.qs.length, pct = Math.round(T.right / n * 100); let e = T.earned, note = '';
+  if (T.test) {
+    rollDay(); const eligible = n >= TEST_MIN_Q && (S.daily.tests || 0) < TEST_BONUS_PER_DAY, tier = TEST_BONUS.find(([min]) => pct >= min);
+    if (eligible) S.daily.tests = (S.daily.tests || 0) + 1;
+    if (eligible && tier) { e = {coins:tier[1], water:tier[2], feed:tier[2]}; give(e); }
+    S.testLog = [{t:Date.now(), n, right:T.right, pct, bonus:rewardText(e)}, ...(S.testLog || [])].slice(0, 20);
+    note = n < TEST_MIN_Q ? `Tests with ${TEST_MIN_Q}+ questions earn a bonus.` : !eligible ? `You already got the bonus for ${TEST_BONUS_PER_DAY} tests today. Come back tomorrow for more!` : tier ? '' : 'Get 60% or more to win a bonus. Try again!';
+    checkBadges(); save();
+  }
+  const wrong = T.results.filter(r => !r.ok);
+  FX.burst(pct >= 60 ? 130 : 30); if (pct >= 60) Sfx.win();
+  cur = {name:'qsummary', p:{}}; renderTabbar();
+  app.innerHTML = `<div class="card" style="text-align:center;margin-top:20px">
+    <div style="font-size:70px">${pct >= 90 ? '🏆' : pct >= 60 ? '🌟' : '💪'}</div><h1>${T.test ? 'Test finished' : 'All done'}, ${esc(profile().name)}!</h1>
+    <div style="font-size:30px;font-weight:800">${T.right}/${n} · ${pct}%</div>
+    <div class="reward" style="font-size:28px;font-weight:800;color:#b37400;margin:12px 0">${rewardText(e) || '—'}${T.test && rewardText(e) ? '<div class="small">Test bonus 🎁</div>' : ''}</div>
+    ${note ? `<div class="small muted">${esc(note)}</div>` : ''}
+    ${wrong.length ? `<div style="text-align:left;margin-top:12px"><b>Let's look again:</b>${wrong.map(r => `<div class="small" style="margin-top:4px">• ${esc(r.q.k === 'order' ? r.q.s : r.q.q.replace('___', r.q.a))}${r.q.k === 'mc' && !r.q.q.includes('___') ? ' → <b>' + esc(r.q.a) + '</b>' : ''}</div>`).join('')}</div>` : ''}
+    <div style="display:grid;gap:10px;margin-top:14px">
+      <button class="btn big primary" data-act="practice-again">🔁 ${T.test ? 'Take another test' : 'Practise again'}</button>
+      <button class="btn big" data-act="tab" data-to="learn">📚 Back to Learn</button>
+      <button class="btn" data-act="tab" data-to="garden">🌻 Go to the farm</button></div></div>`;
+  PQ = null;
+}
+SCREENS.practice = ({kind}) => { learnView = kind; SCREENS.learn(); renderTabbar(); }; // old route: now a tab of Learn
+/* ----- the practice tabs have the same tools as Words: auto practice, my rules, review mistakes, practise by topic, manage topics ----- */
+function allQuestions(kind) {
+  const kinds = kind === 'test' ? ['mc', 'order', 'vmc'] : [kind], seen = new Set(), out = [];
+  for (const k of kinds) for (const t of practiceTopics(k)) for (const x of questionsFor(k, t.id)) {
+    if (x.key && !seen.has(x.key)) { seen.add(x.key); out.push({...x, tn:t.name, tid:(kind === 'test' ? k + '|' : '') + t.id, src:t.src}); }
+  }
+  return out;
+}
+const qStat = x => S.qstats[x.key] || {r:0, w:0, last:0};
+const qWeak = x => { const s = qStat(x); return s.w > s.r; };
+function qPriority(x) { const s = qStat(x); if (!s.last) return 2 + Math.random(); return 1 + s.w / (s.r + s.w + 1) + Math.min(1, (Date.now() - s.last) / DAY / 14) + Math.random() * .3; }
+const autoQs = (kind, n = 10) => allQuestions(kind).map(x => [qPriority(x), x]).sort((a, b) => b[0] - a[0]).slice(0, n).map(a => a[1]);
+const qText = x => x.q || x.s;
+/* topics of a tab, each tagged grammar or vocab; shown as collapsible groups with a search box */
+function ptTopics(kind) {
+  const grp = t => /^w:/.test(t.id) || t.vk === 'vmc' ? 'vocab' : 'grammar';
+  if (kind === 'test') return ['mc', 'order', 'vmc'].flatMap(k => practiceTopics(k).map(t => ({...t, vk:k, id:k + '|' + t.id}))).map(t => ({...t, grp:grp({id:t.id.replace(/^[a-z]+\|/, ''), vk:t.vk})}));
+  return practiceTopics(kind).map(t => ({...t, grp:grp({id:t.id, vk:kind})}));
+}
+function topicMatch(t, q) {
+  if (t.name.toLowerCase().includes(q)) return true;
+  const id = t.id.replace(/^(mc|order|vmc)\|/, '');
+  if (id.startsWith('w:')) return wordsIn(id.slice(2) === 'all' ? null : id.slice(2)).some(w => w.word.includes(q));
+  const tp = findTopic(id.startsWith('o-') ? id.slice(2) : id);
+  return !!tp && tp.items.some(i => String(i.q || i.s || '').toLowerCase().includes(q));
+}
+function ptListHTML(kind, topics, st) {
+  const q = (st.q || '').trim().toLowerCase();
+  if (!topics.length) return `<div class="small muted">No questions yet. ${kind === 'order' || kind === 'vmc' ? 'Add words with example sentences or definitions, or ' : ''}add your own topics from “Manage topics”.</div>`;
+  const shown = q ? topics.filter(t => topicMatch(t, q)) : topics;
+  if (!shown.length) return `<div class="small muted">No topic matches “${esc(st.q)}”.</div>`;
+  st.open = st.open || {};
+  const rowHTML = t => { const on = st.sel.has(t.id); return `<label class="trow ${on ? 'on' : ''}"><input type="checkbox" data-change="pt-tick" data-k="${kind}" data-t="${esc(t.id)}" ${on ? 'checked' : ''}><b>${esc(t.name)}</b><span class="spacer"></span><span class="small muted">${plural(t.n, 'question')} · ${t.src}</span></label>`; };
+  return [['grammar', '🧩', 'Grammar'], ['vocab', '🔤', 'Vocabulary']].map(([g, ic, label]) => {
+    const all = topics.filter(t => t.grp === g), ts = shown.filter(t => t.grp === g); if (!ts.length) return '';
+    const sel = all.filter(t => st.sel.has(t.id)).length;
+    if (st.open[g] === undefined) st.open[g] = sel > 0;
+    const open = q ? true : st.open[g];
+    return `<div class="tgroup" data-g="${g}"><button class="tghead" data-act="pt-group" data-k="${kind}" data-g="${g}"><span>${ic} ${label}</span><span class="small muted">${plural(all.length, 'topic')} · ${sel} ticked</span><span class="spacer"></span><span class="chev">${open ? '▾' : '▸'}</span></button>
+      ${open ? `<div class="row" style="margin:6px 10px 0"><button class="btn sm" data-act="pt-gall" data-k="${kind}" data-g="${g}">Tick ${q ? 'shown' : 'all'}</button><button class="btn sm" data-act="pt-gnone" data-k="${kind}" data-g="${g}">Untick ${q ? 'shown' : 'all'}</button></div><div class="tscroll">${ts.map(rowHTML).join('')}</div>` : ''}</div>`;
+  }).join('');
+}
+function practiceBodyHTML(kind) {
+  const test = kind === 'test', M = KIND_META[kind], st = PS[kind] || (PS[kind] = {sel:null, n:10});
+  const all = allQuestions(kind), fresh = all.filter(x => !qStat(x).last).length, weak = all.filter(qWeak).length;
+  const plans = (S.qPlans || []).filter(p => p.kind === kind);
+  const topics = ptTopics(kind);
+  if (!st.sel) st.sel = new Set(test ? topics.map(t => t.id) : topics.length ? [topics[0].id] : []);
+  st.sel = new Set([...st.sel].filter(id => topics.some(t => t.id === id)));
+  const total = topics.filter(t => st.sel.has(t.id)).reduce((a, t) => a + t.n, 0), ns = test ? [10, 20, 30] : [5, 10, 15, 20, 'all'];
+  const nShow = st.n === 'all' ? total : Math.min(st.n, total), mine = (S.topics || []).filter(t => t.kind === kind);
+  const list = ptListHTML(kind, topics, st);
+  const planChips = plans.length ? `<div class="chips">${plans.map(p => `<button class="chip" data-act="qr-plan" data-id="${p.id}">📌 ${esc(p.name)}</button>`).join('')}</div>` : '';
+  const chooseCard = toolCard('🎯', 'Choose questions', `Pick exactly which questions to ${test ? 'test' : 'practise'}, with your own rules.`, `<button class="btn" data-act="qr-open" data-k="${kind}" ${all.length ? '' : 'disabled'}>🛠 My rules…</button>`, planChips);
+  const secondCard = test
+    ? toolCard('🏅', 'My test results', (S.testLog || []).length ? 'Your last tests' : 'No test taken yet.', '', (S.testLog || []).slice(0, 4).map(l => `<div class="small">${fmtDate(l.t)} · <b>${l.pct}%</b> (${l.right}/${l.n})${l.bonus ? ' · ' + esc(l.bonus) : ''}</div>`).join(''))
+    : toolCard('🔁', 'Review mistakes', weak ? `<b>${plural(weak, 'question')}</b> to try again` : 'No mistakes yet — Auto reviews what you did before.',
+        `<button class="btn blue" data-act="q-mistakes" data-k="${kind}" ${all.length ? '' : 'disabled'}>⚡ Auto</button><button class="btn" data-act="qr-open" data-k="${kind}" data-s="wrong" ${all.length ? '' : 'disabled'}>🛠 My rules…</button>`);
+  const manageCard = test ? toolCard('🗂️', 'Topics', 'The test uses every topic from Grammar, Sentences and Vocab. Add or edit topics in those tabs.', '')
+    : toolCard('🗂️', 'Manage topics', `${mine.length ? plural(mine.length, 'topic of yours', 'topics of yours') : 'No topics of your own yet'} — add, edit, search or export topics`, `<button class="btn orange" data-act="topics-open" data-k="${kind}">Open ›</button>`);
+  return `
+  <button class="learn-btn k-${kind}" data-act="q-auto" data-k="${kind}" ${all.length ? '' : 'disabled'}><span style="font-size:40px">${test ? '📝' : '▶️'}</span><span>${test ? 'Start a test' : 'Start practising'}<span class="sub">${all.length ? `${plural(all.length, 'question')} · ${fresh} new · auto picks 10 for you` : 'no questions yet'}</span></span></button>
+  ${test ? `<div class="card"><div class="small">🎁 <b>Bonus coins by score:</b> ${TEST_BONUS.map(([m, c, w]) => `${m}% = +${c} 💰 +${w} 💧 +${w} 🌾`).join(' · ')}. Bonus for up to ${TEST_BONUS_PER_DAY} tests a day (${TEST_MIN_Q}+ questions). No second tries in a test.</div></div>` : ''}
+  <div class="pgrid">${chooseCard}${secondCard}</div>
+  <div class="card"><div class="row"><h3>${test ? 'Test topics' : 'Practise by topic'}</h3><span class="spacer"></span>${topics.length > 1 ? `<button class="btn sm" data-act="pt-all" data-k="${kind}">Tick all</button><button class="btn sm" data-act="pt-none" data-k="${kind}">Untick all</button>` : ''}</div>
+    ${topics.length ? `<input type="search" list="pt-sug-${kind}" data-field="pt-q" data-k="${kind}" value="${esc(st.q || '')}" placeholder="🔎 Search a topic or a word…" style="margin-top:8px;width:100%"><datalist id="pt-sug-${kind}">${topics.slice(0, 80).map(t => `<option value="${esc(t.name.replace(/^📒 /, ''))}">`).join('')}</datalist>` : ''}
+    <div id="pt-list" style="margin-top:8px">${list}</div>
+    <div class="row" style="margin-top:8px"><span class="small"><b>How many questions?</b></span><div class="chips">${ns.map(v => `<button class="chip ${st.n === v ? 'on' : ''}" data-act="pt-n" data-k="${kind}" data-v="${v}">${v === 'all' ? 'All' : v}</button>`).join('')}</div></div>
+    <button class="btn primary big" style="margin-top:12px" data-act="pt-start" data-k="${kind}" ${total ? '' : 'disabled'}>▶️ ${test ? 'Start the test' : 'Start'} · ${plural(nShow, 'question')}</button></div>
+  ${manageCard}`;
+}
+/* ----- choose questions with your own rules (like "My rules" for words) ----- */
+const QRULES = {
+  topic:    {label:'📒 From topic'},
+  status:   {label:'📝 Questions to include'},
+  mistakes: {label:'❌ Mistakes at least', opts:[1, 2, 3, 5]},
+  notSeen:  {label:'💤 Not practised for', days:true, opts:[1, 3, 7, 14]},
+  text:     {label:'🔎 Contains'}
+};
+const QR_DEFAULT = {topic:'', status:'all', mistakes:1, notSeen:3, text:''};
+const QSORTS = {weak:'🧠 Weakest first', old:'📅 Practised longest ago first', fresh:'🆕 New questions first', abc:'🔠 A → Z', random:'🎲 Random'};
+let QRB = null;
+const newQRB = (kind, status = 'all') => ({kind, rules:[{type:'status', val:status}], sort:status === 'wrong' ? 'weak' : 'fresh', limit:10, items:null, checked:new Set(), name:''});
+function qMatch(x, rules) {
+  const s = qStat(x), now = Date.now(), tids = rules.filter(r => r.type === 'topic' && r.val).map(r => r.val);
+  if (tids.length && !tids.includes(x.tid)) return false;
+  const st = (rules.find(r => r.type === 'status') || {val:'all'}).val;
+  if (st === 'new' && s.last) return false;
+  if (st === 'practised' && !s.last) return false;
+  if (st === 'wrong' && !qWeak(x)) return false;
+  for (const r of rules) {
+    const v = +r.val || 0;
+    if (r.type === 'mistakes' && s.w < v) return false;
+    if (r.type === 'notSeen' && s.last && now - s.last < v * DAY) return false;
+    if (r.type === 'text' && r.val && !qText(x).toLowerCase().includes(String(r.val).trim().toLowerCase())) return false;
+  }
+  return true;
+}
+function runQR() {
+  const ws = allQuestions(QRB.kind).filter(x => qMatch(x, QRB.rules));
+  const by = {weak:(a, b) => qStat(b).w - qStat(a).w, old:(a, b) => (qStat(a).last || 0) - (qStat(b).last || 0), fresh:(a, b) => (qStat(a).last ? 1 : 0) - (qStat(b).last ? 1 : 0), abc:(a, b) => qText(a).localeCompare(qText(b))}[QRB.sort];
+  QRB.items = by ? ws.sort(by) : shuffle(ws);
+  QRB.checked = new Set(QRB.items.slice(0, QRB.limit === 'all' ? QRB.items.length : +QRB.limit).map(x => x.key));
+}
+function qTopicOpts(kind) { return (kind === 'test' ? ['mc', 'order', 'vmc'].flatMap(k => practiceTopics(k).map(t => ({id:k + '|' + t.id, name:KIND_META[k].icon + ' ' + t.name}))) : practiceTopics(kind).map(t => ({id:t.id, name:t.name}))); }
+function qRuleRowHTML(r, i) {
+  const R0 = QRULES[r.type]; let ctl;
+  if (r.type === 'topic') ctl = `<select data-change="qr-val" data-i="${i}"><option value="">— choose a topic —</option>${qTopicOpts(QRB.kind).map(t => `<option value="${esc(t.id)}" ${t.id === r.val ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select>`;
+  else if (r.type === 'status') ctl = `<select data-change="qr-val" data-i="${i}">${[['all', 'All questions'], ['new', 'New ones (never practised)'], ['practised', 'Practised before'], ['wrong', 'Ones I got wrong']].map(([v, l]) => `<option value="${v}" ${v === r.val ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  else if (r.type === 'text') ctl = `<input type="text" value="${esc(r.val)}" data-field="qr-val" data-i="${i}" placeholder="a word in the question" style="min-width:180px">`;
+  else ctl = `<input type="number" min="0" value="${esc(r.val)}" data-field="qr-val" data-i="${i}" style="width:76px"> ${R0.days ? 'days' : 'times'}
+    <span class="chips">${R0.opts.map(v => `<button class="chip ${+r.val === v ? 'on' : ''}" data-act="qr-set" data-i="${i}" data-v="${v}">${v}</button>`).join('')}</span>`;
+  return `<div class="rule"><span class="lbl">${R0.label}</span>${ctl}<span class="spacer"></span><button class="icon-btn" data-act="qr-del" data-i="${i}" title="Remove rule">✕</button></div>`;
+}
+function qrResultsHTML() {
+  const ws = QRB.items || [], n = QRB.checked.size, test = QRB.kind === 'test';
+  if (!QRB.items) return `<h3>2. Choose questions</h3><div class="small muted">Set your rules, then tap 🔍 Find questions.</div>`;
+  if (!ws.length) return `<h3>2. Choose questions</h3><div class="small">🔍 No questions match these rules. Try removing a rule or using smaller numbers.</div><div class="row" style="margin-top:8px"><button class="btn" data-act="qr-loosen">Remove all rules</button></div>`;
+  return `<div class="row"><h3>2. Choose questions · ${plural(ws.length, 'match', 'matches')}</h3><span class="spacer"></span>
+      <button class="btn sm" data-act="qr-pick" data-v="all">Tick all</button><button class="btn sm" data-act="qr-pick" data-v="none">Untick all</button>
+      ${[5, 10, 20].filter(k => k < ws.length).map(k => `<button class="btn sm" data-act="qr-pick" data-v="${k}">First ${k}</button>`).join('')}</div>
+    <div class="rres"><div class="rrow head"><span></span><span>Question</span><span>Topic</span><span class="hide-sm">Mistakes</span><span>Status</span><span class="hide-sm">Last</span></div>
+    ${ws.map(x => { const on = QRB.checked.has(x.key), s = qStat(x);
+      return `<label class="rrow ${on ? 'on' : ''}"><input type="checkbox" data-change="qr-tick" data-key="${esc(x.key)}" ${on ? 'checked' : ''}><b style="font-size:14px">${esc(clip(qText(x), 46))}</b><span class="small muted">${esc(clip(x.tn, 22))}</span>
+        <span class="hide-sm small">${s.w}</span><span class="small">${!s.last ? '🆕 new' : qWeak(x) ? '❗ weak' : '✅ ok'}</span><span class="hide-sm small">${s.last ? fmtDate(s.last).replace(/, \d{4}$/, '') : ''}</span></label>`; }).join('')}</div>
+    <button class="btn primary big" style="margin-top:12px" data-act="qr-start" ${n ? '' : 'disabled'}>▶️ ${test ? 'Start a test with' : 'Practise'} ${plural(n, 'question')}</button>`;
+}
+SCREENS.qrules = ({kind}) => {
+  if (!QRB || QRB.kind !== kind) QRB = newQRB(kind);
+  if (!QRB.items) runQR();
+  const test = kind === 'test', M = KIND_META[kind], plans = (S.qPlans || []).filter(p => p.kind === kind);
+  app.innerHTML = topBar(`${M.icon} Choose questions`, 'learn') + `
+  ${plans.length ? `<div class="card"><h3>📌 My plans</h3><div class="chips">${plans.map(p => `<span class="pill" style="gap:6px"><button class="chip" data-act="qr-plan" data-id="${p.id}">▶️ ${esc(p.name)}</button><button class="icon-btn" style="font-size:16px;padding:0 4px" data-act="qr-plan-del" data-id="${p.id}" title="Delete plan">✕</button></span>`).join('')}</div></div>` : ''}
+  <div class="card"><h3>1. Rules</h3>
+    <div class="small muted" style="margin-bottom:8px">Questions must match <b>every</b> rule. Several 📒 topic rules mean <i>any</i> of those topics.</div>
+    <div class="rules">${QRB.rules.map(qRuleRowHTML).join('') || '<div class="small muted">No rules — every question matches.</div>'}</div>
+    <div class="row" style="margin-top:10px"><select data-change="qr-add" style="width:auto"><option value="">＋ Add a rule…</option>${Object.entries(QRULES).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('')}</select></div>
+    <div class="row" style="margin-top:10px"><span class="small"><b>Order:</b></span><select data-change="qr-sort" style="width:auto">${Object.entries(QSORTS).map(([k, v]) => `<option value="${k}" ${k === QRB.sort ? 'selected' : ''}>${v}</option>`).join('')}</select>
+      <span class="small"><b>Tick the first:</b></span><select data-change="qr-limit" style="width:auto">${[5, 10, 15, 20, 30, 'all'].map(v => `<option value="${v}" ${String(v) === String(QRB.limit) ? 'selected' : ''}>${v === 'all' ? 'all' : v + ' questions'}</option>`).join('')}</select></div>
+    <div class="row" style="margin-top:12px"><button class="btn blue" data-act="qr-run">🔍 Find questions</button><span class="spacer"></span>
+      <input type="text" data-field="qr-name" value="${esc(QRB.name)}" placeholder="Plan name, e.g. Weak ones" style="width:auto;min-width:200px"><button class="btn" data-act="qr-save">💾 Save as plan</button></div></div>
+  <div class="card" id="qr-results">${qrResultsHTML()}</div>`;
+};
+
+/* ----- manage topics (add, edit, search, export) ----- */
+let TM = {q:'', sort:'new', from:'', to:''}, ET = null;
+const topicAdded = t => t.created || 0;
+function tmFiltered(kind) {
+  const q = TM.q.trim().toLowerCase();
+  const ts = (S.topics || []).filter(t => t.kind === kind && (!q || t.name.toLowerCase().includes(q) || t.items.some(i => String(i.q || i.s || '').toLowerCase().includes(q))));
+  return ts.sort(TM.sort === 'old' ? (a, b) => topicAdded(a) - topicAdded(b) : TM.sort === 'abc' ? (a, b) => a.name.localeCompare(b.name) : (a, b) => topicAdded(b) - topicAdded(a));
+}
+function tmExportSet(kind) {
+  const from = TM.from ? new Date(TM.from + 'T00:00:00').getTime() : -Infinity, to = TM.to ? new Date(TM.to + 'T23:59:59').getTime() : Infinity;
+  return tmFiltered(kind).filter(t => topicAdded(t) >= from && topicAdded(t) <= to).sort((a, b) => topicAdded(a) - topicAdded(b));
+}
+function tmResultsHTML(kind) {
+  const q = TM.q.trim().toLowerCase(), ts = tmFiltered(kind);
+  const built = kind === 'mc' ? BUILTIN_TOPICS.filter(t => !q || t.name.toLowerCase().includes(q)) : [];
+  if (!ts.length && !built.length) return `<div class="card">${(S.topics || []).some(t => t.kind === kind) ? `No topic matches “${esc(TM.q)}”.` : 'No topics of your own yet. Tap ➕ New topic or upload a file.'}</div>`;
+  return ts.map(t => {
+    const hit = q && !t.name.toLowerCase().includes(q) ? t.items.find(i => String(i.q || i.s || '').toLowerCase().includes(q)) : null;
+    return `<div class="card list-card" data-act="edit-topic" data-id="${t.id}"><div class="row"><b style="font-size:19px">${esc(t.name)}</b><span class="spacer"></span><span class="pill">${plural(t.items.length, 'question')}</span></div>
+      <div class="small muted">Added ${fmtDate(topicAdded(t))}${hit ? ` · has “${esc(clip(hit.q || hit.s, 40))}”` : ''}</div>
+      <div class="row" style="margin-top:8px"><button class="btn sm" data-act="edit-topic" data-id="${t.id}">✏️ Edit topic</button></div></div>`;
+  }).join('') + built.map(t => `<div class="card"><div class="row"><b style="font-size:19px">${esc(t.name)}</b><span class="spacer"></span><span class="pill">built-in · ${plural(t.items.length, 'question')}</span></div>
+      <div class="row" style="margin-top:8px"><button class="btn sm" data-act="tm-copy" data-id="${t.id}">📋 Copy to my topics to edit</button></div></div>`).join('');
+}
+const tmExportInfo = kind => { const ts = tmExportSet(kind), n = ts.reduce((a, t) => a + t.items.length, 0); return ts.length ? `${plural(ts.length, 'topic')} · ${plural(n, 'question')} will be exported, oldest topic first.` : 'No topic falls in this time range.'; };
+SCREENS.topics = ({kind}) => {
+  const M = KIND_META[kind], mine = (S.topics || []).filter(t => t.kind === kind).sort((a, b) => topicAdded(b) - topicAdded(a));
+  const opts = ph => `<option value="">${ph}</option>` + mine.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  app.innerHTML = topBar(`${M.icon} Manage ${M.title.toLowerCase()} topics`, 'learn') + `
+  <div class="card"><h3>What do you want to do?</h3>
+    <div class="row" style="margin-top:6px"><button class="btn orange big" data-act="tm-new" data-k="${kind}">➕ New topic</button>
+      <select data-change="tm-edit" style="width:auto;flex:1;min-width:190px" ${mine.length ? '' : 'disabled'}>${opts('✏️ Edit a topic… (choose)')}</select></div>
+    <div class="row" style="margin-top:8px"><label class="btn blue">📄 Add from a file<input type="file" accept=".txt,.md,.csv,.tsv,.xlsx,.xls" data-change="practice-file" data-k="${kind}" hidden></label>
+      <button class="btn sm" data-act="ptpl" data-k="${kind}" data-f="sheet">⬇️ Spreadsheet template</button><button class="btn sm" data-act="ptpl" data-k="${kind}" data-f="note">⬇️ Note template</button></div>
+    <details style="margin-top:8px"><summary class="small"><b>What should the file look like?</b></summary>
+      <div class="small" style="margin-top:6px">${kind === 'order'
+        ? '<b>Spreadsheet</b> — first row is the header. Columns: <code>topic</code>, <code>sentence</code>, <code>explanation</code> (optional). One sentence per row. <b>Note</b> — a line <code># Topic name</code>, then one sentence per line.'
+        : `<b>Spreadsheet</b> — first row is the header. Columns: <code>topic</code>, <code>question</code> (write <code>___</code> where the answer goes), <code>correct</code>, <code>wrong 1</code>, <code>wrong 2</code>, <code>wrong 3</code> (at least one), <code>explanation</code> (optional). <b>Note</b> — a line <code># Topic name</code>, then <code>question | correct | wrong | wrong</code> on each line.`}</div></details></div>
+  <div class="card"><h3>🔎 Find a topic</h3>
+    <div class="row"><input type="search" data-field="tm-q" value="${esc(TM.q)}" placeholder="Search by topic name or a question…" style="flex:2;min-width:200px">
+      <select data-change="tm-sort" style="width:auto">${[['new', '🆕 Newest added first'], ['old', '📅 Oldest added first'], ['abc', '🔠 A → Z']].map(([v, t]) => `<option value="${v}" ${TM.sort === v ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
+  <div class="card"><h3>⬇️ Export topics by time added</h3>
+    <div class="small muted">Saves a spreadsheet (.csv) in the same format as the template, ordered by when each topic was added. Leave the dates empty to export everything. If you typed something in the search box, only matching topics are exported.</div>
+    <div class="row" style="margin-top:8px"><span class="small"><b>Added from</b></span><input type="date" data-field="tm-from" value="${esc(TM.from)}" style="width:auto"><span class="small"><b>to</b></span><input type="date" data-field="tm-to" value="${esc(TM.to)}" style="width:auto">
+      <button class="btn sm" data-act="tm-clear-dates" data-k="${kind}">Clear dates</button></div>
+    <div class="small" id="tm-info" style="margin-top:8px">${tmExportInfo(kind)}</div>
+    <div class="row" style="margin-top:8px"><button class="btn primary" data-act="tm-export" data-k="${kind}" ${mine.length ? '' : 'disabled'}>⬇️ Export CSV</button></div></div>
+  <div id="tm-results">${tmResultsHTML(kind)}</div>`;
+};
+function exportTopics(kind) {
+  const ts = tmExportSet(kind); if (!ts.length) return toast('No topic to export in this time range.');
+  const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"', dt = t => { if (!t) return ''; const d = new Date(t); return dstr(d) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  const rows = [kind === 'order' ? ['topic', 'sentence', 'explanation', 'date added'] : ['topic', 'question', 'correct', 'wrong 1', 'wrong 2', 'wrong 3', 'explanation', 'date added']];
+  for (const t of ts) for (const i of t.items) rows.push(kind === 'order' ? [t.name, i.s, i.tip || '', dt(t.created)] : [t.name, i.q, i.a, ...[0, 1, 2].map(k => (i.w || [])[k] || ''), i.tip || '', dt(t.created)]);
+  downloadText(`word-farm-${kind}-topics-${TM.from || 'start'}_${TM.to || today()}.csv`, '﻿' + rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv');
+  toast(`⬇️ Exported ${plural(ts.length, 'topic')}.`);
+}
+SCREENS['edit-topic'] = ({id}) => {
+  const t = (S.topics || []).find(x => x.id === id); if (!t) return go('learn');
+  if (!ET || ET.id !== id) { ET = {id, name:t.name, tip:t.tip || '', rows:t.items.map(i => t.kind === 'order' ? {s:i.s, t:i.tip || ''} : {q:i.q, a:i.a, w:(i.w || []).join(', '), t:i.tip || ''})}; if (!ET.rows.length) ET.rows.push(t.kind === 'order' ? {s:'', t:''} : {q:'', a:'', w:'', t:''}); }
+  app.innerHTML = topBar('✏️ Edit topic').replace('<div class="title">', `<button class="back" data-act="et-cancel">⬅</button><div class="title">`) + `
+  <div class="card"><label class="fl">Topic name</label><input type="text" data-field="et-name" value="${esc(ET.name)}" style="font-weight:800;font-size:20px">
+    <label class="fl">Tip shown after each answer (optional)</label><input type="text" data-field="et-tip" value="${esc(ET.tip)}" placeholder="e.g. Use “is” for one, “are” for many.">
+    <div class="small muted" style="margin-top:6px">${t.kind === 'order' ? 'One sentence per row.' : 'Write <b>___</b> where the answer goes. Wrong answers: separate with commas.'} Tap <b>Save changes</b> when you are done.</div></div>
+  <div class="card" id="et-rows">${etRowsHTML(t.kind)}</div>
+  <div class="row" style="margin:6px 0 20px"><button class="btn" data-act="et-add">+ Add a question</button><button class="btn sm danger" data-act="et-delete">🗑 Delete topic</button><span class="spacer"></span>
+    <button class="btn" data-act="et-cancel">Cancel</button><button class="btn primary" data-act="et-save">💾 Save changes</button></div>`;
+};
+function etRowsHTML(kind) {
+  if (!ET.rows.length) return '<div class="small muted">No questions yet. Tap “+ Add a question”.</div>';
+  return ET.rows.map((r, i) => `<div class="qrow">${kind === 'order'
+    ? `<input type="text" value="${esc(r.s)}" data-field="et-s" data-i="${i}" placeholder="a full sentence, e.g. This is my pen.">`
+    : `<input type="text" value="${esc(r.q)}" data-field="et-q" data-i="${i}" placeholder="question, e.g. She ___ my friend.">
+       <div class="row"><input type="text" value="${esc(r.a)}" data-field="et-a" data-i="${i}" placeholder="correct answer" style="flex:1;min-width:120px"><input type="text" value="${esc(r.w)}" data-field="et-w" data-i="${i}" placeholder="wrong answers, e.g. are, am" style="flex:2;min-width:160px"></div>`}
+    <div class="row"><input type="text" value="${esc(r.t)}" data-field="et-t" data-i="${i}" placeholder="explanation (optional)" style="flex:1"><button class="icon-btn" data-act="et-del" data-i="${i}" title="Remove question">✕</button></div></div>`).join('');
+}
+function quizRowsToGroups(rows, kind, sheetName) {
+  rows = rows.filter(r => r && r.some(c => String(c ?? '').trim()));
+  const out = {}; if (!rows.length) return out;
+  const H = rows[0].map(c => String(c ?? '').trim().toLowerCase()), f = re => H.findIndex(h => re.test(h));
+  const it = f(/^(topic|unit|lesson|list|chủ đề|bài)/), iq = f(/^(question|q$|sentence|câu)/), ic = f(/^(correct|answer|đáp án)/), ie = f(/explain|tip|note|hint|giải thích/);
+  const iw = H.map((h, i) => /wrong|incorrect|distract|sai/.test(h) ? i : -1).filter(i => i >= 0);
+  const cell = (r, i) => i >= 0 && r[i] != null ? String(r[i]).trim() : '';
+  const put = (tn, item) => { const k = tn || sheetName || ''; (out[k] = out[k] || []).push(item); };
+  if (kind === 'order') {
+    const start = iq < 0 ? 0 : 1;
+    rows.slice(start).forEach(r => { const s = cell(r, iq < 0 ? 0 : iq); if (s.split(/\s+/).length >= 2) put(cell(r, it), {s, tip:cell(r, ie)}); });
+  } else {
+    if (iq < 0 || ic < 0) throw new Error('Could not find the “question” and “correct” columns. Download the template to see the format.');
+    rows.slice(1).forEach(r => { const q = cell(r, iq), a = cell(r, ic), w = iw.map(i => cell(r, i)).filter(Boolean); if (q && a && w.length) put(cell(r, it), {q, a, w, tip:cell(r, ie)}); });
+  }
+  return out;
+}
+function quizParseNotes(text, kind) {
+  const out = {}; let topic = '';
+  for (let line of String(text).split(/\r?\n/)) {
+    line = line.trim(); if (!line) continue;
+    const h = line.match(/^#{1,6}\s*(.+)$/); if (h) { topic = h[1].trim(); continue; }
+    line = line.replace(/^\s*\d+[.)]\s+/, '').replace(/^\s*[-•*]\s+/, '');
+    const item = kind === 'order' ? (line.split(/\s+/).length >= 2 ? {s:line, tip:''} : null) : (p => p.length >= 3 ? {q:p[0], a:p[1], w:p.slice(2).filter(Boolean), tip:''} : null)(line.split(/\s*\|\s*/));
+    if (item) (out[topic] = out[topic] || []).push(item);
+  }
+  return out;
+}
+async function readPracticeFile(file, kind) {
+  const name = file.name.toLowerCase(), base = file.name.replace(/\.[^.]+$/, '');
+  try {
+    let groups = {};
+    const merge = g => { for (const [k, v] of Object.entries(g)) (groups[k] = groups[k] || []).push(...v); };
+    if (/\.(txt|md)$/.test(name)) groups = quizParseNotes(await file.text(), kind);
+    else if (/\.(csv|tsv)$/.test(name)) {
+      const text = await file.text(), first = text.split(/\r?\n/)[0] || '';
+      const sep = /\.tsv$/.test(name) || first.split('\t').length > first.split(',').length ? '\t' : (first.split(';').length > first.split(',').length ? ';' : ',');
+      merge(quizRowsToGroups(parseDelimited(text, sep), kind, base));
+    } else {
+      await loadXLSX();
+      const wb = XLSX.read(await file.arrayBuffer(), {type:'array'});
+      const sheets = wb.SheetNames.map(n => [n, XLSX.utils.sheet_to_json(wb.Sheets[n], {header:1, defval:'', raw:false})]).filter(([, rows]) => rows.length);
+      for (const [n, rows] of sheets) merge(quizRowsToGroups(rows, kind, sheets.length > 1 ? n : base));
+    }
+    S.topics = S.topics || []; let added = 0, nTopics = 0;
+    for (const [tn0, items] of Object.entries(groups)) {
+      const tn = tn0 || base; let t = S.topics.find(x => x.kind === kind && x.name.toLowerCase() === tn.toLowerCase());
+      if (!t) { t = {id:uid(), kind, name:tn, tip:'', created:Date.now(), items:[]}; S.topics.push(t); }
+      const have = new Set(t.items.map(i => i.q || i.s)); let any = false;
+      for (const it of items) { const key = it.q || it.s; if (!have.has(key)) { have.add(key); t.items.push(it); added++; any = true; } }
+      if (any) nTopics++;
+    }
+    if (!added) throw new Error('No new questions found in this file. Download a template to see the format.');
+    PS[kind] = null; save(); toast(`✅ Added ${plural(added, 'question')} in ${plural(nTopics, 'topic')}.`, 3500); render();
+  } catch (e) { toast('⚠️ ' + (e.message || 'Could not read this file.'), 4500); }
+}
+const PRACTICE_TPL = {
+  mc: {sheet:['topic,question,correct,wrong 1,wrong 2,wrong 3,explanation', 'Is / are,She ___ my friend.,is,are,am,,Use is with he / she / it.', 'Is / are,They ___ at school.,are,is,am,,Use are with they.', 'This / that,___ is my pen. (near me),This,That,,,'],
+    note:['# Is / are', 'She ___ my friend. | is | are | am', 'They ___ at school. | are | is | am', '# This / that', '___ is my pen. (near me) | This | That']},
+  vmc: {sheet:['topic,question,correct,wrong 1,wrong 2,wrong 3,explanation', 'Animals,A ___ is a small furry pet.,cat,dog,fish,bird,', 'Animals,Which animal can fly?,bird,cat,dog,,A bird has wings.', 'Fruit,What does “apple” mean?,a sweet round fruit,a small furry pet,a place to sleep,,'],
+    note:['# Animals', 'A ___ is a small furry pet. | cat | dog | fish', 'Which animal can fly? | bird | cat | dog']},
+  order: {sheet:['topic,sentence,explanation', 'My family,This is my mother.,', 'My family,I love my little brother.,', 'School,She has a red bag.,'],
+    note:['# My family', 'This is my mother.', 'I love my little brother.', '# School', 'She has a red bag.']}
+};
+
+/* =========================================================
    GARDEN
    ========================================================= */
 const justWatered = new Set();
@@ -3308,7 +3997,101 @@ const ACT = {
   'csv': el => reportCSV(el.dataset.id),
   // word lists
   'open-list': el => go('list', {id:el.dataset.id}),
-  'lm-export': () => exportLists(),
+  'crumb': el => { if (el.dataset.view) learnView = el.dataset.view; let p = {}; try { p = JSON.parse(el.dataset.p || '{}'); } catch (e) {} if (el.dataset.to === 'edit-list') editRows = null; go(el.dataset.to, p); },
+  'learn-tab': el => { learnView = el.dataset.k; render(); scrollTo(0, 0); },
+  'practice': el => { learnView = el.dataset.k; go('learn'); },
+  'pt-all': el => { const k = el.dataset.k; PS[k].sel = new Set(ptTopics(k).map(t => t.id)); render(); },
+  'pt-group': el => { const st = PS[el.dataset.k], g = el.dataset.g; st.open[g] = !st.open[g]; render(); },
+  'pt-gall': el => { const k = el.dataset.k, st = PS[k], q = (st.q || '').trim().toLowerCase(); ptTopics(k).filter(t => t.grp === el.dataset.g && (!q || topicMatch(t, q))).forEach(t => st.sel.add(t.id)); render(); },
+  'pt-gnone': el => { const k = el.dataset.k, st = PS[k], q = (st.q || '').trim().toLowerCase(); ptTopics(k).filter(t => t.grp === el.dataset.g && (!q || topicMatch(t, q))).forEach(t => st.sel.delete(t.id)); render(); },
+  'pt-none': el => { PS[el.dataset.k].sel = new Set(); render(); },
+  'pt-n': el => { PS[el.dataset.k].n = el.dataset.v === 'all' ? 'all' : +el.dataset.v; render(); },
+  'pt-start': el => { const k = el.dataset.k, st = PS[k]; startPractice(k, [...st.sel], st.n); },
+  'practice-again': () => { if (lastPractice) lastPractice.again(); },
+  'q-pick': el => quizPick(+el.dataset.i),
+  'q-tile': el => quizTile(+el.dataset.k),
+  'q-ans': el => quizAns(+el.dataset.k),
+  'q-check': () => quizCheck(),
+  'q-hint': () => quizHint(),
+  'q-clear': () => { PQ.cur.ord.ans = []; renderQuizBody(); },
+  'q-next': () => quizNext(),
+  'q-quit': async () => { if (!await askModal('Stop here? The coins you earned are kept.', 'Stop')) return; const k = PQ && PQ.kind; PQ = null; learnView = k || 'mc'; go('learn'); },
+  'pt-del': async el => {
+    const t = (S.topics || []).find(x => x.id === el.dataset.id); if (!t) return;
+    if (!await askModal(`Delete the topic “${esc(t.name)}” (${plural(t.items.length, 'question')})?`, 'Delete', true)) return;
+    S.topics = S.topics.filter(x => x.id !== t.id); PS[t.kind] = null; save(); render();
+  },
+  'ptpl': el => { const k = el.dataset.k, f = el.dataset.f, T = PRACTICE_TPL[k]; if (f === 'sheet') downloadText(`word-farm-${k}-template.csv`, '﻿' + T.sheet.join('\r\n'), 'text/csv'); else downloadText(`word-farm-${k}-template.txt`, T.note.join('\r\n'), 'text/plain'); },
+  'q-auto': el => { const k = el.dataset.k, again = () => runQs(k, autoQs(k, 10), again); again(); },
+  'q-mistakes': el => { const k = el.dataset.k, again = () => { const all = allQuestions(k); let ws = all.filter(qWeak);
+    if (ws.length) ws = shuffle(ws).slice(0, 10);
+    else { ws = all.filter(x => qStat(x).last).sort((a, b) => qStat(a).last - qStat(b).last).slice(0, 10); toast(ws.length ? 'No mistakes 🎉 Reviewing questions you did before.' : 'Nothing practised yet — starting with new questions.', 3000); if (!ws.length) ws = autoQs(k, 10); }
+    runQs(k, ws, again); }; again(); },
+  'qr-open': el => { QRB = newQRB(el.dataset.k, el.dataset.s || 'all'); go('qrules', {kind:el.dataset.k}); },
+  'qr-run': () => { runQR(); const c = $('#qr-results'); if (c) c.innerHTML = qrResultsHTML(); },
+  'qr-del': el => { QRB.rules.splice(+el.dataset.i, 1); runQR(); render(); },
+  'qr-set': el => { QRB.rules[+el.dataset.i].val = +el.dataset.v; runQR(); render(); },
+  'qr-loosen': () => { QRB.rules = []; runQR(); render(); },
+  'qr-pick': el => { const v = el.dataset.v; QRB.checked = new Set((v === 'all' ? QRB.items : v === 'none' ? [] : QRB.items.slice(0, +v)).map(x => x.key)); $('#qr-results').innerHTML = qrResultsHTML(); },
+  'qr-start': () => { const k = QRB.kind, items = QRB.items.filter(x => QRB.checked.has(x.key)), again = () => runQs(k, items, again); again(); },
+  'qr-save': () => {
+    const name = (QRB.name || '').trim() || `Plan ${(S.qPlans || []).filter(p => p.kind === QRB.kind).length + 1}`;
+    const plan = {id:uid(), kind:QRB.kind, name, rules:QRB.rules.map(r => ({...r})), sort:QRB.sort, limit:QRB.limit};
+    const old = (S.qPlans || []).findIndex(p => p.kind === QRB.kind && p.name.toLowerCase() === name.toLowerCase());
+    if (old >= 0) S.qPlans[old] = plan; else S.qPlans.push(plan);
+    QRB.name = name; save(); toast(`📌 Saved plan “${esc(name)}”. Run it any time from the tab.`); render();
+  },
+  'qr-plan': el => {
+    const p = (S.qPlans || []).find(x => x.id === el.dataset.id); if (!p) return;
+    QRB = {kind:p.kind, rules:p.rules.map(r => ({...r})), sort:p.sort, limit:p.limit, items:null, checked:new Set(), name:p.name};
+    runQR(); go('qrules', {kind:p.kind});
+  },
+  'qr-plan-del': async el => {
+    const p = (S.qPlans || []).find(x => x.id === el.dataset.id); if (!p) return;
+    if (!await askModal(`Delete the plan “${esc(p.name)}”?`, 'Delete', true)) return;
+    S.qPlans = S.qPlans.filter(x => x.id !== p.id); save(); render();
+  },
+  'topics-open': el => { TM.q = ''; go('topics', {kind:el.dataset.k}); },
+  'tm-new': el => {
+    openModal(`<h3>➕ New topic</h3><label class="fl">Topic name</label><input type="text" id="tm-name" placeholder="e.g. Unit 3 - Present simple" style="font-size:20px">
+      <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" data-act="close-modal">Cancel</button><button class="btn primary" data-act="tm-new-ok" data-k="${el.dataset.k}">Create</button></div>`);
+    setTimeout(() => { const g = $('#tm-name'); g && g.focus(); }, 50);
+  },
+  'tm-new-ok': el => {
+    const name = $('#tm-name').value.trim(); if (!name) { $('#tm-name').classList.add('shake'); return toast('Please type a name.'); }
+    const t = {id:uid(), kind:el.dataset.k, name, tip:'', created:Date.now(), items:[]};
+    S.topics.push(t); PS[t.kind] = null; save(); closeModal(); ET = null; go('edit-topic', {id:t.id});
+  },
+  'tm-copy': el => {
+    const b = BUILTIN_TOPICS.find(x => x.id === el.dataset.id); if (!b) return;
+    const t = {id:uid(), kind:b.kind, name:b.name + ' (mine)', tip:b.tip, created:Date.now(), items:b.items.map(i => ({q:i.q, a:i.a, w:[...i.w], tip:''}))};
+    S.topics.push(t); PS[t.kind] = null; save(); toast('📋 Copied. Now you can edit it.'); ET = null; go('edit-topic', {id:t.id});
+  },
+  'edit-topic': el => { ET = null; go('edit-topic', {id:el.dataset.id}); },
+  'tm-export': el => exportTopics(el.dataset.k),
+  'tm-clear-dates': () => { TM.from = TM.to = ''; render(); },
+  'et-add': () => { const t = S.topics.find(x => x.id === ET.id); ET.rows.push(t.kind === 'order' ? {s:'', t:''} : {q:'', a:'', w:'', t:''}); $('#et-rows').innerHTML = etRowsHTML(t.kind); const ins = document.querySelectorAll('#et-rows .qrow'); const last = ins[ins.length - 1]; if (last) last.querySelector('input').focus(); },
+  'et-del': el => { const t = S.topics.find(x => x.id === ET.id); ET.rows.splice(+el.dataset.i, 1); $('#et-rows').innerHTML = etRowsHTML(t.kind); },
+  'et-cancel': () => { const t = ET && S.topics.find(x => x.id === ET.id); ET = null; go('topics', {kind:t ? t.kind : 'mc'}); },
+  'et-delete': async () => {
+    const t = S.topics.find(x => x.id === ET.id); if (!t) return;
+    if (!await askModal(`Delete the topic “${esc(t.name)}” and its ${plural(t.items.length, 'question')}? This cannot be undone.`, 'Delete', true)) return;
+    S.topics = S.topics.filter(x => x.id !== t.id); PS[t.kind] = null; ET = null; save(); go('topics', {kind:t.kind});
+  },
+  'et-save': () => {
+    const t = S.topics.find(x => x.id === ET.id), out = [];
+    for (const [i, r] of ET.rows.entries()) {
+      if (t.kind === 'order') { const s = r.s.trim(); if (!s) continue; if (s.split(/\s+/).length < 2) return toast(`Question ${i + 1}: write a full sentence.`); out.push({s, tip:r.t.trim()}); }
+      else {
+        const q = r.q.trim(), a = r.a.trim(), w = r.w.split(/\s*[,|]\s*/).map(x => x.trim()).filter(Boolean);
+        if (!q && !a && !w.length) continue;
+        if (!q || !a || !w.length) return toast(`Question ${i + 1}: needs a question, the correct answer and at least one wrong answer.`, 4000);
+        out.push({q, a, w, tip:r.t.trim()});
+      }
+    }
+    t.name = ET.name.trim() || t.name; t.tip = ET.tip.trim(); t.items = out; PS[t.kind] = null; ET = null; save();
+    toast(`💾 Saved “${esc(t.name)}” · ${plural(out.length, 'question')}`, 3000); go('topics', {kind:t.kind});
+  },  'lm-export': () => exportLists(),
   'lm-clear-dates': () => { LM.from = LM.to = ''; render(); },
   'del-list': async el => {
     const l = S.lists.find(x => x.id === el.dataset.id);
@@ -3595,7 +4378,14 @@ document.body.addEventListener('input', e => {
   else if (f === 'edit-word') editRows.rows[+el.dataset.i].word = el.value;
   else if (f === 'edit-def') editRows.rows[+el.dataset.i].def = el.value;
   else if (f === 'new-name') addState.newName = el.value;
-  else if (f === 'lm-q') { LM.q = el.value; const c = $('#lm-results'); if (c) c.innerHTML = lmResultsHTML(); const i = $('#lm-info'); if (i) i.textContent = lmExportInfo(); }
+  else if (f === 'pt-q') { const k = el.dataset.k, st = PS[k], c = $('#pt-list'); st.q = el.value; if (c) c.innerHTML = ptListHTML(k, ptTopics(k), st); }
+  else if (f === 'et-name') ET.name = el.value;
+  else if (f === 'et-tip') ET.tip = el.value;
+  else if (/^et-[qawts]$/.test(f)) ET.rows[+el.dataset.i][f.slice(3)] = el.value;
+  else if (f === 'qr-val') { QRB.rules[+el.dataset.i].val = el.value; runQR(); const c = $('#qr-results'); if (c) c.innerHTML = qrResultsHTML(); }
+  else if (f === 'qr-name') QRB.name = el.value;
+  else if (f === 'tm-q') { TM.q = el.value; const k = cur.p.kind, c = $('#tm-results'); if (c) c.innerHTML = tmResultsHTML(k); const i = $('#tm-info'); if (i) i.textContent = tmExportInfo(k); }
+  else if (f === 'tm-from' || f === 'tm-to') { TM[f === 'tm-from' ? 'from' : 'to'] = el.value; const i = $('#tm-info'); if (i) i.textContent = tmExportInfo(cur.p.kind); }  else if (f === 'lm-q') { LM.q = el.value; const c = $('#lm-results'); if (c) c.innerHTML = lmResultsHTML(); const i = $('#lm-info'); if (i) i.textContent = lmExportInfo(); }
   else if (f === 'lm-from' || f === 'lm-to') { LM[f === 'lm-from' ? 'from' : 'to'] = el.value; const i = $('#lm-info'); if (i) i.textContent = lmExportInfo(); }
   else if (f === 'list-name') { const l = S.lists.find(x => x.id === el.dataset.id); if (l) { l.name = el.value.trim() || l.name; save(); } }
   else if (f === 'def') { const w = S.words[el.dataset.id]; w.def = el.value.trim(); w.defUser = true; save(); }
@@ -3604,7 +4394,15 @@ document.body.addEventListener('input', e => {
 document.body.addEventListener('change', async e => {
   const el = e.target, f = el.dataset.change; if (!f) return;
   if (f === 'add-list') { addState.list = el.value; render(); }
-  else if (f === 'lm-edit') { if (el.value) { editRows = null; go('edit-list', {id:el.value}); } }
+  else if (f === 'pt-tick') { const st = PS[el.dataset.k]; if (el.checked) st.sel.add(el.dataset.t); else st.sel.delete(el.dataset.t); render(); }
+  else if (f === 'practice-file' && el.files[0]) { await readPracticeFile(el.files[0], el.dataset.k); el.value = ''; }
+  else if (f === 'qr-val') { QRB.rules[+el.dataset.i].val = el.value; runQR(); render(); }
+  else if (f === 'qr-add' && el.value) { QRB.rules.push({type:el.value, val:QR_DEFAULT[el.value]}); runQR(); render(); }
+  else if (f === 'qr-sort') { QRB.sort = el.value; runQR(); render(); }
+  else if (f === 'qr-limit') { QRB.limit = el.value === 'all' ? 'all' : +el.value; runQR(); render(); }
+  else if (f === 'qr-tick') { if (el.checked) QRB.checked.add(el.dataset.key); else QRB.checked.delete(el.dataset.key); $('#qr-results').innerHTML = qrResultsHTML(); }
+  else if (f === 'tm-edit') { if (el.value) { ET = null; go('edit-topic', {id:el.value}); } }
+  else if (f === 'tm-sort') { TM.sort = el.value; const c = $('#tm-results'); if (c) c.innerHTML = tmResultsHTML(cur.p.kind); }  else if (f === 'lm-edit') { if (el.value) { editRows = null; go('edit-list', {id:el.value}); } }
   else if (f === 'lm-open') { if (el.value) go('list', {id:el.value}); }
   else if (f === 'lm-sort') { LM.sort = el.value; const c = $('#lm-results'); if (c) c.innerHTML = lmResultsHTML(); }
   else if (f === 'report-list') go('report', {id:el.dataset.id, list:el.value || null});
@@ -3667,7 +4465,7 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (e.key === 'Escape' && $('#modal').classList.contains('on')) return ACT['close-modal']();
-  if (cur.name !== 'game' || !G || !G.cur) return;
+  if (!['game', 'quiz'].includes(cur.name) || !G || !G.cur) return;
   const c = G.cur, k = e.key.toLowerCase();
   if (e.key === 'Enter') { if (c.done) nextRound(); else if (c.r.k === 'card') success(); return; }
   if (c.done) return;
@@ -3687,13 +4485,13 @@ setInterval(() => {
   const changed = tickPlants();
   if (cur.name === 'garden') { if (changed) render(); else updateTimers(); }
   else if (changed) renderTabbar();
-  if (document.visibilityState !== 'visible' || cur.name !== 'game') return;
+  if (document.visibilityState !== 'visible' || !['game', 'quiz'].includes(cur.name)) return;
   dayLog().s++;
   if (++tick % 10 === 0) save();
   if (limitOn()) {
     const left = leftSecs(), pill = $('#limpill'); if (pill) pill.textContent = limitPillText();
     if (left === 60) toast('⏰ One minute of learning time left today.', 3500);
-    if (left <= 0) { save(); G = null; go('learn'); timeUpModal(); }
+    if (left <= 0) { save(); G = null; PQ = null; go('learn'); timeUpModal(); }
   }
 }, 1000);
 addEventListener('online', () => S && queueEnrich(Object.values(S.words).filter(w => !w.enriched).map(w => w.id)));
