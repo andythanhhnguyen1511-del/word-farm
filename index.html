@@ -331,6 +331,11 @@ pre.fmt{background:#f7f9fc;border-radius:12px;padding:8px 10px;white-space:pre-w
 .plot{position:relative;border:none;background:radial-gradient(ellipse at 50% 85%,rgba(0,0,0,.18),transparent 60%);border-radius:14px;padding:0;cursor:pointer;aspect-ratio:5/6;display:flex;align-items:flex-end;justify-content:center;overflow:visible}
 .plot:hover{background:radial-gradient(ellipse at 50% 85%,rgba(255,255,255,.22),transparent 65%)}
 .plot.sel{outline:3px solid var(--yellow)}
+.plot[data-name]::after{content:attr(data-name);position:absolute;left:50%;bottom:100%;transform:translateX(-50%);background:#fff;color:#3b2a14;font-size:14px;font-weight:800;white-space:nowrap;padding:5px 10px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,.3);pointer-events:none;opacity:0;visibility:hidden;z-index:20}
+.plot[data-name]:hover,.plot[data-name]:focus-visible{z-index:20}
+.plot[data-name]:focus-visible::after{opacity:1;visibility:visible}
+@media (hover:hover){.plot[data-name]:hover::after{opacity:1;visibility:visible}}
+.yard .soil:hover,.yard .soil:focus-within{z-index:20}
 .psvg{width:100%;height:100%;overflow:visible;display:block}
 .psvg .sway{transform-box:view-box;transform-origin:50% 92%;animation:sway 4s ease-in-out infinite}
 @keyframes sway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
@@ -3526,7 +3531,7 @@ function plotHTML(p, bi, pi) {
   if (!p) return `<button class="plot" data-act="plot" data-b="${bi}" data-p="${pi}" title="Plant a seed"><span class="empty">＋</span></button>`;
   const tag = st === 'ripe' ? `<span class="ptag ripe">🧺 Pick!</span>` : st === 'water' ? `<span class="ptag water">💧</span>` : `<span class="ptag grow" data-wat="${key}">⏳ ${fmtSec(growLeft(p))}</span>`;
   const anim = justWatered.has(key) ? CAN_SVG + `<div class="drops">${[10, 35, 60, 80].map((x, i) => `<i style="left:${x}%;animation-delay:${i * .15}s"></i>`).join('')}</div>` : '';
-  return `<button class="plot ${st === 'ripe' ? 'ripe' : ''}" data-act="plot" data-b="${bi}" data-p="${pi}" title="${esc(PLANTS[p.t].name)} – ${esc(stageName(p.t, p.stage))}">${tag}${anim}${plantSVG(p.t, p.stage, st === 'grow')}</button>`;
+  return `<button class="plot ${st === 'ripe' ? 'ripe' : ''}" data-act="plot" data-b="${bi}" data-p="${pi}" data-name="${esc(PLANTS[p.t].name)}" aria-label="${esc(PLANTS[p.t].name)} – ${esc(stageName(p.t, p.stage))}">${tag}${anim}${plantSVG(p.t, p.stage, st === 'grow')}</button>`;
 }
 let gardenView = 'fields';
 SCREENS.garden = () => {
